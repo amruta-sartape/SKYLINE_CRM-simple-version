@@ -951,6 +951,263 @@ export async function seedDatabase(): Promise<void> {
     `UPDATE leads SET project_id = 'proj_skyline_bayview', unit_id = 'unt_skb_t1_502' WHERE interested_property LIKE '%Skyline Bayview%'`
   );
 
+  // ============================================================================
+  // 8. Seed Phase 4 Site Visits
+  // ============================================================================
+  const today = new Date();
+  const todayStr = today.toISOString().split('T')[0];
+  
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+  const inThreeDays = new Date(today);
+  inThreeDays.setDate(inThreeDays.getDate() + 3);
+  const inThreeDaysStr = inThreeDays.toISOString().split('T')[0];
+
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+  const twoDaysAgo = new Date(today);
+  twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+  const twoDaysAgoStr = twoDaysAgo.toISOString().split('T')[0];
+
+  const sampleVisits = [
+    {
+      id: 'sv_seed_001',
+      lead_id: 'lead_001',
+      project_id: 'proj_skyline_heights',
+      unit_id: 'unt_skh_a_101',
+      assigned_user_id: 'usr_agent_001',
+      visit_date: todayStr,
+      visit_time: '11:00',
+      visit_status: 'Scheduled',
+      visit_type: 'Direct Visit',
+      remarks: 'Client requested comprehensive walkthrough of the 2 BHK showroom and clubhouse.',
+      outcome: null,
+      created_by: 'usr_admin_001',
+    },
+    {
+      id: 'sv_seed_002',
+      lead_id: 'lead_002',
+      project_id: 'proj_skyline_bayview',
+      unit_id: 'unt_skb_t1_501',
+      assigned_user_id: 'usr_agent_001',
+      visit_date: yesterdayStr,
+      visit_time: '15:30',
+      visit_status: 'Completed',
+      visit_type: 'Executive Accompanied',
+      remarks: 'Dr. Deshmukh visited with family. Very positive response regarding sea-facing balcony.',
+      outcome: 'Interested',
+      created_by: 'usr_agent_001',
+    },
+    {
+      id: 'sv_seed_003',
+      lead_id: 'lead_003',
+      project_id: 'proj_skyline_grandeur',
+      unit_id: 'unt_skg_a_101',
+      assigned_user_id: 'usr_employee_001',
+      visit_date: tomorrowStr,
+      visit_time: '14:00',
+      visit_status: 'Rescheduled',
+      visit_type: 'Pickup & Drop',
+      remarks: 'Rescheduled from original morning slot due to flight arrival delay.',
+      outcome: null,
+      created_by: 'usr_employee_001',
+    },
+    {
+      id: 'sv_seed_004',
+      lead_id: 'lead_004',
+      project_id: 'proj_skyline_oasis',
+      unit_id: null,
+      assigned_user_id: 'usr_agent_002',
+      visit_date: twoDaysAgoStr,
+      visit_time: '10:00',
+      visit_status: 'No Show',
+      visit_type: 'Direct Visit',
+      remarks: 'Customer could not be reached on phone at the gate. Follow-up initiated.',
+      outcome: null,
+      created_by: 'usr_agent_002',
+    },
+    {
+      id: 'sv_seed_005',
+      lead_id: 'lead_005',
+      project_id: 'proj_skyline_heights',
+      unit_id: 'unt_skh_a_201',
+      assigned_user_id: 'usr_agent_001',
+      visit_date: yesterdayStr,
+      visit_time: '16:00',
+      visit_status: 'Cancelled',
+      visit_type: 'Direct Visit',
+      remarks: 'Cancelled by customer due to sudden business travel.',
+      outcome: null,
+      created_by: 'usr_admin_001',
+    },
+    {
+      id: 'sv_seed_006',
+      lead_id: 'lead_001',
+      project_id: 'proj_skyline_bayview',
+      unit_id: 'unt_skb_t1_502',
+      assigned_user_id: 'usr_agent_001',
+      visit_date: inThreeDaysStr,
+      visit_time: '11:30',
+      visit_status: 'Scheduled',
+      visit_type: 'Executive Accompanied',
+      remarks: 'Second follow-up site visit to inspect 3 BHK corner layout with structural architect.',
+      outcome: null,
+      created_by: 'usr_agent_001',
+    },
+  ];
+
+  for (const sv of sampleVisits) {
+    const existing = await db.get('SELECT id FROM site_visits WHERE id = ?', [sv.id]);
+    if (!existing) {
+      await db.run(
+        `INSERT INTO site_visits (id, lead_id, project_id, unit_id, assigned_user_id, visit_date, visit_time, visit_status, visit_type, remarks, outcome, created_by, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+        [
+          sv.id,
+          sv.lead_id,
+          sv.project_id,
+          sv.unit_id,
+          sv.assigned_user_id,
+          sv.visit_date,
+          sv.visit_time,
+          sv.visit_status,
+          sv.visit_type,
+          sv.remarks,
+          sv.outcome,
+          sv.created_by,
+        ]
+      );
+      console.log(`[Seed] Created site visit: ${sv.id} [${sv.visit_status} - ${sv.visit_date}]`);
+    }
+  }
+
+  // ============================================================================
+  // 9. Seed Phase 4 Follow-Ups (Today, Upcoming, Overdue, Completed)
+  // ============================================================================
+  const sampleFollowUps = [
+    {
+      id: 'fol_seed_001',
+      lead_id: 'lead_001',
+      site_visit_id: 'sv_seed_001',
+      assigned_user_id: 'usr_agent_001',
+      follow_up_type: 'Phone Call',
+      scheduled_date: todayStr,
+      scheduled_time: '17:00',
+      remarks: 'Post-visit debrief call to answer questions on payment milestones and amenities.',
+      status: 'Scheduled',
+      outcome: null,
+      next_follow_up_date: null,
+      created_by: 'usr_agent_001',
+    },
+    {
+      id: 'fol_seed_002',
+      lead_id: 'lead_002',
+      site_visit_id: 'sv_seed_002',
+      assigned_user_id: 'usr_agent_001',
+      follow_up_type: 'Meeting',
+      scheduled_date: todayStr,
+      scheduled_time: '18:30',
+      remarks: 'In-person discussion on stamp duty calculations and token booking terms.',
+      status: 'Scheduled',
+      outcome: null,
+      next_follow_up_date: null,
+      created_by: 'usr_agent_001',
+    },
+    {
+      id: 'fol_seed_003',
+      lead_id: 'lead_003',
+      site_visit_id: null,
+      assigned_user_id: 'usr_employee_001',
+      follow_up_type: 'WhatsApp',
+      scheduled_date: yesterdayStr,
+      scheduled_time: '10:00',
+      remarks: 'Overdue follow-up: Send updated ROI comparison sheet and rental index for Whitefield.',
+      status: 'Scheduled', // Overdue because date is in the past and status is Scheduled
+      outcome: null,
+      next_follow_up_date: null,
+      created_by: 'usr_employee_001',
+    },
+    {
+      id: 'fol_seed_004',
+      lead_id: 'lead_004',
+      site_visit_id: null,
+      assigned_user_id: 'usr_agent_002',
+      follow_up_type: 'Phone Call',
+      scheduled_date: twoDaysAgoStr,
+      scheduled_time: '12:00',
+      remarks: 'Overdue follow-up: Check why client missed scheduled site visit.',
+      status: 'Scheduled', // Overdue
+      outcome: null,
+      next_follow_up_date: null,
+      created_by: 'usr_agent_002',
+    },
+    {
+      id: 'fol_seed_005',
+      lead_id: 'lead_002',
+      site_visit_id: null,
+      assigned_user_id: 'usr_agent_001',
+      follow_up_type: 'Email',
+      scheduled_date: yesterdayStr,
+      scheduled_time: '11:00',
+      remarks: 'Shared brochure and sample agreement draft via official email.',
+      status: 'Completed',
+      outcome: 'Brochure Delivered',
+      next_follow_up_date: todayStr,
+      created_by: 'usr_agent_001',
+    },
+    {
+      id: 'fol_seed_006',
+      lead_id: 'lead_001',
+      site_visit_id: null,
+      assigned_user_id: 'usr_agent_001',
+      follow_up_type: 'Video Call',
+      scheduled_date: inThreeDaysStr,
+      scheduled_time: '16:00',
+      remarks: 'Virtual 3D model demonstration with co-applicant spouse.',
+      status: 'Scheduled',
+      outcome: null,
+      next_follow_up_date: null,
+      created_by: 'usr_agent_001',
+    },
+  ];
+
+  for (const fol of sampleFollowUps) {
+    const existing = await db.get('SELECT id FROM follow_ups WHERE id = ?', [fol.id]);
+    if (!existing) {
+      await db.run(
+        `INSERT INTO follow_ups (
+          id, lead_id, site_visit_id, assigned_user_id, executive_id,
+          follow_up_type, type, scheduled_date, followup_date, scheduled_time, followup_time,
+          remarks, status, outcome, next_follow_up_date, next_followup_date, created_by, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+        [
+          fol.id,
+          fol.lead_id,
+          fol.site_visit_id,
+          fol.assigned_user_id,
+          fol.assigned_user_id,
+          fol.follow_up_type,
+          fol.follow_up_type,
+          fol.scheduled_date,
+          fol.scheduled_date,
+          fol.scheduled_time,
+          fol.scheduled_time,
+          fol.remarks,
+          fol.status,
+          fol.outcome,
+          fol.next_follow_up_date,
+          fol.next_follow_up_date,
+          fol.created_by,
+        ]
+      );
+      console.log(`[Seed] Created follow-up: ${fol.id} [${fol.follow_up_type} - ${fol.status}]`);
+    }
+  }
+
   console.log('[Seed] Database seed completed successfully!');
 }
 

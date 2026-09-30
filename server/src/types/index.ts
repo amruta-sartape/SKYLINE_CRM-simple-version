@@ -115,7 +115,18 @@ export type ActivityType =
   | 'EXECUTIVE_ASSIGNED'
   | 'FOLLOW_UP_LOGGED'
   | 'NOTE_UPDATED'
-  | 'REQUIREMENT_UPDATED';
+  | 'REQUIREMENT_UPDATED'
+  | 'SITE_VISIT_SCHEDULED'
+  | 'SITE_VISIT_RESCHEDULED'
+  | 'SITE_VISIT_COMPLETED'
+  | 'SITE_VISIT_CANCELLED'
+  | 'SITE_VISIT_NO_SHOW'
+  | 'SITE_VISIT_REASSIGNED'
+  | 'FOLLOW_UP_CREATED'
+  | 'FOLLOW_UP_COMPLETED'
+  | 'FOLLOW_UP_RESCHEDULED'
+  | 'FOLLOW_UP_CANCELLED'
+  | 'FOLLOW_UP_REASSIGNED';
 
 export interface Enquiry {
   id: string;
@@ -358,5 +369,97 @@ export interface FloorMatrixData {
   wing_name: string;
   total_floors: number;
   floors: FloorMatrixFloor[];
+}
+
+// ============================================================================
+// PHASE 4: SITE VISIT & COMPLETE FOLLOW-UP ENUMS & INTERFACES
+// ============================================================================
+
+export type SiteVisitStatus = 'Scheduled' | 'Completed' | 'Rescheduled' | 'Cancelled' | 'No Show';
+
+export type SiteVisitType = 'Direct Visit' | 'Executive Accompanied' | 'Pickup & Drop';
+
+export type SiteVisitOutcome = 'Interested' | 'Follow-up Required' | 'Not Interested' | 'Needs More Time';
+
+export type FollowUpStatus = 'Scheduled' | 'Completed' | 'Rescheduled' | 'Cancelled';
+
+export interface SiteVisit {
+  id: string;
+  lead_id: string;
+  project_id: string;
+  unit_id?: string | null;
+  assigned_user_id: string;
+  visit_date: string; // 'YYYY-MM-DD'
+  visit_time: string; // 'HH:mm'
+  visit_status: SiteVisitStatus;
+  visit_type: SiteVisitType;
+  remarks?: string | null;
+  outcome?: SiteVisitOutcome | null;
+  created_by?: string | null;
+  created_at: string;
+  updated_at: string;
+  // Joined fields
+  customer_name?: string;
+  customer_phone?: string;
+  customer_email?: string;
+  lead_status?: QualificationStatus;
+  lead_budget?: number;
+  lead_flat_type?: PropertyConfiguration;
+  lead_pipeline_stage?: PipelineStage;
+  project_name?: string;
+  project_code?: string;
+  project_city?: string;
+  project_location?: string;
+  unit_number?: string;
+  unit_configuration?: string;
+  unit_price?: number;
+  unit_availability?: UnitAvailability;
+  assigned_user_name?: string;
+  assigned_user_email?: string;
+  created_by_name?: string;
+}
+
+export interface FollowUpItem {
+  id: string;
+  lead_id: string;
+  site_visit_id?: string | null;
+  assigned_user_id?: string | null; // also executive_id
+  follow_up_type: FollowUpType; // also type
+  scheduled_date: string; // 'YYYY-MM-DD' (also followup_date)
+  scheduled_time?: string | null; // (also followup_time)
+  remarks: string;
+  status: FollowUpStatus;
+  outcome?: string | null;
+  next_follow_up_date?: string | null; // (also next_followup_date)
+  created_by?: string | null;
+  created_at: string;
+  updated_at: string;
+  // Joined fields
+  customer_name?: string;
+  customer_phone?: string;
+  customer_email?: string;
+  assigned_user_name?: string;
+  created_by_name?: string;
+  project_name?: string;
+  is_overdue?: boolean;
+}
+
+export interface SiteVisitSummary {
+  total_visits: number;
+  scheduled_visits: number;
+  completed_visits: number;
+  rescheduled_visits: number;
+  cancelled_visits: number;
+  no_show_visits: number;
+  today_visits: number;
+  upcoming_visits: number;
+}
+
+export interface FollowUpSummary {
+  total: number;
+  today: number;
+  upcoming: number;
+  overdue: number;
+  completed: number;
 }
 

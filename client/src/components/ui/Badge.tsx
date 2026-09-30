@@ -9,6 +9,8 @@ import {
   EnquiryStatus,
 } from '../../types/crm.types';
 import { UnitAvailability, ProjectStatus } from '../../types/property.types';
+import { SiteVisitStatus, SiteVisitOutcome } from '../../types/siteVisit.types';
+import { FollowUpStatus, FollowUpType } from '../../types/followUp.types';
 
 export interface BadgeProps {
   role?: UserRole | string;
@@ -18,6 +20,10 @@ export interface BadgeProps {
   enquiryStatus?: EnquiryStatus | string;
   availability?: UnitAvailability | string;
   projectStatus?: ProjectStatus | string;
+  siteVisitStatus?: SiteVisitStatus | string;
+  siteVisitOutcome?: SiteVisitOutcome | string;
+  followUpStatus?: FollowUpStatus | string;
+  followUpType?: FollowUpType | string;
   variant?: 'admin' | 'employee' | 'agent' | 'success' | 'warning' | 'error' | 'neutral' | 'info' | 'purple';
   size?: 'xs' | 'sm' | 'md';
   showIcon?: boolean;
@@ -33,6 +39,10 @@ export const Badge: React.FC<BadgeProps> = ({
   enquiryStatus,
   availability,
   projectStatus,
+  siteVisitStatus,
+  siteVisitOutcome,
+  followUpStatus,
+  followUpType,
   variant,
   size = 'md',
   showIcon = true,
@@ -169,6 +179,87 @@ export const Badge: React.FC<BadgeProps> = ({
         customClasses = 'bg-slate-100 border-slate-200 text-slate-700';
     }
     labelText = labelText || projectStatus;
+  } else if (siteVisitStatus) {
+    switch (siteVisitStatus) {
+      case 'Scheduled':
+        customClasses = 'bg-sky-50 border-sky-300 text-sky-900 font-medium';
+        break;
+      case 'Completed':
+        customClasses = 'bg-emerald-50 border-emerald-300 text-emerald-900 font-semibold';
+        break;
+      case 'Rescheduled':
+        customClasses = 'bg-amber-50 border-amber-300 text-amber-900 font-medium';
+        break;
+      case 'Cancelled':
+        customClasses = 'bg-rose-50 border-rose-200 text-rose-800';
+        break;
+      case 'No Show':
+        customClasses = 'bg-slate-100 border-slate-300 text-slate-600 font-medium';
+        break;
+      default:
+        customClasses = 'bg-slate-100 border-slate-200 text-slate-700';
+    }
+    labelText = labelText || siteVisitStatus;
+  } else if (siteVisitOutcome) {
+    switch (siteVisitOutcome) {
+      case 'Interested':
+        customClasses = 'bg-emerald-50 border-emerald-300 text-emerald-800 font-semibold';
+        break;
+      case 'Follow-up Required':
+        customClasses = 'bg-blue-50 border-blue-300 text-blue-800';
+        break;
+      case 'Needs More Time':
+        customClasses = 'bg-amber-50 border-amber-300 text-amber-800';
+        break;
+      case 'Not Interested':
+        customClasses = 'bg-rose-50 border-rose-300 text-rose-800';
+        break;
+      default:
+        customClasses = 'bg-slate-100 border-slate-200 text-slate-700';
+    }
+    labelText = labelText || siteVisitOutcome;
+  } else if (followUpStatus) {
+    switch (followUpStatus) {
+      case 'Scheduled':
+        customClasses = 'bg-sky-50 border-sky-300 text-sky-800';
+        break;
+      case 'Completed':
+        customClasses = 'bg-emerald-50 border-emerald-300 text-emerald-800 font-semibold';
+        break;
+      case 'Rescheduled':
+        customClasses = 'bg-amber-50 border-amber-300 text-amber-800';
+        break;
+      case 'Cancelled':
+        customClasses = 'bg-rose-50 border-rose-200 text-rose-800';
+        break;
+      default:
+        customClasses = 'bg-slate-100 border-slate-200 text-slate-700';
+    }
+    labelText = labelText || followUpStatus;
+  } else if (followUpType) {
+    switch (followUpType) {
+      case 'Phone Call':
+        customClasses = 'bg-indigo-50 border-indigo-200 text-indigo-800';
+        break;
+      case 'WhatsApp':
+        customClasses = 'bg-emerald-50 border-emerald-200 text-emerald-800 font-medium';
+        break;
+      case 'Email':
+        customClasses = 'bg-sky-50 border-sky-200 text-sky-800';
+        break;
+      case 'Meeting':
+        customClasses = 'bg-purple-50 border-purple-200 text-purple-800 font-medium';
+        break;
+      case 'Video Call':
+        customClasses = 'bg-pink-50 border-pink-200 text-pink-800';
+        break;
+      case 'SMS':
+        customClasses = 'bg-slate-100 border-slate-300 text-slate-700';
+        break;
+      default:
+        customClasses = 'bg-slate-100 border-slate-200 text-slate-700';
+    }
+    labelText = labelText || followUpType;
   } else if (variant) {
     switch (variant) {
       case 'success':

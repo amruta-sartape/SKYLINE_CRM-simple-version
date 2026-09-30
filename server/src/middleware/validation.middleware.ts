@@ -324,6 +324,80 @@ export const updateAvailabilitySchema = z.object({
   customer_lead_id: z.string().optional().nullable().or(z.literal('')),
 });
 
+// ============================================================================
+// PHASE 4 SITE VISIT & COMPLETE FOLLOW-UP VALIDATION SCHEMAS
+// ============================================================================
+
+export const createSiteVisitSchema = z.object({
+  lead_id: z.string({ required_error: 'Lead is required' }).min(1, 'Lead is required'),
+  project_id: z.string({ required_error: 'Project is required' }).min(1, 'Project is required'),
+  unit_id: z.string().optional().nullable().or(z.literal('')),
+  assigned_user_id: z.string({ required_error: 'Assigned executive is required' }).min(1, 'Assigned executive is required'),
+  visit_date: z.string({ required_error: 'Visit date is required' }).min(1, 'Visit date is required'),
+  visit_time: z.string({ required_error: 'Visit time is required' }).min(1, 'Visit time is required'),
+  visit_type: z.enum(['Direct Visit', 'Executive Accompanied', 'Pickup & Drop']).default('Direct Visit'),
+  remarks: z.string().optional().nullable().or(z.literal('')),
+});
+
+export const updateSiteVisitSchema = createSiteVisitSchema.partial();
+
+export const updateSiteVisitStatusSchema = z.object({
+  visit_status: z.enum(['Scheduled', 'Completed', 'Rescheduled', 'Cancelled', 'No Show'], {
+    required_error: 'Target visit status is required',
+  }),
+  outcome: z.enum(['Interested', 'Follow-up Required', 'Not Interested', 'Needs More Time']).optional().nullable().or(z.literal('')),
+  remarks: z.string().optional().nullable().or(z.literal('')),
+});
+
+export const rescheduleSiteVisitSchema = z.object({
+  visit_date: z.string({ required_error: 'New visit date is required' }).min(1, 'New visit date is required'),
+  visit_time: z.string({ required_error: 'New visit time is required' }).min(1, 'New visit time is required'),
+  remarks: z.string().optional().nullable().or(z.literal('')),
+});
+
+export const reassignSiteVisitSchema = z.object({
+  assigned_user_id: z.string({ required_error: 'New assigned executive is required' }).min(1, 'New assigned executive is required'),
+  remarks: z.string().optional().nullable().or(z.literal('')),
+});
+
+export const createFollowUpItemSchema = z.object({
+  lead_id: z.string({ required_error: 'Lead is required' }).min(1, 'Lead is required'),
+  site_visit_id: z.string().optional().nullable().or(z.literal('')),
+  assigned_user_id: z.string().optional().nullable().or(z.literal('')),
+  executive_id: z.string().optional().nullable().or(z.literal('')),
+  follow_up_type: z.enum(['Phone Call', 'WhatsApp', 'Email', 'SMS', 'Meeting', 'Video Call']).optional(),
+  type: z.enum(['Phone Call', 'WhatsApp', 'Email', 'SMS', 'Meeting', 'Video Call']).optional(),
+  scheduled_date: z.string().optional().or(z.literal('')),
+  followup_date: z.string().optional().or(z.literal('')),
+  scheduled_time: z.string().optional().nullable().or(z.literal('')),
+  followup_time: z.string().optional().nullable().or(z.literal('')),
+  remarks: z.string({ required_error: 'Remarks are required' }).min(2, 'Please provide follow-up remarks'),
+  next_follow_up_date: z.string().optional().nullable().or(z.literal('')),
+  next_followup_date: z.string().optional().nullable().or(z.literal('')),
+});
+
+export const updateFollowUpItemSchema = createFollowUpItemSchema.partial();
+
+export const updateFollowUpStatusSchema = z.object({
+  status: z.enum(['Scheduled', 'Completed', 'Rescheduled', 'Cancelled'], {
+    required_error: 'Target status is required',
+  }),
+  outcome: z.string().optional().nullable().or(z.literal('')),
+  remarks: z.string().optional().nullable().or(z.literal('')),
+  next_follow_up_date: z.string().optional().nullable().or(z.literal('')),
+});
+
+export const rescheduleFollowUpSchema = z.object({
+  scheduled_date: z.string({ required_error: 'New scheduled date is required' }).min(1, 'New scheduled date is required'),
+  scheduled_time: z.string().optional().nullable().or(z.literal('')),
+  remarks: z.string().optional().nullable().or(z.literal('')),
+});
+
+export const reassignFollowUpSchema = z.object({
+  assigned_user_id: z.string({ required_error: 'New assigned executive is required' }).min(1, 'New assigned executive is required'),
+  remarks: z.string().optional().nullable().or(z.literal('')),
+});
+
 /**
  * Express middleware helper to validate request bodies against a Zod schema
  */

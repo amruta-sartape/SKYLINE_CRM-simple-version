@@ -263,6 +263,31 @@ CREATE TABLE IF NOT EXISTS property_activities (
 );
 
 -- ============================================================================
+-- PHASE 4: SITE VISITS TABLE
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS site_visits (
+  id TEXT PRIMARY KEY,
+  lead_id TEXT NOT NULL,
+  project_id TEXT NOT NULL,
+  unit_id TEXT,
+  assigned_user_id TEXT NOT NULL,
+  visit_date DATE NOT NULL,
+  visit_time TEXT NOT NULL,
+  visit_status TEXT NOT NULL DEFAULT 'Scheduled', -- 'Scheduled', 'Completed', 'Rescheduled', 'Cancelled', 'No Show'
+  visit_type TEXT NOT NULL DEFAULT 'Direct Visit', -- 'Direct Visit', 'Executive Accompanied', 'Pickup & Drop'
+  remarks TEXT,
+  outcome TEXT, -- 'Interested', 'Follow-up Required', 'Not Interested', 'Needs More Time'
+  created_by TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (lead_id) REFERENCES leads(id) ON DELETE CASCADE,
+  FOREIGN KEY (project_id) REFERENCES property_projects(id) ON DELETE RESTRICT,
+  FOREIGN KEY (unit_id) REFERENCES property_units(id) ON DELETE SET NULL,
+  FOREIGN KEY (assigned_user_id) REFERENCES users(id) ON DELETE RESTRICT,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+);
+
+-- ============================================================================
 -- INDEXES
 -- ============================================================================
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
@@ -297,4 +322,12 @@ CREATE INDEX IF NOT EXISTS idx_property_units_config ON property_units(configura
 CREATE INDEX IF NOT EXISTS idx_property_units_price ON property_units(price);
 CREATE INDEX IF NOT EXISTS idx_property_units_floor ON property_units(floor);
 CREATE INDEX IF NOT EXISTS idx_property_activities_resource ON property_activities(resource_type, resource_id);
+
+-- Phase 4 Indexes
+CREATE INDEX IF NOT EXISTS idx_site_visits_lead_id ON site_visits(lead_id);
+CREATE INDEX IF NOT EXISTS idx_site_visits_project_id ON site_visits(project_id);
+CREATE INDEX IF NOT EXISTS idx_site_visits_unit_id ON site_visits(unit_id);
+CREATE INDEX IF NOT EXISTS idx_site_visits_assigned ON site_visits(assigned_user_id);
+CREATE INDEX IF NOT EXISTS idx_site_visits_status ON site_visits(visit_status);
+CREATE INDEX IF NOT EXISTS idx_site_visits_date ON site_visits(visit_date);
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { AppShell } from '../components/layout/AppShell';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
@@ -7,20 +7,27 @@ import { Spinner } from '../components/ui/Spinner';
 import { Alert } from '../components/ui/Alert';
 import { QualifyLeadModal } from '../components/crm/QualifyLeadModal';
 import { StageChangeModal } from '../components/crm/StageChangeModal';
-import { AddFollowUpModal } from '../components/crm/AddFollowUpModal';
 import { LeadFormModal } from '../components/crm/LeadFormModal';
+import { ScheduleSiteVisitModal } from '../components/siteVisit/ScheduleSiteVisitModal';
+import { SiteVisitStatusModal } from '../components/siteVisit/SiteVisitStatusModal';
+import { SiteVisitRescheduleModal } from '../components/siteVisit/SiteVisitRescheduleModal';
+import { FollowUpFormModal } from '../components/followUp/FollowUpFormModal';
+import { CompleteFollowUpModal } from '../components/followUp/CompleteFollowUpModal';
+import { FollowUpRescheduleModal } from '../components/followUp/FollowUpRescheduleModal';
 import { leadService } from '../services/lead.service';
+import { siteVisitService } from '../services/siteVisit.service';
+import { followUpService } from '../services/followUp.service';
 import { useToast } from '../context/ToastContext';
 import {
   Lead,
   LeadActivity,
-  FollowUp,
   PipelineStage,
   QualifyLeadFormData,
-  FollowUpFormData,
   LeadFormData,
   UserSummary,
 } from '../types/crm.types';
+import { SiteVisit } from '../types/siteVisit.types';
+import { FollowUpItem } from '../types/followUp.types';
 import {
   ArrowLeft,
   Phone,
@@ -31,8 +38,13 @@ import {
   GitCommit,
   PhoneCall,
   Edit2,
-  Clock,
   Layers,
+  Calendar,
+  ExternalLink,
+  Plus,
+  MessageSquare,
+  Users,
+  Video,
 } from 'lucide-react';
 
 export const LeadDetailPage: React.FC = () => {
@@ -42,15 +54,25 @@ export const LeadDetailPage: React.FC = () => {
 
   const [lead, setLead] = useState<Lead | null>(null);
   const [activities, setActivities] = useState<LeadActivity[]>([]);
-  const [followUps, setFollowUps] = useState<FollowUp[]>([]);
+  const [siteVisits, setSiteVisits] = useState<SiteVisit[]>([]);
+  const [followUps, setFollowUps] = useState<FollowUpItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // Modals
   const [isQualifyModalOpen, setIsQualifyModalOpen] = useState(false);
   const [isStageModalOpen, setIsStageModalOpen] = useState(false);
-  const [isFollowUpModalOpen, setIsFollowUpModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isScheduleVisitOpen, setIsScheduleVisitOpen] = useState(false);
+  const [isVisitStatusOpen, setIsVisitStatusOpen] = useState(false);
+  const [isVisitRescheduleOpen, setIsVisitRescheduleOpen] = useState(false);
+  const [selectedVisit, setSelectedVisit] = useState<SiteVisit | null>(null);
+
+  const [isFollowUpModalOpen, setIsFollowUpModalOpen] = useState(false);
+  const [isCompleteFollowUpOpen, setIsCompleteFollowUpOpen] = useState(false);
+  const [isRescheduleFollowUpOpen, setIsRescheduleFollowUpOpen] = useState(false);
+  const [selectedFollowUp, setSelectedFollowUp] = useState<FollowUpItem | null>(null);
+
   const [executives, setExecutives] = useState<UserSummary[]>([]);
 
   useEffect(() => {
@@ -65,14 +87,19 @@ export const LeadDetailPage: React.FC = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const fetchedLead = await leadService.getLeadById(id);
-      setLead(fetchedLead);
+      const [fetchedLead, timeline, visitsRes, followUpsRes] = await Promise.all([
+        leadService.getLeadById(id),
+        leadService.getLeadTimeline(id),
+        siteVisitService.list({ lead_id: id, limit: 100 }),
+        followUpService.list({ lead_id: id, limit: 100 }),
+      ]);
 
-      const timeline = await leadService.getLeadTimeline(id);
-      setActivities(timeline.activities);
-      setFollowUps(timeline.followUps);
+      setLead(fetchedLead);
+      setActivities(timeline.activities || []);
+      setSiteVisits(visitsRes.visits || []);
+      setFollowUps(followUpsRes.followUps || []);
     } catch (err: any) {
-      setError(err.message || 'Failed to fetch lead profile.');
+      setError(err.response?.data?.error || err.message || 'Failed to fetch lead profile.');
     } finally {
       setIsLoading(false);
     }
@@ -106,16 +133,6 @@ export const LeadDetailPage: React.FC = () => {
     fetchLeadData();
   };
 
-  const handleAddFollowUp = async (leadId: string, data: FollowUpFormData) => {
-    await leadService.addFollowUp(leadId, data);
-    showToast({
-      variant: 'success',
-      title: 'Follow-Up Logged',
-      message: `Interaction recorded successfully.`,
-    });
-    fetchLeadData();
-  };
-
   const handleUpdateLead = async (data: LeadFormData) => {
     if (!id) return;
     await leadService.updateLead(id, data);
@@ -125,6 +142,23 @@ export const LeadDetailPage: React.FC = () => {
       message: 'Lead changes saved.',
     });
     fetchLeadData();
+  };
+
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case 'Phone Call':
+        return <PhoneCall className="w-3.5 h-3.5 text-indigo-600" />;
+      case 'WhatsApp':
+        return <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />;
+      case 'Email':
+        return <Mail className="w-3.5 h-3.5 text-sky-600" />;
+      case 'Meeting':
+        return <Users className="w-3.5 h-3.5 text-purple-600" />;
+      case 'Video Call':
+        return <Video className="w-3.5 h-3.5 text-pink-600" />;
+      default:
+        return <Calendar className="w-3.5 h-3.5 text-slate-500" />;
+    }
   };
 
   if (isLoading) {
@@ -212,10 +246,25 @@ export const LeadDetailPage: React.FC = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setIsFollowUpModalOpen(true)}
+              onClick={() => {
+                setSelectedFollowUp(null);
+                setIsFollowUpModalOpen(true);
+              }}
               leftIcon={<PhoneCall className="w-3.5 h-3.5 text-emerald-600" />}
             >
-              Log Follow-Up
+              Schedule Follow-Up
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setSelectedVisit(null);
+                setIsScheduleVisitOpen(true);
+              }}
+              leftIcon={<Calendar className="w-3.5 h-3.5 text-blue-600" />}
+            >
+              Schedule Site Visit
             </Button>
 
             <Button
@@ -320,7 +369,7 @@ export const LeadDetailPage: React.FC = () => {
           </div>
         </div>
 
-        {/* 2-Column Main Layout: Profile Specifications (Left) & Customer 360 Timeline (Right) */}
+        {/* 2-Column Main Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left Column: Requirements & Buyer Criteria (5 cols) */}
           <div className="lg:col-span-5 space-y-6">
@@ -421,9 +470,97 @@ export const LeadDetailPage: React.FC = () => {
                 </div>
               )}
             </div>
+
+            {/* Site Visits Section (Phase 4) */}
+            <div className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-subtle space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
+                  <Calendar className="w-4 h-4 text-blue-600" />
+                  <h3>Site Visits ({siteVisits.length})</h3>
+                </div>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedVisit(null);
+                    setIsScheduleVisitOpen(true);
+                  }}
+                  leftIcon={<Plus className="w-3 h-3" />}
+                >
+                  Schedule Visit
+                </Button>
+              </div>
+
+              {siteVisits.length === 0 ? (
+                <div className="py-6 text-center text-slate-400 text-xs border border-dashed border-slate-200 rounded-lg">
+                  No site visits scheduled for this customer yet.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {siteVisits.map((v) => (
+                    <div
+                      key={v.id}
+                      className="p-3.5 bg-slate-50 border border-slate-200/80 rounded-xl space-y-2 text-xs"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-slate-900">{v.visit_date}</span>
+                          <span className="text-slate-500 font-medium">at {v.visit_time}</span>
+                        </div>
+                        <Badge siteVisitStatus={v.visit_status} size="xs" />
+                      </div>
+
+                      <div className="text-[11px] text-slate-600">
+                        Project: <span className="font-semibold text-slate-800">{v.project_name}</span>
+                        {v.unit_number && <span> • Unit {v.unit_number}</span>}
+                      </div>
+
+                      {v.outcome && (
+                        <div className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 w-fit">
+                          Outcome: {v.outcome}
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between pt-1 border-t border-slate-200/60 text-[10px] text-slate-500">
+                        <span>Host: <strong>{v.assigned_user_name || 'Staff'}</strong></span>
+                        <div className="flex items-center gap-2">
+                          {v.visit_status === 'Scheduled' && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedVisit(v);
+                                  setIsVisitRescheduleOpen(true);
+                                }}
+                                className="text-amber-700 hover:underline font-semibold"
+                              >
+                                Reschedule
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedVisit(v);
+                                  setIsVisitStatusOpen(true);
+                                }}
+                                className="text-emerald-700 hover:underline font-semibold"
+                              >
+                                Outcome
+                              </button>
+                            </>
+                          )}
+                          <Link to={`/site-visits/${v.id}`} className="text-brand-600 hover:underline font-semibold flex items-center gap-0.5">
+                            Details <ExternalLink className="w-2.5 h-2.5" />
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Right Column: Customer 360 Activity & Follow-Up History (7 cols) */}
+          {/* Right Column: Follow-Ups & Timeline (7 cols) */}
           <div className="lg:col-span-7 space-y-6">
             {/* Follow-Up Logs Section */}
             <div className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-subtle space-y-4">
@@ -435,10 +572,13 @@ export const LeadDetailPage: React.FC = () => {
                 <Button
                   variant="primary"
                   size="sm"
-                  onClick={() => setIsFollowUpModalOpen(true)}
-                  leftIcon={<PhoneCall className="w-3 h-3" />}
+                  onClick={() => {
+                    setSelectedFollowUp(null);
+                    setIsFollowUpModalOpen(true);
+                  }}
+                  leftIcon={<Plus className="w-3 h-3" />}
                 >
-                  Log Follow-Up
+                  Schedule Follow-Up
                 </Button>
               </div>
 
@@ -455,29 +595,65 @@ export const LeadDetailPage: React.FC = () => {
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-slate-900 bg-white px-2 py-0.5 rounded border border-slate-200 shadow-2xs">
-                            {fol.type}
+                          <span className="flex items-center gap-1 font-bold text-slate-900 bg-white px-2 py-0.5 rounded border border-slate-200 shadow-2xs">
+                            {getTypeIcon(fol.follow_up_type)}
+                            <span>{fol.follow_up_type}</span>
                           </span>
                           <span className="text-[11px] text-slate-500">
-                            {fol.followup_date} {fol.followup_time ? `at ${fol.followup_time}` : ''}
+                            {fol.scheduled_date} {fol.scheduled_time ? `at ${fol.scheduled_time}` : ''}
                           </span>
+                          {fol.is_overdue && (
+                            <span className="px-1.5 py-0.2 text-[9px] rounded bg-rose-100 text-rose-700 font-bold uppercase">
+                              Overdue
+                            </span>
+                          )}
                         </div>
 
-                        <span className="text-[11px] text-slate-500 font-medium">
-                          Executive: <strong>{fol.executive_name || 'Staff'}</strong>
-                        </span>
+                        <Badge followUpStatus={fol.status} size="xs" />
                       </div>
 
                       <p className="text-slate-700 leading-relaxed bg-white p-2.5 rounded-lg border border-slate-100">
                         {fol.remarks}
                       </p>
 
-                      {fol.next_followup_date && (
-                        <div className="text-[10px] text-amber-800 flex items-center gap-1 font-semibold">
-                          <Clock className="w-3 h-3 text-amber-600" />
-                          <span>Next Commitment: {fol.next_followup_date}</span>
+                      {fol.outcome && (
+                        <div className="text-[11px] font-semibold text-emerald-800 bg-emerald-50/80 px-2.5 py-1 rounded border border-emerald-200">
+                          Outcome: {fol.outcome}
                         </div>
                       )}
+
+                      <div className="flex items-center justify-between pt-1 border-t border-slate-200/60 text-[10px] text-slate-500">
+                        <span>Executive: <strong>{fol.assigned_user_name || 'Staff'}</strong></span>
+                        <div className="flex items-center gap-2">
+                          {(fol.status === 'Scheduled' || fol.status === 'Rescheduled') && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedFollowUp(fol);
+                                  setIsRescheduleFollowUpOpen(true);
+                                }}
+                                className="text-amber-700 hover:underline font-semibold"
+                              >
+                                Reschedule
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedFollowUp(fol);
+                                  setIsCompleteFollowUpOpen(true);
+                                }}
+                                className="text-emerald-700 hover:underline font-semibold"
+                              >
+                                Complete
+                              </button>
+                            </>
+                          )}
+                          <Link to={`/follow-ups/${fol.id}`} className="text-brand-600 hover:underline font-semibold flex items-center gap-0.5">
+                            Details <ExternalLink className="w-2.5 h-2.5" />
+                          </Link>
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -549,20 +725,98 @@ export const LeadDetailPage: React.FC = () => {
         onSubmit={handleStageTransition}
       />
 
-      <AddFollowUpModal
-        isOpen={isFollowUpModalOpen}
-        onClose={() => setIsFollowUpModalOpen(false)}
-        lead={lead}
-        onSubmit={handleAddFollowUp}
-        executives={executives}
-      />
-
       <LeadFormModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         onSubmit={handleUpdateLead}
         initialData={lead}
         executives={executives}
+      />
+
+      {/* Site Visit Modals */}
+      <ScheduleSiteVisitModal
+        isOpen={isScheduleVisitOpen}
+        onClose={() => setIsScheduleVisitOpen(false)}
+        preselectedLead={lead}
+        onSuccess={() => {
+          showToast({
+            variant: 'success',
+            title: 'Visit Scheduled',
+            message: 'Property site visit successfully booked.',
+          });
+          fetchLeadData();
+        }}
+      />
+
+      <SiteVisitStatusModal
+        isOpen={isVisitStatusOpen}
+        onClose={() => setIsVisitStatusOpen(false)}
+        visit={selectedVisit}
+        onSuccess={() => {
+          showToast({
+            variant: 'success',
+            title: 'Outcome Recorded',
+            message: 'Site visit outcome saved.',
+          });
+          fetchLeadData();
+        }}
+      />
+
+      <SiteVisitRescheduleModal
+        isOpen={isVisitRescheduleOpen}
+        onClose={() => setIsVisitRescheduleOpen(false)}
+        visit={selectedVisit}
+        onSuccess={() => {
+          showToast({
+            variant: 'success',
+            title: 'Visit Rescheduled',
+            message: 'New site visit schedule confirmed.',
+          });
+          fetchLeadData();
+        }}
+      />
+
+      {/* Follow-Up Modals */}
+      <FollowUpFormModal
+        isOpen={isFollowUpModalOpen}
+        onClose={() => setIsFollowUpModalOpen(false)}
+        preselectedLead={lead}
+        onSuccess={() => {
+          showToast({
+            variant: 'success',
+            title: 'Follow-up Scheduled',
+            message: 'Follow-up interaction planned successfully.',
+          });
+          fetchLeadData();
+        }}
+      />
+
+      <CompleteFollowUpModal
+        isOpen={isCompleteFollowUpOpen}
+        onClose={() => setIsCompleteFollowUpOpen(false)}
+        followUp={selectedFollowUp}
+        onSuccess={() => {
+          showToast({
+            variant: 'success',
+            title: 'Follow-up Completed',
+            message: 'Outcome and interaction notes saved.',
+          });
+          fetchLeadData();
+        }}
+      />
+
+      <FollowUpRescheduleModal
+        isOpen={isRescheduleFollowUpOpen}
+        onClose={() => setIsRescheduleFollowUpOpen(false)}
+        followUp={selectedFollowUp}
+        onSuccess={() => {
+          showToast({
+            variant: 'success',
+            title: 'Follow-up Rescheduled',
+            message: 'New follow-up schedule saved.',
+          });
+          fetchLeadData();
+        }}
       />
     </AppShell>
   );

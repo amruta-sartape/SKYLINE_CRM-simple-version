@@ -18,6 +18,10 @@ import { LeadDetailPage } from './pages/LeadDetailPage';
 import { ProjectsPage } from './pages/ProjectsPage';
 import { InventoryPage } from './pages/InventoryPage';
 import { UnitDetailPage } from './pages/UnitDetailPage';
+import { SiteVisitsPage } from './pages/SiteVisitsPage';
+import { SiteVisitDetailPage } from './pages/SiteVisitDetailPage';
+import { FollowUpsPage } from './pages/FollowUpsPage';
+import { FollowUpDetailPage } from './pages/FollowUpDetailPage';
 
 // Public Route Guard (Redirects already authenticated users to Enquiries or Dashboard)
 const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -135,6 +139,43 @@ export const AppRoutes: React.FC = () => {
         element={
           <ProtectedRoute>
             <UnitDetailPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Protected Phase 4 Site Visit & Follow-Up Management */}
+      <Route
+        path="/site-visits"
+        element={
+          <ProtectedRoute>
+            <SiteVisitsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/site-visits/:id"
+        element={
+          <ProtectedRoute>
+            <SiteVisitDetailPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/follow-ups"
+        element={
+          <ProtectedRoute>
+            <FollowUpsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/follow-ups/:id"
+        element={
+          <ProtectedRoute>
+            <FollowUpDetailPage />
           </ProtectedRoute>
         }
       />

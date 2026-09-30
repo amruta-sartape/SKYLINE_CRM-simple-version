@@ -291,12 +291,12 @@ export class LeadService {
   }
 
   /**
-   * Get complete Lead Activity Timeline + Follow-ups (Customer 360 Foundation)
+   * Get complete Lead Activity Timeline + Follow-ups + Site Visits (Customer 360 Foundation)
    */
   public static async getLeadTimeline(
     leadId: string,
     user: JWTPayload
-  ): Promise<{ activities: LeadActivity[]; followUps: FollowUp[] }> {
+  ): Promise<{ activities: LeadActivity[]; followUps: any[]; siteVisits: any[] }> {
     // Verify access first
     await this.getLeadById(leadId, user);
 
@@ -314,16 +314,53 @@ export class LeadService {
 
     const followUpsSql = `
       SELECT 
-        f.*,
-        u.name as executive_name
+        f.id,
+        f.lead_id,
+        f.site_visit_id,
+        COALESCE(f.assigned_user_id, f.executive_id) as executive_id,
+        COALESCE(f.assigned_user_id, f.executive_id) as assigned_user_id,
+        COALESCE(f.follow_up_type, f.type) as type,
+        COALESCE(f.follow_up_type, f.type) as follow_up_type,
+        COALESCE(f.scheduled_date, f.followup_date) as followup_date,
+        COALESCE(f.scheduled_date, f.followup_date) as scheduled_date,
+        COALESCE(f.scheduled_time, f.followup_time) as followup_time,
+        COALESCE(f.scheduled_time, f.followup_time) as scheduled_time,
+        f.remarks,
+        f.status,
+        f.outcome,
+        COALESCE(f.next_follow_up_date, f.next_followup_date) as next_followup_date,
+        COALESCE(f.next_follow_up_date, f.next_followup_date) as next_follow_up_date,
+        f.created_at,
+        u.name as executive_name,
+        u.name as assigned_user_name
       FROM follow_ups f
-      LEFT JOIN users u ON f.executive_id = u.id
+      LEFT JOIN users u ON COALESCE(f.assigned_user_id, f.executive_id) = u.id
       WHERE f.lead_id = ?
-      ORDER BY f.followup_date DESC, f.created_at DESC
+      ORDER BY COALESCE(f.scheduled_date, f.followup_date) DESC, f.created_at DESC
     `;
-    const followUps = await db.all<FollowUp>(followUpsSql, [leadId]);
+    const followUps = await db.all<any>(followUpsSql, [leadId]);
 
-    return { activities, followUps };
+    const siteVisitsSql = `
+      SELECT 
+        sv.*,
+        p.name as project_name,
+        p.code as project_code,
+        un.unit_number,
+        un.configuration as unit_configuration,
+        un.price as unit_price,
+        u.name as assigned_user_name,
+        cb.name as created_by_name
+      FROM site_visits sv
+      LEFT JOIN property_projects p ON sv.project_id = p.id
+      LEFT JOIN property_units un ON sv.unit_id = un.id
+      LEFT JOIN users u ON sv.assigned_user_id = u.id
+      LEFT JOIN users cb ON sv.created_by = cb.id
+      WHERE sv.lead_id = ?
+      ORDER BY sv.visit_date DESC, sv.visit_time DESC
+    `;
+    const siteVisits = await db.all<any>(siteVisitsSql, [leadId]);
+
+    return { activities, followUps, siteVisits };
   }
 
   /**

@@ -12,6 +12,7 @@ import {
   Building2,
   Home,
   CalendarCheck,
+  PhoneCall,
   TrendingUp,
   CreditCard,
   BarChart3,
@@ -56,7 +57,9 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
       name: 'Leads Management',
       href: '/leads',
       icon: <Users className="w-4 h-4" />,
-      active: location.pathname === '/leads' || (location.pathname.startsWith('/leads/') && location.pathname !== '/leads/pipeline'),
+      active:
+        location.pathname === '/leads' ||
+        (location.pathname.startsWith('/leads/') && location.pathname !== '/leads/pipeline'),
       status: 'Active',
     },
     {
@@ -64,6 +67,20 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
       href: '/leads/pipeline',
       icon: <Kanban className="w-4 h-4" />,
       active: location.pathname === '/leads/pipeline',
+      status: 'Active',
+    },
+    {
+      name: 'Site Visits & Tours',
+      href: '/site-visits',
+      icon: <CalendarCheck className="w-4 h-4" />,
+      active: location.pathname === '/site-visits' || location.pathname.startsWith('/site-visits/'),
+      status: 'Active',
+    },
+    {
+      name: 'Follow-Up Tasks',
+      href: '/follow-ups',
+      icon: <PhoneCall className="w-4 h-4" />,
+      active: location.pathname === '/follow-ups' || location.pathname.startsWith('/follow-ups/'),
       status: 'Active',
     },
     {
@@ -86,13 +103,6 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
       icon: <LayoutDashboard className="w-4 h-4" />,
       active: location.pathname === '/',
       status: 'Active',
-    },
-    {
-      name: 'Site Visits & Calendar',
-      href: '#visits',
-      icon: <CalendarCheck className="w-4 h-4" />,
-      locked: true,
-      status: 'Phase 4',
     },
     {
       name: 'Deals & Sales Pipeline',
@@ -142,7 +152,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span className="font-semibold text-slate-800">SKYLINE Real Estate CRM</span>
             <span>•</span>
-            <span className="text-brand-700 font-medium">Phase 3 Active</span>
+            <span className="text-brand-700 font-medium">Phase 4 Active</span>
           </div>
 
           {/* Right User & Actions */}
@@ -275,10 +285,10 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             <div className="p-3 rounded-lg bg-brand-50/70 border border-brand-100 text-left">
               <div className="flex items-center gap-1.5 text-brand-900 font-bold text-xs">
                 <Sparkles className="w-3.5 h-3.5 text-brand-600" />
-                <span>Phase 2 Live</span>
+                <span>Phase 4 Live</span>
               </div>
               <p className="text-[11px] text-brand-800/80 mt-1 leading-relaxed">
-                Enquiries, Lead Qualification, Visual Pipeline Kanban, and Customer 360 are active.
+                Site Visit scheduling & conflict engine, Follow-Up tracking, and Customer 360 are active.
               </p>
             </div>
 

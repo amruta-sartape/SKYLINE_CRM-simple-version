@@ -90,6 +90,41 @@ class DatabaseService {
       if (!leadColNames.includes('unit_id')) {
         await this.run('ALTER TABLE leads ADD COLUMN unit_id TEXT');
       }
+
+      const followUpCols = await this.all<any>('PRAGMA table_info(follow_ups)');
+      const followUpColNames = followUpCols.map((c) => c.name);
+      if (!followUpColNames.includes('site_visit_id')) {
+        await this.run('ALTER TABLE follow_ups ADD COLUMN site_visit_id TEXT');
+      }
+      if (!followUpColNames.includes('assigned_user_id')) {
+        await this.run('ALTER TABLE follow_ups ADD COLUMN assigned_user_id TEXT');
+      }
+      if (!followUpColNames.includes('follow_up_type')) {
+        await this.run('ALTER TABLE follow_ups ADD COLUMN follow_up_type TEXT');
+      }
+      if (!followUpColNames.includes('scheduled_date')) {
+        await this.run('ALTER TABLE follow_ups ADD COLUMN scheduled_date DATE');
+      }
+      if (!followUpColNames.includes('scheduled_time')) {
+        await this.run('ALTER TABLE follow_ups ADD COLUMN scheduled_time TEXT');
+      }
+      if (!followUpColNames.includes('outcome')) {
+        await this.run('ALTER TABLE follow_ups ADD COLUMN outcome TEXT');
+      }
+      if (!followUpColNames.includes('next_follow_up_date')) {
+        await this.run('ALTER TABLE follow_ups ADD COLUMN next_follow_up_date DATETIME');
+      }
+      if (!followUpColNames.includes('created_by')) {
+        await this.run('ALTER TABLE follow_ups ADD COLUMN created_by TEXT');
+      }
+      if (!followUpColNames.includes('updated_at')) {
+        await this.run('ALTER TABLE follow_ups ADD COLUMN updated_at DATETIME');
+      }
+
+      await this.run('CREATE INDEX IF NOT EXISTS idx_follow_ups_assigned ON follow_ups(assigned_user_id)');
+      await this.run('CREATE INDEX IF NOT EXISTS idx_follow_ups_status ON follow_ups(status)');
+      await this.run('CREATE INDEX IF NOT EXISTS idx_follow_ups_date ON follow_ups(scheduled_date)');
+      await this.run('CREATE INDEX IF NOT EXISTS idx_follow_ups_site_visit ON follow_ups(site_visit_id)');
     } catch (migErr) {
       console.warn('[DB] Non-critical migration note:', migErr);
     }
