@@ -18,7 +18,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
   return (
     <div className="min-h-screen w-full flex flex-col lg:flex-row bg-slate-900 overflow-x-hidden">
       {/* LEFT COLUMN: Luxury Real Estate & Enterprise Brand Showcase (Hidden on small mobile, visible on desktop/tablet) */}
-      <div className="relative hidden lg:flex lg:w-1/2 xl:w-7/12 flex-col justify-between p-12 bg-navy-950 text-white overflow-hidden bg-grid-pattern-dark border-r border-slate-800/80">
+      <div className="relative hidden lg:flex lg:w-1/2 xl:w-7/12 flex-col justify-between p-12 bg-navy-950 text-white overflow-hidden bg-skyline-architecture border-r border-slate-800/80">
         {/* Subtle Ambient Glowing Orbs */}
         <div className="absolute -top-24 -left-24 w-96 h-96 bg-brand-600/15 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />

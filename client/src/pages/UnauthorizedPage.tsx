@@ -23,7 +23,7 @@ export const UnauthorizedPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-6 bg-grid-pattern-dark">
+    <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-6 bg-skyline-architecture">
       <div className="w-full max-w-lg bg-slate-950 border border-slate-800 rounded-2xl p-8 shadow-2xl text-center space-y-6 animate-slide-up">
         <SkylineBrand variant="light" size="md" className="mx-auto" />
 
