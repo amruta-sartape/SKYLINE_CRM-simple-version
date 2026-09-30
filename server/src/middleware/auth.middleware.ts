@@ -78,3 +78,7 @@ export function requireRole(...allowedRoles: UserRole[]) {
     next();
   };
 }
+
+// Aliases for alternate naming conventions
+export const requireAuth = authenticateToken;
+export const requireRoles = requireRole;

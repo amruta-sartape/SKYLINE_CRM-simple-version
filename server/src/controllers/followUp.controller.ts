@@ -43,7 +43,7 @@ export class FollowUpController {
 
   public static async getById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const result = await FollowUpService.getById(id, req.user!);
 
       if (!result) {
@@ -78,7 +78,7 @@ export class FollowUpController {
 
   public static async update(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const followUp = await FollowUpService.update(id, req.body, req.user!);
       res.status(200).json({
         success: true,
@@ -92,7 +92,7 @@ export class FollowUpController {
 
   public static async complete(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const followUp = await FollowUpService.complete(id, req.body, req.user!);
       res.status(200).json({
         success: true,
@@ -106,7 +106,7 @@ export class FollowUpController {
 
   public static async reschedule(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const followUp = await FollowUpService.reschedule(id, req.body, req.user!);
       res.status(200).json({
         success: true,
@@ -120,7 +120,7 @@ export class FollowUpController {
 
   public static async cancel(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const followUp = await FollowUpService.cancel(id, req.body.remarks, req.user!);
       res.status(200).json({
         success: true,

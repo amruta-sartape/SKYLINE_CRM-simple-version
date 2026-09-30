@@ -43,7 +43,7 @@ export class SiteVisitController {
 
   public static async getById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const result = await SiteVisitService.getById(id, req.user!);
 
       if (!result) {
@@ -78,7 +78,7 @@ export class SiteVisitController {
 
   public static async update(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const visit = await SiteVisitService.update(id, req.body, req.user!);
       res.status(200).json({
         success: true,
@@ -92,7 +92,7 @@ export class SiteVisitController {
 
   public static async updateStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const visit = await SiteVisitService.updateStatus(id, req.body, req.user!);
       res.status(200).json({
         success: true,
@@ -106,7 +106,7 @@ export class SiteVisitController {
 
   public static async reschedule(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const visit = await SiteVisitService.reschedule(id, req.body, req.user!);
       res.status(200).json({
         success: true,
@@ -120,7 +120,7 @@ export class SiteVisitController {
 
   public static async reassign(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const visit = await SiteVisitService.reassign(id, req.body, req.user!);
       res.status(200).json({
         success: true,

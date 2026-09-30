@@ -51,7 +51,7 @@ export class LeadController {
 
   public static async getLeadById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const lead = await LeadService.getLeadById(id, req.user!);
       if (!lead) {
         res.status(404).json({ success: false, error: 'Lead not found.' });
@@ -69,7 +69,7 @@ export class LeadController {
 
   public static async getLeadTimeline(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const timeline = await LeadService.getLeadTimeline(id, req.user!);
       res.status(200).json({
         success: true,
@@ -93,9 +93,23 @@ export class LeadController {
     }
   }
 
+  public static async updateLead(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const id = req.params.id as string;
+      const lead = await LeadService.updateLead(id, req.body, req.user!);
+      res.status(200).json({
+        success: true,
+        message: 'Lead updated successfully.',
+        data: { lead },
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
   public static async qualifyLead(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const lead = await LeadService.qualifyLead(id, req.body, req.user!);
       res.status(200).json({
         success: true,
@@ -109,7 +123,7 @@ export class LeadController {
 
   public static async updateStage(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { pipeline_stage, remarks } = req.body;
       const lead = await LeadService.updateStage(id, pipeline_stage, remarks, req.user!);
       res.status(200).json({
@@ -124,7 +138,7 @@ export class LeadController {
 
   public static async addFollowUp(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const followUp = await LeadService.addFollowUp(id, req.body, req.user!);
       res.status(201).json({
         success: true,

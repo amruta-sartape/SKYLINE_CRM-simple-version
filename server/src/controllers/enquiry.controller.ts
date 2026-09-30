@@ -31,7 +31,7 @@ export class EnquiryController {
 
   public static async getEnquiryById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const enquiry = await EnquiryService.getEnquiryById(id, req.user!);
       if (!enquiry) {
         res.status(404).json({ success: false, error: 'Enquiry not found.' });
@@ -61,7 +61,7 @@ export class EnquiryController {
 
   public static async updateEnquiry(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const enquiry = await EnquiryService.updateEnquiry(id, req.body, req.user!);
       res.status(200).json({
         success: true,
@@ -75,7 +75,7 @@ export class EnquiryController {
 
   public static async convertToLead(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const result = await EnquiryService.convertToLead(id, req.body, req.user!);
       res.status(200).json({
         success: true,

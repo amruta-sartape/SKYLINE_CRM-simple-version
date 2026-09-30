@@ -452,6 +452,85 @@ export class LeadService {
   }
 
   /**
+   * Update an existing Lead
+   */
+  public static async updateLead(
+    id: string,
+    data: Partial<{
+      customer_name: string;
+      phone: string;
+      email?: string | null;
+      city?: string | null;
+      budget?: number;
+      preferred_location?: string | null;
+      flat_type?: PropertyConfiguration;
+      interested_property?: string | null;
+      project_id?: string | null;
+      unit_id?: string | null;
+      loan_required?: number;
+      purchase_timeline?: PurchaseTimeline | null;
+      purpose?: PurchasePurpose | null;
+      assigned_to?: string | null;
+      pipeline_stage?: PipelineStage;
+      qualification_status?: QualificationStatus;
+      priority?: LeadPriority;
+      next_followup_date?: string | null;
+      notes?: string | null;
+    }>,
+    user: JWTPayload
+  ): Promise<Lead> {
+    const existing = await this.getLeadById(id, user);
+    if (!existing) {
+      const error: any = new Error('Lead not found.');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    const updates: string[] = [];
+    const params: any[] = [];
+
+    const fieldMap: Record<string, any> = {
+      customer_name: data.customer_name?.trim(),
+      phone: data.phone?.trim(),
+      email: data.email !== undefined ? data.email?.trim() || null : undefined,
+      city: data.city !== undefined ? data.city?.trim() || null : undefined,
+      budget: data.budget,
+      preferred_location: data.preferred_location !== undefined ? data.preferred_location?.trim() || null : undefined,
+      flat_type: data.flat_type,
+      interested_property: data.interested_property !== undefined ? data.interested_property?.trim() || null : undefined,
+      project_id: data.project_id !== undefined ? data.project_id || null : undefined,
+      unit_id: data.unit_id !== undefined ? data.unit_id || null : undefined,
+      loan_required: data.loan_required,
+      purchase_timeline: data.purchase_timeline !== undefined ? data.purchase_timeline || null : undefined,
+      purpose: data.purpose !== undefined ? data.purpose || null : undefined,
+      assigned_to: data.assigned_to !== undefined ? data.assigned_to || null : undefined,
+      pipeline_stage: data.pipeline_stage,
+      qualification_status: data.qualification_status,
+      priority: data.priority,
+      next_followup_date: data.next_followup_date !== undefined ? data.next_followup_date || null : undefined,
+      notes: data.notes !== undefined ? data.notes || null : undefined,
+    };
+
+    for (const [key, val] of Object.entries(fieldMap)) {
+      if (val !== undefined) {
+        updates.push(`${key} = ?`);
+        params.push(val);
+      }
+    }
+
+    if (updates.length > 0) {
+      const now = new Date().toISOString();
+      updates.push('updated_at = ?');
+      params.push(now);
+      params.push(id);
+      await db.run(`UPDATE leads SET ${updates.join(', ')} WHERE id = ?`, params);
+    }
+
+    const updated = await this.getLeadById(id, user);
+    return updated!;
+  }
+
+  /**
    * Qualify a Lead
    */
   public static async qualifyLead(

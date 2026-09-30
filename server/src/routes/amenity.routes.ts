@@ -1,11 +1,11 @@
 import { Router } from 'express';
 import { AmenityController } from '../controllers/amenity.controller.js';
-import { requireAuth } from '../middleware/auth.middleware.js';
+import { authenticateToken } from '../middleware/auth.middleware.js';
 
 const router = Router();
 
 // All amenity routes require authentication
-router.use(requireAuth);
+router.use(authenticateToken);
 
 router.get('/', AmenityController.list);
 

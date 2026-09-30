@@ -35,7 +35,7 @@ export class ProjectController {
    */
   static async getById(req: Request, res: Response): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const project = await ProjectService.getProjectById(id);
 
       if (!project) {
@@ -84,7 +84,7 @@ export class ProjectController {
    */
   static async update(req: Request, res: Response): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const actorId = req.user!.userId;
       const project = await ProjectService.updateProject(id, req.body, actorId);
 
@@ -106,7 +106,7 @@ export class ProjectController {
    */
   static async archive(req: Request, res: Response): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const actorId = req.user!.userId;
       const project = await ProjectService.archiveProject(id, actorId);
 
@@ -128,7 +128,7 @@ export class ProjectController {
    */
   static async listWings(req: Request, res: Response): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const wings = await ProjectService.listWings(id);
 
       res.status(200).json({
@@ -148,7 +148,7 @@ export class ProjectController {
    */
   static async createWing(req: Request, res: Response): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const actorId = req.user!.userId;
       const wing = await ProjectService.createWing(id, req.body, actorId);
 

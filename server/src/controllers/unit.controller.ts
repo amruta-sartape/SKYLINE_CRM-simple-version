@@ -118,7 +118,7 @@ export class UnitController {
    */
   static async getById(req: Request, res: Response): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const result = await UnitService.getUnitById(id);
 
       if (!result) {
@@ -167,7 +167,7 @@ export class UnitController {
    */
   static async update(req: Request, res: Response): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const actorId = req.user!.userId;
       const unit = await UnitService.updateUnit(id, req.body, actorId);
 
@@ -189,7 +189,7 @@ export class UnitController {
    */
   static async updateAvailability(req: Request, res: Response): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const actorId = req.user!.userId;
       const userRole = req.user!.roles[0];
       const unit = await UnitService.updateAvailability(id, req.body, actorId, userRole);
