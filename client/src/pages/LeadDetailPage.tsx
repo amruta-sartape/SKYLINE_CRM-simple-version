@@ -1,0 +1,569 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { AppShell } from '../components/layout/AppShell';
+import { Button } from '../components/ui/Button';
+import { Badge } from '../components/ui/Badge';
+import { Spinner } from '../components/ui/Spinner';
+import { Alert } from '../components/ui/Alert';
+import { QualifyLeadModal } from '../components/crm/QualifyLeadModal';
+import { StageChangeModal } from '../components/crm/StageChangeModal';
+import { AddFollowUpModal } from '../components/crm/AddFollowUpModal';
+import { LeadFormModal } from '../components/crm/LeadFormModal';
+import { leadService } from '../services/lead.service';
+import { useToast } from '../context/ToastContext';
+import {
+  Lead,
+  LeadActivity,
+  FollowUp,
+  PipelineStage,
+  QualifyLeadFormData,
+  FollowUpFormData,
+  LeadFormData,
+  UserSummary,
+} from '../types/crm.types';
+import {
+  ArrowLeft,
+  Phone,
+  Mail,
+  MapPin,
+  Building,
+  ShieldCheck,
+  GitCommit,
+  PhoneCall,
+  Edit2,
+  Clock,
+  Layers,
+} from 'lucide-react';
+
+export const LeadDetailPage: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { showToast } = useToast();
+
+  const [lead, setLead] = useState<Lead | null>(null);
+  const [activities, setActivities] = useState<LeadActivity[]>([]);
+  const [followUps, setFollowUps] = useState<FollowUp[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Modals
+  const [isQualifyModalOpen, setIsQualifyModalOpen] = useState(false);
+  const [isStageModalOpen, setIsStageModalOpen] = useState(false);
+  const [isFollowUpModalOpen, setIsFollowUpModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [executives, setExecutives] = useState<UserSummary[]>([]);
+
+  useEffect(() => {
+    leadService
+      .getExecutives()
+      .then(setExecutives)
+      .catch((err) => console.warn('Failed to fetch executives:', err));
+  }, []);
+
+  const fetchLeadData = useCallback(async () => {
+    if (!id) return;
+    setIsLoading(true);
+    setError(null);
+    try {
+      const fetchedLead = await leadService.getLeadById(id);
+      setLead(fetchedLead);
+
+      const timeline = await leadService.getLeadTimeline(id);
+      setActivities(timeline.activities);
+      setFollowUps(timeline.followUps);
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch lead profile.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    fetchLeadData();
+  }, [fetchLeadData]);
+
+  const handleQualifyLead = async (leadId: string, data: QualifyLeadFormData) => {
+    await leadService.qualifyLead(leadId, data);
+    showToast({
+      variant: 'success',
+      title: 'Qualification Updated',
+      message: `Buyer status saved as "${data.qualification_status}".`,
+    });
+    fetchLeadData();
+  };
+
+  const handleStageTransition = async (
+    leadId: string,
+    newStage: PipelineStage,
+    remarks?: string
+  ) => {
+    await leadService.updateStage(leadId, newStage, remarks);
+    showToast({
+      variant: 'success',
+      title: 'Stage Updated',
+      message: `Lead advanced to ${newStage}.`,
+    });
+    fetchLeadData();
+  };
+
+  const handleAddFollowUp = async (leadId: string, data: FollowUpFormData) => {
+    await leadService.addFollowUp(leadId, data);
+    showToast({
+      variant: 'success',
+      title: 'Follow-Up Logged',
+      message: `Interaction recorded successfully.`,
+    });
+    fetchLeadData();
+  };
+
+  const handleUpdateLead = async (data: LeadFormData) => {
+    if (!id) return;
+    await leadService.updateLead(id, data);
+    showToast({
+      variant: 'success',
+      title: 'Profile Updated',
+      message: 'Lead changes saved.',
+    });
+    fetchLeadData();
+  };
+
+  if (isLoading) {
+    return (
+      <AppShell>
+        <div className="py-24 flex flex-col items-center justify-center gap-3">
+          <Spinner size="lg" variant="primary" />
+          <span className="text-xs text-slate-500 font-medium">Loading Customer 360 View...</span>
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (error || !lead) {
+    return (
+      <AppShell>
+        <div className="space-y-4 text-left">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate('/leads')}
+            leftIcon={<ArrowLeft className="w-4 h-4" />}
+          >
+            Back to Leads
+          </Button>
+          <Alert
+            variant="error"
+            title="Lead Not Found"
+            message={error || 'The requested lead does not exist or you lack authorization to view it.'}
+          />
+        </div>
+      </AppShell>
+    );
+  }
+
+  const pipelineStagesList: PipelineStage[] = [
+    'New',
+    'Contacted',
+    'Follow-up',
+    'Site Visit',
+    'Negotiation',
+    'Converted',
+  ];
+
+  const currentStageIndex = pipelineStagesList.indexOf(lead.pipeline_stage);
+
+  return (
+    <AppShell>
+      <div className="space-y-6 text-left animate-fade-in">
+        {/* Navigation Breadcrumb & Actions Bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/leads')}
+              leftIcon={<ArrowLeft className="w-4 h-4" />}
+            >
+              Back to Leads
+            </Button>
+            <div className="h-4 w-px bg-slate-200" />
+            <span className="text-xs font-semibold text-slate-400">Customer 360 Profile</span>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsEditModalOpen(true)}
+              leftIcon={<Edit2 className="w-3.5 h-3.5" />}
+            >
+              Edit Lead
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsQualifyModalOpen(true)}
+              leftIcon={<ShieldCheck className="w-3.5 h-3.5 text-brand-600" />}
+            >
+              Qualify Buyer
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsFollowUpModalOpen(true)}
+              leftIcon={<PhoneCall className="w-3.5 h-3.5 text-emerald-600" />}
+            >
+              Log Follow-Up
+            </Button>
+
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => setIsStageModalOpen(true)}
+              leftIcon={<GitCommit className="w-3.5 h-3.5" />}
+            >
+              Update Stage
+            </Button>
+          </div>
+        </div>
+
+        {/* Customer 360 Header Banner */}
+        <div className="bg-slate-900 text-white rounded-2xl p-6 sm:p-8 shadow-card border border-slate-800 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-80 h-80 bg-brand-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-brand-300">
+                  Lead Ref: {lead.id}
+                </span>
+                <Badge priority={lead.priority} size="sm" />
+                <Badge qualification={lead.qualification_status} size="sm" />
+              </div>
+
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-white font-sans">
+                {lead.customer_name}
+              </h1>
+
+              <div className="flex flex-wrap items-center gap-4 text-xs text-slate-300 pt-1">
+                <span className="flex items-center gap-1.5">
+                  <Phone className="w-3.5 h-3.5 text-slate-400" />
+                  {lead.phone}
+                </span>
+                {lead.email && (
+                  <span className="flex items-center gap-1.5 font-mono">
+                    <Mail className="w-3.5 h-3.5 text-slate-400" />
+                    {lead.email}
+                  </span>
+                )}
+                {lead.city && (
+                  <span className="flex items-center gap-1.5">
+                    <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                    {lead.city}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Right Financial & Executive Snapshot */}
+            <div className="shrink-0 bg-slate-950/80 p-4 rounded-xl border border-slate-800 space-y-2 text-right">
+              <div>
+                <span className="text-[10px] text-slate-400 uppercase tracking-wider block">
+                  Budget Capacity
+                </span>
+                <span className="text-xl font-bold text-emerald-400">
+                  ₹{(lead.budget / 100000).toFixed(1)} Lakhs
+                </span>
+              </div>
+              <div className="pt-2 border-t border-slate-800 text-[11px] text-slate-300">
+                <span>Assigned to: </span>
+                <strong className="text-white font-semibold">
+                  {lead.assigned_name || 'Unassigned'}
+                </strong>
+              </div>
+            </div>
+          </div>
+
+          {/* Interactive Pipeline Progression Stepper */}
+          <div className="mt-6 pt-6 border-t border-slate-800/80">
+            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center justify-between">
+              <span>Pipeline Stage Progression</span>
+              <span className="text-brand-300 font-medium">Current: {lead.pipeline_stage}</span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-6 gap-2">
+              {pipelineStagesList.map((stg, idx) => {
+                const isPassed = currentStageIndex >= idx;
+                const isCurrent = lead.pipeline_stage === stg;
+
+                return (
+                  <button
+                    key={stg}
+                    type="button"
+                    onClick={() => handleStageTransition(lead.id, stg)}
+                    className={`p-2 rounded-lg text-xs font-semibold text-center transition-all border ${
+                      isCurrent
+                        ? 'bg-brand-600 text-white border-brand-500 shadow-md ring-2 ring-brand-400/30'
+                        : isPassed
+                        ? 'bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700'
+                        : 'bg-slate-950/60 text-slate-500 border-slate-800 hover:text-slate-300'
+                    }`}
+                  >
+                    <div className="text-[10px] uppercase font-bold opacity-75">Step {idx + 1}</div>
+                    <div className="truncate font-bold mt-0.5">{stg}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* 2-Column Main Layout: Profile Specifications (Left) & Customer 360 Timeline (Right) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Left Column: Requirements & Buyer Criteria (5 cols) */}
+          <div className="lg:col-span-5 space-y-6">
+            {/* Property Interest & Requirements Card */}
+            <div className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-subtle space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
+                  <Building className="w-4 h-4 text-brand-600" />
+                  <h3>Property Interest</h3>
+                </div>
+                <Badge stage={lead.pipeline_stage} size="xs" />
+              </div>
+
+              <div className="space-y-3 text-xs">
+                <div className="flex items-start justify-between py-1 border-b border-slate-100">
+                  <span className="text-slate-500">Interested Project:</span>
+                  <span className="font-bold text-slate-900">
+                    {lead.interested_property || 'General Requirements'}
+                  </span>
+                </div>
+
+                <div className="flex items-start justify-between py-1 border-b border-slate-100">
+                  <span className="text-slate-500">Configuration:</span>
+                  <span className="font-bold text-brand-700 bg-brand-50 px-2 py-0.5 rounded border border-brand-200">
+                    {lead.flat_type}
+                  </span>
+                </div>
+
+                <div className="flex items-start justify-between py-1 border-b border-slate-100">
+                  <span className="text-slate-500">Preferred Location:</span>
+                  <span className="font-medium text-slate-900">
+                    {lead.preferred_location || 'Not specified'}
+                  </span>
+                </div>
+
+                <div className="flex items-start justify-between py-1 border-b border-slate-100">
+                  <span className="text-slate-500">Purchase Timeline:</span>
+                  <span className="font-medium text-slate-900">
+                    {lead.purchase_timeline || 'N/A'}
+                  </span>
+                </div>
+
+                <div className="flex items-start justify-between py-1 border-b border-slate-100">
+                  <span className="text-slate-500">Purpose of Purchase:</span>
+                  <span className="font-medium text-slate-900">{lead.purpose || 'Self Use'}</span>
+                </div>
+
+                <div className="flex items-start justify-between py-1">
+                  <span className="text-slate-500">Home Loan Required:</span>
+                  <span
+                    className={`font-semibold ${
+                      lead.loan_required === 1 ? 'text-amber-700' : 'text-slate-700'
+                    }`}
+                  >
+                    {lead.loan_required === 1 ? 'Yes (Bank Loan Assistance)' : 'No (Self Funded)'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Buyer Qualification Card */}
+            <div className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-subtle space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                  <h3>Qualification Status</h3>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsQualifyModalOpen(true)}
+                >
+                  Update
+                </Button>
+              </div>
+
+              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200/80 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                    Verified Status
+                  </span>
+                  <Badge qualification={lead.qualification_status} size="md" className="mt-1" />
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                    Priority Tier
+                  </span>
+                  <Badge priority={lead.priority} size="md" className="mt-1" />
+                </div>
+              </div>
+
+              {lead.notes && (
+                <div className="p-3 bg-amber-50/60 border border-amber-200/60 rounded-lg text-xs space-y-1">
+                  <span className="font-bold text-amber-950 text-[11px] block">
+                    Lead Notes & Strategy:
+                  </span>
+                  <p className="text-amber-900 leading-relaxed">{lead.notes}</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right Column: Customer 360 Activity & Follow-Up History (7 cols) */}
+          <div className="lg:col-span-7 space-y-6">
+            {/* Follow-Up Logs Section */}
+            <div className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-subtle space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
+                  <PhoneCall className="w-4 h-4 text-brand-600" />
+                  <h3>Follow-Up Interaction Log ({followUps.length})</h3>
+                </div>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => setIsFollowUpModalOpen(true)}
+                  leftIcon={<PhoneCall className="w-3 h-3" />}
+                >
+                  Log Follow-Up
+                </Button>
+              </div>
+
+              {followUps.length === 0 ? (
+                <div className="py-8 text-center text-slate-400 text-xs border border-dashed border-slate-200 rounded-lg">
+                  No follow-up interactions recorded yet. Log your first client phone call or meeting.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {followUps.map((fol) => (
+                    <div
+                      key={fol.id}
+                      className="p-3.5 bg-slate-50 border border-slate-200/80 rounded-xl space-y-2 text-xs"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-slate-900 bg-white px-2 py-0.5 rounded border border-slate-200 shadow-2xs">
+                            {fol.type}
+                          </span>
+                          <span className="text-[11px] text-slate-500">
+                            {fol.followup_date} {fol.followup_time ? `at ${fol.followup_time}` : ''}
+                          </span>
+                        </div>
+
+                        <span className="text-[11px] text-slate-500 font-medium">
+                          Executive: <strong>{fol.executive_name || 'Staff'}</strong>
+                        </span>
+                      </div>
+
+                      <p className="text-slate-700 leading-relaxed bg-white p-2.5 rounded-lg border border-slate-100">
+                        {fol.remarks}
+                      </p>
+
+                      {fol.next_followup_date && (
+                        <div className="text-[10px] text-amber-800 flex items-center gap-1 font-semibold">
+                          <Clock className="w-3 h-3 text-amber-600" />
+                          <span>Next Commitment: {fol.next_followup_date}</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Complete Activity Timeline (Customer 360 View) */}
+            <div className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-subtle space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
+                  <Layers className="w-4 h-4 text-brand-600" />
+                  <h3>Customer 360 Audit & Activity Timeline</h3>
+                </div>
+                <span className="text-[11px] text-slate-400 font-medium">
+                  {activities.length} Recorded Events
+                </span>
+              </div>
+
+              {activities.length === 0 ? (
+                <div className="py-8 text-center text-slate-400 text-xs">
+                  No activities recorded yet.
+                </div>
+              ) : (
+                <div className="relative pl-6 space-y-6 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
+                  {activities.map((act) => (
+                    <div key={act.id} className="relative group">
+                      {/* Timeline dot */}
+                      <div className="absolute -left-6 mt-1 w-2.5 h-2.5 rounded-full bg-slate-900 ring-4 ring-white" />
+
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-bold text-xs text-slate-900">{act.title}</span>
+                          <span className="text-[10px] text-slate-400">
+                            {act.created_at ? act.created_at.split('T')[0] : 'Recently'}
+                          </span>
+                        </div>
+
+                        {act.description && (
+                          <p className="text-xs text-slate-600 leading-relaxed bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                            {act.description}
+                          </p>
+                        )}
+
+                        <div className="text-[10px] text-slate-400">
+                          Action by: {act.performer_name || 'System Auto'}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Modals */}
+      <QualifyLeadModal
+        isOpen={isQualifyModalOpen}
+        onClose={() => setIsQualifyModalOpen(false)}
+        lead={lead}
+        onSubmit={handleQualifyLead}
+      />
+
+      <StageChangeModal
+        isOpen={isStageModalOpen}
+        onClose={() => setIsStageModalOpen(false)}
+        lead={lead}
+        onSubmit={handleStageTransition}
+      />
+
+      <AddFollowUpModal
+        isOpen={isFollowUpModalOpen}
+        onClose={() => setIsFollowUpModalOpen(false)}
+        lead={lead}
+        onSubmit={handleAddFollowUp}
+        executives={executives}
+      />
+
+      <LeadFormModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSubmit={handleUpdateLead}
+        initialData={lead}
+        executives={executives}
+      />
+    </AppShell>
+  );
+};

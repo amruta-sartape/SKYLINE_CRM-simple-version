@@ -11,8 +11,12 @@ import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { UnauthorizedPage } from './pages/UnauthorizedPage';
 import { AppOverviewPage } from './pages/AppOverviewPage';
+import { EnquiriesPage } from './pages/EnquiriesPage';
+import { LeadsPage } from './pages/LeadsPage';
+import { LeadPipelinePage } from './pages/LeadPipelinePage';
+import { LeadDetailPage } from './pages/LeadDetailPage';
 
-// Public Route Guard (Redirects already authenticated users to App Dashboard)
+// Public Route Guard (Redirects already authenticated users to Enquiries or Dashboard)
 const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
 
@@ -21,7 +25,7 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/enquiries" replace />;
   }
 
   return <>{children}</>;
@@ -67,7 +71,44 @@ export const AppRoutes: React.FC = () => {
       {/* Access Denied Route */}
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
-      {/* Protected Main CRM Core */}
+      {/* Protected Phase 2 CRM Core */}
+      <Route
+        path="/enquiries"
+        element={
+          <ProtectedRoute>
+            <EnquiriesPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/leads"
+        element={
+          <ProtectedRoute>
+            <LeadsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/leads/pipeline"
+        element={
+          <ProtectedRoute>
+            <LeadPipelinePage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/leads/:id"
+        element={
+          <ProtectedRoute>
+            <LeadDetailPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Auth Overview & RBAC Live Tester Console */}
       <Route
         path="/"
         element={
@@ -78,7 +119,7 @@ export const AppRoutes: React.FC = () => {
       />
 
       {/* Fallback */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<Navigate to="/enquiries" replace />} />
     </Routes>
   );
 };

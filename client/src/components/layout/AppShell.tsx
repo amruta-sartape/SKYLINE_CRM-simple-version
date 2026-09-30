@@ -6,13 +6,14 @@ import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import {
   LayoutDashboard,
+  MessageSquare,
   Users,
+  Kanban,
   Building2,
   CalendarCheck,
   TrendingUp,
   CreditCard,
   BarChart3,
-  ShieldAlert,
   LogOut,
   ChevronDown,
   Menu,
@@ -41,64 +42,70 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
 
   const primaryRole = user?.roles?.[0] || 'AGENT';
 
-  // Navigation Items (Phase 1 active, Future modules indicated with roadmap badges)
+  // Navigation Items
   const navItems = [
     {
-      name: 'Auth & Role Guard',
+      name: 'Client Enquiries',
+      href: '/enquiries',
+      icon: <MessageSquare className="w-4 h-4" />,
+      active: location.pathname === '/enquiries',
+      status: 'Active',
+    },
+    {
+      name: 'Leads Management',
+      href: '/leads',
+      icon: <Users className="w-4 h-4" />,
+      active: location.pathname === '/leads' || (location.pathname.startsWith('/leads/') && location.pathname !== '/leads/pipeline'),
+      status: 'Active',
+    },
+    {
+      name: 'Lead Pipeline',
+      href: '/leads/pipeline',
+      icon: <Kanban className="w-4 h-4" />,
+      active: location.pathname === '/leads/pipeline',
+      status: 'Active',
+    },
+    {
+      name: 'Auth & RBAC Console',
       href: '/',
       icon: <LayoutDashboard className="w-4 h-4" />,
       active: location.pathname === '/',
-      status: 'Phase 1 Active',
-    },
-    {
-      name: 'Leads & Enquiries',
-      href: '#leads',
-      icon: <Users className="w-4 h-4" />,
-      locked: true,
-      status: 'Phase 2',
+      status: 'Active',
     },
     {
       name: 'Properties & Inventory',
       href: '#properties',
       icon: <Building2 className="w-4 h-4" />,
       locked: true,
-      status: 'Phase 2',
+      status: 'Phase 3',
     },
     {
       name: 'Site Visits & Calendar',
       href: '#visits',
       icon: <CalendarCheck className="w-4 h-4" />,
       locked: true,
-      status: 'Phase 2',
+      status: 'Phase 4',
     },
     {
       name: 'Deals & Sales Pipeline',
       href: '#sales',
       icon: <TrendingUp className="w-4 h-4" />,
       locked: true,
-      status: 'Phase 2',
+      status: 'Phase 5',
     },
     {
       name: 'Finance & Payments',
       href: '#finance',
       icon: <CreditCard className="w-4 h-4" />,
       locked: true,
-      status: 'Phase 2',
+      status: 'Phase 6',
     },
     {
       name: 'Reports & Analytics',
       href: '#reports',
       icon: <BarChart3 className="w-4 h-4" />,
       locked: true,
-      status: 'Phase 2',
-    },
-    {
-      name: 'Admin Governance',
-      href: '#admin',
-      icon: <ShieldAlert className="w-4 h-4" />,
-      adminOnly: true,
-      locked: true,
-      status: 'Phase 2',
+      status: 'Phase 9',
     },
   ];
 
@@ -117,7 +124,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             >
               {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
-            <Link to="/" className="flex items-center">
+            <Link to="/enquiries" className="flex items-center">
               <SkylineBrand size="sm" />
             </Link>
           </div>
@@ -125,9 +132,9 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
           {/* Center Info / Phase Status */}
           <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 border border-slate-200/80 text-xs text-slate-600">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="font-semibold text-slate-800">Phase 1 Architecture</span>
+            <span className="font-semibold text-slate-800">SKYLINE Real Estate CRM</span>
             <span>•</span>
-            <span>Complete Auth & RBAC Active</span>
+            <span className="text-brand-700 font-medium">Phase 2 Active</span>
           </div>
 
           {/* Right User & Actions */}
@@ -207,7 +214,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
 
       {/* Main Container: Sidebar + Content */}
       <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col lg:flex-row gap-6">
-        {/* Navigation Sidebar (Desktop + Mobile drawer) */}
+        {/* Navigation Sidebar */}
         <aside
           className={`lg:w-64 shrink-0 ${
             isMobileMenuOpen ? 'block' : 'hidden lg:block'
@@ -216,50 +223,58 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
           <div className="bg-white rounded-xl border border-slate-200/90 p-4 shadow-subtle space-y-4">
             <div>
               <div className="px-3 py-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                CRM Architecture
+                CRM Modules
               </div>
               <nav className="mt-2 space-y-1">
-                {navItems.map((item) => (
-                  <div
-                    key={item.name}
-                    className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
-                      item.active
-                        ? 'bg-slate-900 text-white font-semibold shadow-xs'
-                        : item.locked
-                        ? 'text-slate-400 hover:bg-slate-50 cursor-not-allowed opacity-75'
-                        : 'text-slate-700 hover:bg-slate-100'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      {item.icon}
-                      <span>{item.name}</span>
-                    </div>
-
-                    {item.locked ? (
+                {navItems.map((item) =>
+                  item.locked ? (
+                    <div
+                      key={item.name}
+                      className="flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-slate-400 cursor-not-allowed opacity-75"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        {item.icon}
+                        <span>{item.name}</span>
+                      </div>
                       <span className="flex items-center gap-1 text-[10px] text-slate-400 font-normal">
                         <Lock className="w-3 h-3" />
                         <span>{item.status}</span>
                       </span>
-                    ) : (
-                      <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                    )}
-                  </div>
-                ))}
+                    </div>
+                  ) : (
+                    <Link
+                      key={item.name}
+                      to={item.href}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                        item.active
+                          ? 'bg-slate-900 text-white font-semibold shadow-xs'
+                          : 'text-slate-700 hover:bg-slate-100'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        {item.icon}
+                        <span>{item.name}</span>
+                      </div>
+                      {item.active && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />}
+                    </Link>
+                  )
+                )}
               </nav>
             </div>
 
-            {/* Architectural Info Box */}
+            {/* Status Information Box */}
             <div className="p-3 rounded-lg bg-brand-50/70 border border-brand-100 text-left">
               <div className="flex items-center gap-1.5 text-brand-900 font-bold text-xs">
                 <Sparkles className="w-3.5 h-3.5 text-brand-600" />
-                <span>Phase 1 Scope</span>
+                <span>Phase 2 Live</span>
               </div>
               <p className="text-[11px] text-brand-800/80 mt-1 leading-relaxed">
-                Foundation & Auth flow active. Database & role architecture are prepared for CRM modules in Phase 2.
+                Enquiries, Lead Qualification, Visual Pipeline Kanban, and Customer 360 are active.
               </p>
             </div>
 
-            {/* Logout button */}
+            {/* Sign Out Button */}
             <div className="pt-2 border-t border-slate-100">
               <Button
                 variant="outline"
@@ -275,7 +290,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
           </div>
         </aside>
 
-        {/* Viewport content */}
+        {/* Main Content Area */}
         <main className="flex-1 min-w-0">{children}</main>
       </div>
     </div>
