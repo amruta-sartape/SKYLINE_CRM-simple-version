@@ -135,10 +135,14 @@ export class LeadService {
         l.*,
         u.name as assigned_name,
         u.email as assigned_email,
-        cb.name as created_by_name
+        cb.name as created_by_name,
+        p.name as project_name,
+        un.unit_number as unit_number
       FROM leads l
       LEFT JOIN users u ON l.assigned_to = u.id
       LEFT JOIN users cb ON l.created_by = cb.id
+      LEFT JOIN property_projects p ON l.project_id = p.id
+      LEFT JOIN property_units un ON l.unit_id = un.id
       ${whereClause}
       ORDER BY ${sortField} ${sortOrder}
       LIMIT ? OFFSET ?
@@ -212,10 +216,14 @@ export class LeadService {
         l.*,
         u.name as assigned_name,
         u.email as assigned_email,
-        cb.name as created_by_name
+        cb.name as created_by_name,
+        p.name as project_name,
+        un.unit_number as unit_number
       FROM leads l
       LEFT JOIN users u ON l.assigned_to = u.id
       LEFT JOIN users cb ON l.created_by = cb.id
+      LEFT JOIN property_projects p ON l.project_id = p.id
+      LEFT JOIN property_units un ON l.unit_id = un.id
       ${whereClause}
       ORDER BY l.created_at DESC
     `;
@@ -256,10 +264,14 @@ export class LeadService {
         l.*,
         u.name as assigned_name,
         u.email as assigned_email,
-        cb.name as created_by_name
+        cb.name as created_by_name,
+        p.name as project_name,
+        un.unit_number as unit_number
       FROM leads l
       LEFT JOIN users u ON l.assigned_to = u.id
       LEFT JOIN users cb ON l.created_by = cb.id
+      LEFT JOIN property_projects p ON l.project_id = p.id
+      LEFT JOIN property_units un ON l.unit_id = un.id
       WHERE l.id = ?
     `;
 
@@ -327,6 +339,8 @@ export class LeadService {
       preferred_location?: string | null;
       flat_type: PropertyConfiguration;
       interested_property?: string | null;
+      project_id?: string | null;
+      unit_id?: string | null;
       loan_required?: number;
       purchase_timeline?: PurchaseTimeline | null;
       purpose?: PurchasePurpose | null;
@@ -348,10 +362,10 @@ export class LeadService {
     await db.run(
       `INSERT INTO leads (
         id, customer_name, phone, email, city, budget,
-        preferred_location, flat_type, interested_property, loan_required,
+        preferred_location, flat_type, interested_property, project_id, unit_id, loan_required,
         purchase_timeline, purpose, assigned_to, pipeline_stage,
         qualification_status, priority, next_followup_date, notes, created_by, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
         data.customer_name.trim(),
@@ -362,6 +376,8 @@ export class LeadService {
         data.preferred_location?.trim() || null,
         data.flat_type,
         data.interested_property?.trim() || null,
+        data.project_id || null,
+        data.unit_id || null,
         data.loan_required || 0,
         data.purchase_timeline || null,
         data.purpose || null,

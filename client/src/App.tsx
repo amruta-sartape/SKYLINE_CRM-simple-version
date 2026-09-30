@@ -15,6 +15,9 @@ import { EnquiriesPage } from './pages/EnquiriesPage';
 import { LeadsPage } from './pages/LeadsPage';
 import { LeadPipelinePage } from './pages/LeadPipelinePage';
 import { LeadDetailPage } from './pages/LeadDetailPage';
+import { ProjectsPage } from './pages/ProjectsPage';
+import { InventoryPage } from './pages/InventoryPage';
+import { UnitDetailPage } from './pages/UnitDetailPage';
 
 // Public Route Guard (Redirects already authenticated users to Enquiries or Dashboard)
 const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -104,6 +107,34 @@ export const AppRoutes: React.FC = () => {
         element={
           <ProtectedRoute>
             <LeadDetailPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Protected Phase 3 Property Catalog & Inventory Management */}
+      <Route
+        path="/properties"
+        element={
+          <ProtectedRoute>
+            <ProjectsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/inventory"
+        element={
+          <ProtectedRoute>
+            <InventoryPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/inventory/:id"
+        element={
+          <ProtectedRoute>
+            <UnitDetailPage />
           </ProtectedRoute>
         }
       />

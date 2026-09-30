@@ -104,6 +104,8 @@ export const createEnquirySchema = z.object({
     required_error: 'Lead source is required',
   }),
   assigned_to: z.string().optional().nullable().or(z.literal('')),
+  project_id: z.string().optional().nullable().or(z.literal('')),
+  unit_id: z.string().optional().nullable().or(z.literal('')),
   status: z.enum(['New Lead', 'In Progress', 'Converted', 'Dropped']).optional(),
   enquiry_date: z.string().optional(),
 });
@@ -116,6 +118,8 @@ export const convertEnquirySchema = z.object({
   purchase_timeline: z.enum(['Immediate', '1-3 Months', '3-6 Months', '6+ Months']).optional(),
   purpose: z.enum(['Self Use', 'Investment']).optional(),
   assigned_to: z.string().optional().nullable().or(z.literal('')),
+  project_id: z.string().optional().nullable().or(z.literal('')),
+  unit_id: z.string().optional().nullable().or(z.literal('')),
   priority: z.enum(['Low', 'Medium', 'High', 'Urgent']).optional().default('Medium'),
   notes: z.string().optional().or(z.literal('')),
 });
@@ -141,6 +145,8 @@ export const createLeadSchema = z.object({
     required_error: 'Flat type configuration is required',
   }),
   interested_property: z.string().optional().or(z.literal('')),
+  project_id: z.string().optional().nullable().or(z.literal('')),
+  unit_id: z.string().optional().nullable().or(z.literal('')),
   loan_required: z.coerce.number().optional().default(0),
   purchase_timeline: z.enum(['Immediate', '1-3 Months', '3-6 Months', '6+ Months']).optional(),
   purpose: z.enum(['Self Use', 'Investment']).optional(),
@@ -211,6 +217,111 @@ export const createFollowUpSchema = z.object({
   remarks: z.string({ required_error: 'Remarks are required' }).min(2, 'Please provide follow-up remarks'),
   next_followup_date: z.string().optional().nullable().or(z.literal('')),
   executive_id: z.string().optional().nullable().or(z.literal('')),
+});
+
+// ============================================================================
+// PHASE 3 PROPERTY CATALOG & INVENTORY VALIDATION SCHEMAS
+// ============================================================================
+
+export const createWingItemSchema = z.object({
+  name: z.string({ required_error: 'Wing name is required' }).min(1, 'Wing name is required'),
+  total_floors: z.coerce.number().int().min(1, 'Total floors must be at least 1').default(10),
+  units_per_floor: z.coerce.number().int().min(1, 'Units per floor must be at least 1').default(4),
+});
+
+export const createProjectSchema = z.object({
+  name: z
+    .string({ required_error: 'Project name is required' })
+    .min(2, 'Project name must be at least 2 characters')
+    .max(150, 'Project name cannot exceed 150 characters'),
+  code: z
+    .string({ required_error: 'Project code is required' })
+    .min(2, 'Project code must be at least 2 characters')
+    .max(10, 'Project code cannot exceed 10 characters')
+    .regex(/^[A-Za-z0-9_-]+$/, 'Project code must contain only alphanumeric characters, dashes, or underscores')
+    .transform((val) => val.toUpperCase()),
+  location: z
+    .string({ required_error: 'Project location is required' })
+    .min(2, 'Location must be at least 2 characters'),
+  city: z
+    .string({ required_error: 'City is required' })
+    .min(2, 'City must be at least 2 characters'),
+  state: z
+    .string({ required_error: 'State is required' })
+    .min(2, 'State must be at least 2 characters'),
+  description: z.string().optional().or(z.literal('')),
+  developer: z.string().default('Skyline Realty Group'),
+  status: z.enum(['Upcoming', 'Active', 'Completed', 'On Hold']).default('Active'),
+  wings: z.array(createWingItemSchema).optional(),
+});
+
+export const updateProjectSchema = z.object({
+  name: z.string().min(2).max(150).optional(),
+  location: z.string().min(2).optional(),
+  city: z.string().min(2).optional(),
+  state: z.string().min(2).optional(),
+  description: z.string().optional().or(z.literal('')),
+  developer: z.string().optional(),
+  status: z.enum(['Upcoming', 'Active', 'Completed', 'On Hold']).optional(),
+  is_active: z.coerce.number().int().min(0).max(1).optional(),
+});
+
+export const createWingSchema = z.object({
+  name: z.string({ required_error: 'Wing name is required' }).min(1, 'Wing name is required'),
+  total_floors: z.coerce.number().int().min(1, 'Total floors must be at least 1').default(10),
+  units_per_floor: z.coerce.number().int().min(1, 'Units per floor must be at least 1').default(4),
+});
+
+export const createUnitSchema = z.object({
+  project_id: z.string({ required_error: 'Project is required' }).min(1, 'Project is required'),
+  wing_id: z.string({ required_error: 'Wing is required' }).min(1, 'Wing is required'),
+  unit_number: z
+    .string({ required_error: 'Unit number is required' })
+    .min(1, 'Unit number is required')
+    .max(20, 'Unit number cannot exceed 20 characters'),
+  floor: z.coerce.number({ required_error: 'Floor is required' }).int(),
+  configuration: z.string({ required_error: 'Flat configuration is required' }).min(1),
+  carpet_area: z.coerce
+    .number({ required_error: 'Carpet area is required' })
+    .positive('Carpet area must be greater than 0'),
+  built_up_area: z.coerce
+    .number({ required_error: 'Built-up area is required' })
+    .positive('Built-up area must be greater than 0'),
+  price: z.coerce
+    .number({ required_error: 'Price is required' })
+    .positive('Price must be greater than 0'),
+  parking_type: z.enum(['Included', 'Not Included']).default('Included'),
+  parking_slot: z.string().optional().nullable().or(z.literal('')),
+  availability_status: z.enum(['Available', 'Reserved', 'Sold']).default('Available'),
+  facing: z.string().optional().nullable().or(z.literal('')),
+  description: z.string().optional().nullable().or(z.literal('')),
+  amenity_ids: z.array(z.string()).optional(),
+}).refine((data) => data.built_up_area >= data.carpet_area, {
+  message: 'Built-up area must be greater than or equal to carpet area',
+  path: ['built_up_area'],
+});
+
+export const updateUnitSchema = z.object({
+  unit_number: z.string().min(1).max(20).optional(),
+  floor: z.coerce.number().int().optional(),
+  configuration: z.string().min(1).optional(),
+  carpet_area: z.coerce.number().positive().optional(),
+  built_up_area: z.coerce.number().positive().optional(),
+  price: z.coerce.number().positive().optional(),
+  parking_type: z.enum(['Included', 'Not Included']).optional(),
+  parking_slot: z.string().optional().nullable().or(z.literal('')),
+  availability_status: z.enum(['Available', 'Reserved', 'Sold']).optional(),
+  facing: z.string().optional().nullable().or(z.literal('')),
+  description: z.string().optional().nullable().or(z.literal('')),
+  amenity_ids: z.array(z.string()).optional(),
+});
+
+export const updateAvailabilitySchema = z.object({
+  availability_status: z.enum(['Available', 'Reserved', 'Sold'], {
+    required_error: 'New availability status is required',
+  }),
+  remarks: z.string().optional().or(z.literal('')),
+  customer_lead_id: z.string().optional().nullable().or(z.literal('')),
 });
 
 /**

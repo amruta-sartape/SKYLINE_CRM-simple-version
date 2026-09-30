@@ -116,16 +116,20 @@ export class EnquiryService {
     const sortField = allowedSortFields[filters.sortBy || 'enquiry_date'] || 'e.enquiry_date';
     const sortOrder = filters.sortOrder === 'ASC' ? 'ASC' : 'DESC';
 
-    // Select enquiries with assigned user join
+    // Select enquiries with assigned user and property joins
     const selectSql = `
       SELECT 
         e.*,
         u.name as assigned_name,
         u.email as assigned_email,
-        cb.name as created_by_name
+        cb.name as created_by_name,
+        p.name as project_name,
+        un.unit_number as unit_number
       FROM enquiries e
       LEFT JOIN users u ON e.assigned_to = u.id
       LEFT JOIN users cb ON e.created_by = cb.id
+      LEFT JOIN property_projects p ON e.project_id = p.id
+      LEFT JOIN property_units un ON e.unit_id = un.id
       ${whereClause}
       ORDER BY ${sortField} ${sortOrder}
       LIMIT ? OFFSET ?
@@ -151,10 +155,14 @@ export class EnquiryService {
         e.*,
         u.name as assigned_name,
         u.email as assigned_email,
-        cb.name as created_by_name
+        cb.name as created_by_name,
+        p.name as project_name,
+        un.unit_number as unit_number
       FROM enquiries e
       LEFT JOIN users u ON e.assigned_to = u.id
       LEFT JOIN users cb ON e.created_by = cb.id
+      LEFT JOIN property_projects p ON e.project_id = p.id
+      LEFT JOIN property_units un ON e.unit_id = un.id
       WHERE e.id = ?
     `;
 
@@ -187,6 +195,8 @@ export class EnquiryService {
       configuration: PropertyConfiguration;
       lead_source: LeadSource;
       assigned_to?: string | null;
+      project_id?: string | null;
+      unit_id?: string | null;
       status?: EnquiryStatus;
       enquiry_date?: string;
     },
@@ -200,8 +210,8 @@ export class EnquiryService {
     await db.run(
       `INSERT INTO enquiries (
         id, customer_name, phone, email, city, budget, interested_property,
-        configuration, lead_source, assigned_to, status, enquiry_date, created_by, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        configuration, lead_source, assigned_to, project_id, unit_id, status, enquiry_date, created_by, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
         data.customer_name.trim(),
@@ -213,6 +223,8 @@ export class EnquiryService {
         data.configuration,
         data.lead_source,
         data.assigned_to || null,
+        data.project_id || null,
+        data.unit_id || null,
         status,
         enquiryDate,
         user.userId,
@@ -292,6 +304,14 @@ export class EnquiryService {
       updates.push('assigned_to = ?');
       params.push(data.assigned_to || null);
     }
+    if (data.project_id !== undefined) {
+      updates.push('project_id = ?');
+      params.push(data.project_id || null);
+    }
+    if (data.unit_id !== undefined) {
+      updates.push('unit_id = ?');
+      params.push(data.unit_id || null);
+    }
     if (data.status !== undefined) {
       updates.push('status = ?');
       params.push(data.status);
@@ -328,6 +348,8 @@ export class EnquiryService {
       purchase_timeline?: any;
       purpose?: any;
       assigned_to?: string;
+      project_id?: string;
+      unit_id?: string;
       priority?: LeadPriority;
       notes?: string;
     },
@@ -350,15 +372,17 @@ export class EnquiryService {
     const leadId = `lead_${crypto.randomUUID()}`;
     const now = new Date().toISOString();
     const assignedTo = conversionData.assigned_to || enquiry.assigned_to || user.userId;
+    const projectId = conversionData.project_id || enquiry.project_id || null;
+    const unitId = conversionData.unit_id || enquiry.unit_id || null;
 
     // Insert into leads table
     await db.run(
       `INSERT INTO leads (
         id, enquiry_id, customer_name, phone, email, city, budget,
-        preferred_location, flat_type, interested_property, loan_required,
+        preferred_location, flat_type, interested_property, project_id, unit_id, loan_required,
         purchase_timeline, purpose, assigned_to, pipeline_stage,
         qualification_status, priority, notes, created_by, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         leadId,
         enquiry.id,
@@ -370,6 +394,8 @@ export class EnquiryService {
         conversionData.preferred_location || enquiry.city || null,
         enquiry.configuration,
         enquiry.interested_property,
+        projectId,
+        unitId,
         conversionData.loan_required || 0,
         conversionData.purchase_timeline || '1-3 Months',
         conversionData.purpose || 'Self Use',

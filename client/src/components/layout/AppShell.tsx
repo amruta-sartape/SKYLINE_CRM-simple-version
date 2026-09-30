@@ -10,6 +10,7 @@ import {
   Users,
   Kanban,
   Building2,
+  Home,
   CalendarCheck,
   TrendingUp,
   CreditCard,
@@ -66,18 +67,25 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
       status: 'Active',
     },
     {
+      name: 'Projects Master',
+      href: '/properties',
+      icon: <Building2 className="w-4 h-4" />,
+      active: location.pathname === '/properties',
+      status: 'Active',
+    },
+    {
+      name: 'Property Inventory',
+      href: '/inventory',
+      icon: <Home className="w-4 h-4" />,
+      active: location.pathname === '/inventory' || location.pathname.startsWith('/inventory/'),
+      status: 'Active',
+    },
+    {
       name: 'Auth & RBAC Console',
       href: '/',
       icon: <LayoutDashboard className="w-4 h-4" />,
       active: location.pathname === '/',
       status: 'Active',
-    },
-    {
-      name: 'Properties & Inventory',
-      href: '#properties',
-      icon: <Building2 className="w-4 h-4" />,
-      locked: true,
-      status: 'Phase 3',
     },
     {
       name: 'Site Visits & Calendar',
@@ -134,7 +142,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span className="font-semibold text-slate-800">SKYLINE Real Estate CRM</span>
             <span>•</span>
-            <span className="text-brand-700 font-medium">Phase 2 Active</span>
+            <span className="text-brand-700 font-medium">Phase 3 Active</span>
           </div>
 
           {/* Right User & Actions */}

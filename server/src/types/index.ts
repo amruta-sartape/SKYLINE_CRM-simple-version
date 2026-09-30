@@ -128,6 +128,8 @@ export interface Enquiry {
   configuration: PropertyConfiguration;
   lead_source: LeadSource;
   assigned_to?: string | null;
+  project_id?: string | null;
+  unit_id?: string | null;
   status: EnquiryStatus;
   enquiry_date: string;
   converted_lead_id?: string | null;
@@ -138,6 +140,8 @@ export interface Enquiry {
   assigned_name?: string | null;
   assigned_email?: string | null;
   created_by_name?: string | null;
+  project_name?: string | null;
+  unit_number?: string | null;
 }
 
 export interface Lead {
@@ -151,6 +155,8 @@ export interface Lead {
   preferred_location?: string | null;
   flat_type: PropertyConfiguration;
   interested_property?: string | null;
+  project_id?: string | null;
+  unit_id?: string | null;
   loan_required: number; // 0 or 1
   purchase_timeline?: PurchaseTimeline | null;
   purpose?: PurchasePurpose | null;
@@ -167,6 +173,8 @@ export interface Lead {
   assigned_name?: string | null;
   assigned_email?: string | null;
   created_by_name?: string | null;
+  project_name?: string | null;
+  unit_number?: string | null;
 }
 
 export interface LeadActivity {
@@ -197,3 +205,158 @@ export interface FollowUp {
   // Joined
   executive_name?: string | null;
 }
+
+// ============================================================================
+// PHASE 3 PROPERTY CATALOG & INVENTORY ENUMS & INTERFACES
+// ============================================================================
+
+export type ProjectStatus = 'Upcoming' | 'Active' | 'Completed' | 'On Hold';
+
+export type UnitAvailability = 'Available' | 'Reserved' | 'Sold';
+
+export type ParkingType = 'Included' | 'Not Included';
+
+export type AmenityCategory =
+  | 'Sports & Wellness'
+  | 'Security'
+  | 'Convenience'
+  | 'Leisure'
+  | 'Green Living'
+  | 'General';
+
+export type PropertyActivityType =
+  | 'PROJECT_CREATED'
+  | 'PROJECT_UPDATED'
+  | 'PROJECT_ARCHIVED'
+  | 'UNIT_CREATED'
+  | 'UNIT_UPDATED'
+  | 'AVAILABILITY_CHANGED';
+
+export interface PropertyProject {
+  id: string;
+  name: string;
+  code: string;
+  location: string;
+  city: string;
+  state: string;
+  description?: string | null;
+  developer: string;
+  status: ProjectStatus;
+  total_wings: number;
+  total_units: number;
+  is_active: number; // 1 or 0
+  created_by?: string | null;
+  created_at: string;
+  updated_at: string;
+  // Computed / Joined fields
+  available_units?: number;
+  reserved_units?: number;
+  sold_units?: number;
+  wings?: PropertyWing[];
+  created_by_name?: string | null;
+}
+
+export interface PropertyWing {
+  id: string;
+  project_id: string;
+  name: string;
+  total_floors: number;
+  units_per_floor: number;
+  created_at: string;
+  updated_at: string;
+  // Computed fields
+  total_units?: number;
+  available_units?: number;
+  reserved_units?: number;
+  sold_units?: number;
+}
+
+export interface Amenity {
+  id: string;
+  name: string;
+  category: AmenityCategory;
+  icon?: string | null;
+  is_active: number;
+  created_at: string;
+}
+
+export interface PropertyUnit {
+  id: string;
+  project_id: string;
+  wing_id: string;
+  unit_number: string;
+  floor: number;
+  configuration: string; // '1 BHK', '2 BHK', '3 BHK', '4 BHK', 'Studio', 'Penthouse'
+  carpet_area: number; // In sq ft
+  built_up_area: number; // In sq ft
+  price: number; // In INR
+  parking_type: ParkingType;
+  parking_slot?: string | null;
+  availability_status: UnitAvailability;
+  facing?: string | null;
+  description?: string | null;
+  created_by?: string | null;
+  created_at: string;
+  updated_at: string;
+  // Joined fields
+  project_name?: string;
+  project_code?: string;
+  project_city?: string;
+  wing_name?: string;
+  amenities?: Amenity[];
+  amenity_ids?: string[];
+  created_by_name?: string | null;
+}
+
+export interface PropertyActivity {
+  id: string;
+  resource_type: 'PROJECT' | 'UNIT';
+  resource_id: string;
+  activity_type: PropertyActivityType;
+  title: string;
+  description?: string | null;
+  old_value?: string | null;
+  new_value?: string | null;
+  performed_by?: string | null;
+  created_at: string;
+  // Joined
+  performer_name?: string | null;
+  performer_email?: string | null;
+}
+
+export interface InventorySummary {
+  total_units: number;
+  available_units: number;
+  reserved_units: number;
+  sold_units: number;
+  total_valuation: number;
+  available_valuation: number;
+  avg_sqft_price: number;
+}
+
+export interface FloorMatrixUnit {
+  id: string;
+  unit_number: string;
+  floor: number;
+  configuration: string;
+  carpet_area: number;
+  price: number;
+  availability_status: UnitAvailability;
+  parking_type: ParkingType;
+  parking_slot?: string | null;
+}
+
+export interface FloorMatrixFloor {
+  floor: number;
+  units: FloorMatrixUnit[];
+}
+
+export interface FloorMatrixData {
+  project_id: string;
+  project_name: string;
+  wing_id: string;
+  wing_name: string;
+  total_floors: number;
+  floors: FloorMatrixFloor[];
+}
+

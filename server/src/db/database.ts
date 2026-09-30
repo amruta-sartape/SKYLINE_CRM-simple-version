@@ -70,6 +70,29 @@ class DatabaseService {
     } else {
       console.warn('[DB] Schema file not found in search paths:', possiblePaths);
     }
+
+    // Safe column migrations for existing tables
+    try {
+      const enquiryCols = await this.all<any>('PRAGMA table_info(enquiries)');
+      const enquiryColNames = enquiryCols.map((c) => c.name);
+      if (!enquiryColNames.includes('project_id')) {
+        await this.run('ALTER TABLE enquiries ADD COLUMN project_id TEXT');
+      }
+      if (!enquiryColNames.includes('unit_id')) {
+        await this.run('ALTER TABLE enquiries ADD COLUMN unit_id TEXT');
+      }
+
+      const leadCols = await this.all<any>('PRAGMA table_info(leads)');
+      const leadColNames = leadCols.map((c) => c.name);
+      if (!leadColNames.includes('project_id')) {
+        await this.run('ALTER TABLE leads ADD COLUMN project_id TEXT');
+      }
+      if (!leadColNames.includes('unit_id')) {
+        await this.run('ALTER TABLE leads ADD COLUMN unit_id TEXT');
+      }
+    } catch (migErr) {
+      console.warn('[DB] Non-critical migration note:', migErr);
+    }
   }
 
   public async run(sql: string, params: any[] = []): Promise<{ lastID: number; changes: number }> {

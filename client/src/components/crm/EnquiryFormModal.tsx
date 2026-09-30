@@ -9,6 +9,8 @@ import type {
   EnquiryFormData,
   UserSummary,
 } from '../../types/crm.types';
+import type { PropertyProject } from '../../types/property.types';
+import { projectService } from '../../services/project.service';
 import { User, Phone, Mail, MapPin, Building, DollarSign, Calendar } from 'lucide-react';
 
 interface EnquiryFormModalProps {
@@ -42,9 +44,14 @@ export const EnquiryFormModal: React.FC<EnquiryFormModalProps> = ({
     enquiry_date: new Date().toISOString().split('T')[0],
   });
 
+  const [projects, setProjects] = useState<PropertyProject[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    projectService.list({ limit: 50 }).then((res) => setProjects(res.projects)).catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (initialData) {
@@ -236,15 +243,39 @@ export const EnquiryFormModal: React.FC<EnquiryFormModalProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <FormField label="Interested Property" required error={errors.interested_property}>
-              <Input
-                name="interested_property"
-                placeholder="e.g. Skyline Imperial Towers"
-                value={formData.interested_property}
-                onChange={handleChange}
-                error={errors.interested_property}
-                leftIcon={<Building className="w-4 h-4" />}
-                disabled={isSubmitting}
-              />
+              <div className="space-y-1.5">
+                {projects.length > 0 && (
+                  <select
+                    onChange={(e) => {
+                      const selectedProj = projects.find((p) => p.id === e.target.value);
+                      if (selectedProj) {
+                        setFormData((prev) => ({
+                          ...prev,
+                          interested_property: selectedProj.name,
+                          city: prev.city || selectedProj.city,
+                        }));
+                      }
+                    }}
+                    className="w-full text-[11px] px-2 py-1 bg-slate-50 border border-slate-200 rounded text-slate-600 mb-1"
+                  >
+                    <option value="">-- Quick Pick from Project Master --</option>
+                    {projects.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name} ({p.code} - {p.city})
+                      </option>
+                    ))}
+                  </select>
+                )}
+                <Input
+                  name="interested_property"
+                  placeholder="e.g. Skyline Heights"
+                  value={formData.interested_property}
+                  onChange={handleChange}
+                  error={errors.interested_property}
+                  leftIcon={<Building className="w-4 h-4" />}
+                  disabled={isSubmitting}
+                />
+              </div>
             </FormField>
 
             <FormField label="Flat Configuration" required error={errors.configuration}>

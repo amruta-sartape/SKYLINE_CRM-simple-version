@@ -8,6 +8,7 @@ import {
   LeadPriority,
   EnquiryStatus,
 } from '../../types/crm.types';
+import { UnitAvailability, ProjectStatus } from '../../types/property.types';
 
 export interface BadgeProps {
   role?: UserRole | string;
@@ -15,6 +16,8 @@ export interface BadgeProps {
   qualification?: QualificationStatus | string;
   priority?: LeadPriority | string;
   enquiryStatus?: EnquiryStatus | string;
+  availability?: UnitAvailability | string;
+  projectStatus?: ProjectStatus | string;
   variant?: 'admin' | 'employee' | 'agent' | 'success' | 'warning' | 'error' | 'neutral' | 'info' | 'purple';
   size?: 'xs' | 'sm' | 'md';
   showIcon?: boolean;
@@ -28,6 +31,8 @@ export const Badge: React.FC<BadgeProps> = ({
   qualification,
   priority,
   enquiryStatus,
+  availability,
+  projectStatus,
   variant,
   size = 'md',
   showIcon = true,
@@ -131,7 +136,39 @@ export const Badge: React.FC<BadgeProps> = ({
         customClasses = 'bg-slate-100 border-slate-200 text-slate-600';
         break;
     }
-    labelText = labelText || enquiryStatus;
+  } else if (availability) {
+    switch (availability) {
+      case 'Available':
+        customClasses = 'bg-emerald-50 border-emerald-300 text-emerald-800 font-semibold';
+        break;
+      case 'Reserved':
+        customClasses = 'bg-amber-50 border-amber-300 text-amber-900 font-semibold';
+        break;
+      case 'Sold':
+        customClasses = 'bg-slate-100 border-slate-300 text-slate-700 font-medium';
+        break;
+      default:
+        customClasses = 'bg-slate-100 border-slate-200 text-slate-700';
+    }
+    labelText = labelText || availability;
+  } else if (projectStatus) {
+    switch (projectStatus) {
+      case 'Active':
+        customClasses = 'bg-emerald-50 border-emerald-300 text-emerald-800';
+        break;
+      case 'Upcoming':
+        customClasses = 'bg-sky-50 border-sky-300 text-sky-800';
+        break;
+      case 'Completed':
+        customClasses = 'bg-purple-50 border-purple-300 text-purple-800';
+        break;
+      case 'On Hold':
+        customClasses = 'bg-slate-100 border-slate-300 text-slate-600';
+        break;
+      default:
+        customClasses = 'bg-slate-100 border-slate-200 text-slate-700';
+    }
+    labelText = labelText || projectStatus;
   } else if (variant) {
     switch (variant) {
       case 'success':

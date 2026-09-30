@@ -9,6 +9,8 @@ import type {
   LeadFormData,
   UserSummary,
 } from '../../types/crm.types';
+import type { PropertyProject } from '../../types/property.types';
+import { projectService } from '../../services/project.service';
 import { User, Phone, Mail, MapPin, Building, DollarSign, Calendar } from 'lucide-react';
 
 interface LeadFormModalProps {
@@ -48,9 +50,14 @@ export const LeadFormModal: React.FC<LeadFormModalProps> = ({
     notes: '',
   });
 
+  const [projects, setProjects] = useState<PropertyProject[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    projectService.list({ limit: 50 }).then((res) => setProjects(res.projects)).catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (initialData) {
@@ -300,13 +307,37 @@ export const LeadFormModal: React.FC<LeadFormModalProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <FormField label="Interested Project / Property">
-              <Input
-                name="interested_property"
-                placeholder="e.g. Skyline Grandeur"
-                value={formData.interested_property || ''}
-                onChange={handleChange}
-                disabled={isSubmitting}
-              />
+              <div className="space-y-1.5">
+                {projects.length > 0 && (
+                  <select
+                    onChange={(e) => {
+                      const selectedProj = projects.find((p) => p.id === e.target.value);
+                      if (selectedProj) {
+                        setFormData((prev) => ({
+                          ...prev,
+                          interested_property: selectedProj.name,
+                          preferred_location: prev.preferred_location || selectedProj.location,
+                        }));
+                      }
+                    }}
+                    className="w-full text-[11px] px-2 py-1 bg-slate-50 border border-slate-200 rounded text-slate-600 mb-1"
+                  >
+                    <option value="">-- Quick Pick Project --</option>
+                    {projects.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name} ({p.city})
+                      </option>
+                    ))}
+                  </select>
+                )}
+                <Input
+                  name="interested_property"
+                  placeholder="e.g. Skyline Grandeur"
+                  value={formData.interested_property || ''}
+                  onChange={handleChange}
+                  disabled={isSubmitting}
+                />
+              </div>
             </FormField>
 
             <FormField label="Purchase Timeline">

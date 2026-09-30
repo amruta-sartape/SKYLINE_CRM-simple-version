@@ -1,0 +1,50 @@
+import { Router } from 'express';
+import { ProjectController } from '../controllers/project.controller.js';
+import { requireAuth, requireRoles } from '../middleware/auth.middleware.js';
+import {
+  validateBody,
+  createProjectSchema,
+  updateProjectSchema,
+  createWingSchema,
+} from '../middleware/validation.middleware.js';
+import { UserRole } from '../types/index.js';
+
+const router = Router();
+
+// All project routes require authentication
+router.use(requireAuth);
+
+// Read endpoints: accessible to Admin, Employee, and Agent
+router.get('/', ProjectController.list);
+router.get('/:id', ProjectController.getById);
+router.get('/:id/wings', ProjectController.listWings);
+
+// Administrative mutations: Admin only
+router.post(
+  '/',
+  requireRoles(UserRole.ADMIN),
+  validateBody(createProjectSchema),
+  ProjectController.create
+);
+
+router.put(
+  '/:id',
+  requireRoles(UserRole.ADMIN),
+  validateBody(updateProjectSchema),
+  ProjectController.update
+);
+
+router.post(
+  '/:id/archive',
+  requireRoles(UserRole.ADMIN),
+  ProjectController.archive
+);
+
+router.post(
+  '/:id/wings',
+  requireRoles(UserRole.ADMIN),
+  validateBody(createWingSchema),
+  ProjectController.createWing
+);
+
+export const projectRoutes = router;

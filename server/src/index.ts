@@ -9,6 +9,9 @@ import portalRoutes from './routes/protected-sample.routes.js';
 import enquiryRoutes from './routes/enquiry.routes.js';
 import leadRoutes from './routes/lead.routes.js';
 import userRoutes from './routes/user.routes.js';
+import { projectRoutes } from './routes/project.routes.js';
+import { unitRoutes } from './routes/unit.routes.js';
+import { amenityRoutes } from './routes/amenity.routes.js';
 import { errorHandler } from './middleware/error.middleware.js';
 
 const app = express();
@@ -36,7 +39,7 @@ app.get('/api/health', (req, res) => {
     status: 'online',
     app: 'SKYLINE CRM API',
     version: '1.0.0',
-    phase: 'Phase 2 - Enquiry & Lead Management + Pipeline',
+    phase: 'Phase 3 - Property Catalog & Inventory Management',
     timestamp: new Date().toISOString(),
   });
 });
@@ -47,6 +50,9 @@ app.use('/api/portal', portalRoutes);
 app.use('/api/enquiries', enquiryRoutes);
 app.use('/api/leads', leadRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/projects', projectRoutes);
+app.use('/api/units', unitRoutes);
+app.use('/api/amenities', amenityRoutes);
 
 // Catch 404
 app.use('/api/*', (req, res) => {
