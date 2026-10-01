@@ -61,20 +61,20 @@
 /* Premium Real-Estate Architectural Background */
 .bg-skyline-architecture,
 .bg-grid-pattern-dark {
-  background-color: #0B1120;
+  background-color: #070D18;
   background-image: 
-    linear-gradient(180deg, rgba(11, 17, 32, 0.82) 0%, rgba(15, 23, 42, 0.92) 100%),
-    url('/src/assets/skyline-realestate-bg.svg');
+    linear-gradient(180deg, rgba(7, 13, 24, 0.35) 0%, rgba(11, 19, 36, 0.50) 100%),
+    url('/skyline-realestate-bg.svg');
   background-size: cover;
   background-position: center top;
   background-repeat: no-repeat;
 }
 
 .bg-skyline-architecture-fixed {
-  background-color: #0B1120;
+  background-color: #070D18;
   background-image: 
-    linear-gradient(180deg, rgba(11, 17, 32, 0.82) 0%, rgba(15, 23, 42, 0.92) 100%),
-    url('/src/assets/skyline-realestate-bg.svg');
+    linear-gradient(180deg, rgba(7, 13, 24, 0.35) 0%, rgba(11, 19, 36, 0.50) 100%),
+    url('/skyline-realestate-bg.svg');
   background-size: cover;
   background-position: center top;
   background-repeat: no-repeat;
@@ -84,10 +84,11 @@
 .bg-grid-pattern {
   background-color: #F8FAFC;
   background-image: 
-    linear-gradient(180deg, rgba(248, 250, 252, 0.92) 0%, rgba(241, 245, 249, 0.96) 100%),
-    url('/src/assets/skyline-realestate-bg.svg');
+    linear-gradient(180deg, rgba(248, 250, 252, 0.90) 0%, rgba(241, 245, 249, 0.95) 100%),
+    url('/skyline-realestate-bg.svg');
   background-size: cover;
   background-position: center top;
   background-repeat: no-repeat;
 }
+
 
