@@ -1,148 +1,277 @@
 import { PropertyProject, PropertyUnit } from '../types/property.types';
 
-export interface PropertyImageMeta {
-  imageUrl: string;
-  category: string;
-  badge: string;
+export interface GalleryImage {
+  url: string;
+  label: string;
+  category: 'Exterior' | 'Interior' | 'Amenities' | 'Entrance';
   altText: string;
 }
 
-/**
- * Photorealistic image mapping registry for Real Estate Projects & Units.
- * Connects database project/unit records to realistic architectural photography
- * with fallback mechanisms without altering the database schema.
- */
-const PROJECT_IMAGE_REGISTRY: Record<string, PropertyImageMeta> = {
-  // Skyline Bayview / Mumbai Coastal
-  proj_skyline_bayview: {
-    imageUrl: '/images/property-pinnacle.jpg',
-    category: 'Waterfront Luxury Residences',
-    badge: 'Signature Tower',
-    altText: 'Modern luxury residential building exterior with infinity pool at waterfront',
-  },
-  skb: {
-    imageUrl: '/images/property-pinnacle.jpg',
-    category: 'Waterfront Luxury Residences',
-    badge: 'Signature Tower',
-    altText: 'Modern luxury residential building exterior with infinity pool at waterfront',
-  },
-
-  // Skyline Heights / Pune IT Corridor
-  proj_skyline_heights: {
-    imageUrl: '/images/property-interior.jpg',
-    category: 'Ultra-Luxury High-Rise',
-    badge: 'Staged Living Suite',
-    altText: 'Ultra-luxury modern apartment living room with panoramic glass windows',
-  },
-  skh: {
-    imageUrl: '/images/property-interior.jpg',
-    category: 'Ultra-Luxury High-Rise',
-    badge: 'Staged Living Suite',
-    altText: 'Ultra-luxury modern apartment living room with panoramic glass windows',
-  },
-
-  // Skyline Grandeur / Bangalore Tech Corridor
-  proj_skyline_grandeur: {
-    imageUrl: '/images/property-penthouse.jpg',
-    category: 'Executive Penthouse & Suites',
-    badge: 'Rooftop Sky Lounge',
-    altText: 'Luxury penthouse outdoor terrace with panoramic skyline view at sunset',
-  },
-  skg: {
-    imageUrl: '/images/property-penthouse.jpg',
-    category: 'Executive Penthouse & Suites',
-    badge: 'Rooftop Sky Lounge',
-    altText: 'Luxury penthouse outdoor terrace with panoramic skyline view at sunset',
-  },
-
-  // Skyline Oasis / Hyderabad Enclave
-  proj_skyline_oasis: {
-    imageUrl: '/images/property-villa.jpg',
-    category: 'Boutique Sky Villas & Enclave',
-    badge: 'Exclusive Enclave',
-    altText: 'Modern luxury residential villa estate with infinity pool and manicured lawn',
-  },
-  sko: {
-    imageUrl: '/images/property-villa.jpg',
-    category: 'Boutique Sky Villas & Enclave',
-    badge: 'Exclusive Enclave',
-    altText: 'Modern luxury residential villa estate with infinity pool and manicured lawn',
-  },
-};
-
-const DEFAULT_IMAGES: PropertyImageMeta[] = [
-  {
-    imageUrl: '/images/property-pinnacle.jpg',
-    category: 'Luxury Apartment Complex',
-    badge: 'Modern Architecture',
-    altText: 'Modern residential tower with swimming pool and landscaped gardens',
-  },
-  {
-    imageUrl: '/images/property-interior.jpg',
-    category: 'Premium Interior Flat',
-    badge: 'Designer Interior',
-    altText: 'High-end interior staged living room with city view',
-  },
-  {
-    imageUrl: '/images/property-penthouse.jpg',
-    category: 'Skyline Penthouse',
-    badge: 'Panoramic Terrace',
-    altText: 'Penthouse rooftop terrace with evening city views',
-  },
-  {
-    imageUrl: '/images/property-villa.jpg',
-    category: 'Residential Luxury Villa',
-    badge: 'Private Estate',
-    altText: 'Contemporary villa estate with pool and landscape',
-  },
-];
-
-/**
- * Resolves a photorealistic real-estate image for a Project
- */
-export function getProjectImage(project?: Partial<PropertyProject> | null, index = 0): PropertyImageMeta {
-  if (project?.id && PROJECT_IMAGE_REGISTRY[project.id.toLowerCase()]) {
-    return PROJECT_IMAGE_REGISTRY[project.id.toLowerCase()];
-  }
-  if (project?.code && PROJECT_IMAGE_REGISTRY[project.code.toLowerCase()]) {
-    return PROJECT_IMAGE_REGISTRY[project.code.toLowerCase()];
-  }
-  if (project?.name) {
-    const nameLower = project.name.toLowerCase();
-    if (nameLower.includes('bayview') || nameLower.includes('coastal') || nameLower.includes('sea')) {
-      return PROJECT_IMAGE_REGISTRY.proj_skyline_bayview;
-    }
-    if (nameLower.includes('height') || nameLower.includes('tower') || nameLower.includes('imperial')) {
-      return PROJECT_IMAGE_REGISTRY.proj_skyline_heights;
-    }
-    if (nameLower.includes('grandeur') || nameLower.includes('penthouse') || nameLower.includes('pinnacle')) {
-      return PROJECT_IMAGE_REGISTRY.proj_skyline_grandeur;
-    }
-    if (nameLower.includes('oasis') || nameLower.includes('villa') || nameLower.includes('enclave') || nameLower.includes('green')) {
-      return PROJECT_IMAGE_REGISTRY.proj_skyline_oasis;
-    }
-  }
-  return DEFAULT_IMAGES[index % DEFAULT_IMAGES.length];
+export interface ProjectImageSet {
+  projectId: string;
+  cover: string;
+  category: string;
+  badge: string;
+  gallery: GalleryImage[];
 }
 
 /**
- * Resolves a photorealistic real-estate image for an Inventory Unit
+ * Deterministic Project-Specific Real Estate Image Galleries.
+ * Each project has its own unique 4-image set:
+ * 1. Exterior architectural building
+ * 2. Premium sample flat interior
+ * 3. Dedicated luxury amenities
+ * 4. Grand entrance / arrival court
  */
-export function getUnitImage(unit?: Partial<PropertyUnit> | null, index = 0): PropertyImageMeta {
-  if (unit?.configuration) {
-    const config = unit.configuration.toUpperCase();
-    if (config.includes('4 BHK') || config.includes('PENTHOUSE') || config.includes('DUPLEX')) {
-      return PROJECT_IMAGE_REGISTRY.proj_skyline_grandeur;
-    }
-    if (config.includes('3 BHK')) {
-      return PROJECT_IMAGE_REGISTRY.proj_skyline_heights;
-    }
-    if (config.includes('2 BHK') || config.includes('1 BHK')) {
-      return PROJECT_IMAGE_REGISTRY.proj_skyline_bayview;
-    }
-    if (config.includes('VILLA') || config.includes('PLOT')) {
-      return PROJECT_IMAGE_REGISTRY.proj_skyline_oasis;
-    }
+const PROJECT_GALLERY_CATALOG: Record<string, ProjectImageSet> = {
+  // 1. Skyline Bayview (Marine Drive, South Mumbai)
+  bayview: {
+    projectId: 'proj_skyline_bayview',
+    cover: '/images/projects/project-bayview/exterior.jpg',
+    category: 'Waterfront Super-Luxury Residences',
+    badge: 'Marine Drive Waterfront',
+    gallery: [
+      {
+        url: '/images/projects/project-bayview/exterior.jpg',
+        label: 'Coastal Tower Facade & Infinity Pool',
+        category: 'Exterior',
+        altText: 'Modern sea-facing luxury apartment building with infinity pool',
+      },
+      {
+        url: '/images/projects/project-bayview/interior.jpg',
+        label: 'Panoramic Living Room Suite',
+        category: 'Interior',
+        altText: 'Luxury staged living room with ocean view windows and marble flooring',
+      },
+      {
+        url: '/images/projects/project-bayview/amenities.jpg',
+        label: 'Rooftop Horizon Lounge',
+        category: 'Amenities',
+        altText: 'Infinity pool deck and private cabanas overlooking the bay',
+      },
+      {
+        url: '/images/projects/project-bayview/entrance.jpg',
+        label: 'Grand Porte-Cochère & Water Feature',
+        category: 'Entrance',
+        altText: 'Grand illuminated glass entrance lobby with architectural fountain',
+      },
+    ],
+  },
+
+  // 2. Skyline Heights (Kharadi IT Corridor, Pune)
+  heights: {
+    projectId: 'proj_skyline_heights',
+    cover: '/images/projects/project-heights/exterior.jpg',
+    category: 'Contemporary High-Rise Residences',
+    badge: 'Twin Skybridge Towers',
+    gallery: [
+      {
+        url: '/images/projects/project-heights/exterior.jpg',
+        label: 'Twin Glass Towers & Skybridge',
+        category: 'Exterior',
+        altText: 'Modern luxury twin residential glass towers with skybridge and plaza',
+      },
+      {
+        url: '/images/projects/project-heights/interior.jpg',
+        label: 'Designer 3 BHK Residence',
+        category: 'Interior',
+        altText: 'Contemporary warm-toned living room with floor-to-ceiling windows',
+      },
+      {
+        url: '/images/projects/project-heights/amenities.jpg',
+        label: 'Wellness & Fitness Club',
+        category: 'Amenities',
+        altText: 'State-of-the-art private residential gym and wellness center',
+      },
+      {
+        url: '/images/projects/project-heights/entrance.jpg',
+        label: 'Double-Height Arrival Lobby',
+        category: 'Entrance',
+        altText: 'Illuminated glass entrance lobby and tree-lined walkway',
+      },
+    ],
+  },
+
+  // 3. Skyline Grandeur (Whitefield Tech Corridor, Bangalore)
+  grandeur: {
+    projectId: 'proj_skyline_grandeur',
+    cover: '/images/projects/project-grandeur/exterior.jpg',
+    category: 'Eco-Luxury Terraced Condominiums',
+    badge: 'Vertical Forest Architecture',
+    gallery: [
+      {
+        url: '/images/projects/project-grandeur/exterior.jpg',
+        label: 'Terraced Eco-Architecture with Vertical Gardens',
+        category: 'Exterior',
+        altText: 'Modern luxury eco-friendly residential building with lush terraced gardens',
+      },
+      {
+        url: '/images/projects/project-grandeur/interior.jpg',
+        label: 'Spacious Panoramic Penthouse',
+        category: 'Interior',
+        altText: 'Elegant staged open-concept apartment with floor-to-ceiling windows',
+      },
+      {
+        url: '/images/projects/project-grandeur/amenities.jpg',
+        label: 'Rooftop Sunset Pergola Lounge',
+        category: 'Amenities',
+        altText: 'Rooftop outdoor terrace with glass railings and city sunset views',
+      },
+      {
+        url: '/images/projects/project-grandeur/entrance.jpg',
+        label: 'Botanical Arrival Court',
+        category: 'Entrance',
+        altText: 'Modern entrance courtyard with water fountain and ambient lighting',
+      },
+    ],
+  },
+
+  // 4. Skyline Oasis (Banjara Hills, Hyderabad)
+  oasis: {
+    projectId: 'proj_skyline_oasis',
+    cover: '/images/projects/project-oasis/exterior.jpg',
+    category: 'Boutique Sky Villas & Private Estates',
+    badge: 'Private Villa Enclave',
+    gallery: [
+      {
+        url: '/images/projects/project-oasis/exterior.jpg',
+        label: 'Contemporary Luxury Villa Estate',
+        category: 'Exterior',
+        altText: 'Modern residential villa with private infinity pool and manicured lawn',
+      },
+      {
+        url: '/images/projects/project-oasis/interior.jpg',
+        label: 'Master Bedroom Garden Suite',
+        category: 'Interior',
+        altText: 'Luxury villa master bedroom with sliding glass doors to reflecting pool',
+      },
+      {
+        url: '/images/projects/project-oasis/amenities.jpg',
+        label: 'Private Pool Pavilion & Sun Deck',
+        category: 'Amenities',
+        altText: 'Private resort-style swimming pool and lawn',
+      },
+      {
+        url: '/images/projects/project-oasis/entrance.jpg',
+        label: 'Gated Estate Entrance & Portico',
+        category: 'Entrance',
+        altText: 'Architectural entrance portico with reflecting fountain',
+      },
+    ],
+  },
+
+  // 5. Skyline Pinnacle Towers (Viman Nagar, Pune)
+  pinnacle: {
+    projectId: 'proj_skyline_pinnacle',
+    cover: '/images/projects/project-pinnacle/exterior.jpg',
+    category: 'Iconic Skyscraper Residences',
+    badge: 'Crown Spire Skyscraper',
+    gallery: [
+      {
+        url: '/images/projects/project-pinnacle/exterior.jpg',
+        label: 'Crystalline Skyscraper & Crown Spire',
+        category: 'Exterior',
+        altText: 'Iconic luxury residential tower with illuminated architectural crown at twilight',
+      },
+      {
+        url: '/images/projects/project-pinnacle/interior.jpg',
+        label: 'Sky Observatory Cocktail Lounge',
+        category: 'Interior',
+        altText: 'High-rise residential observatory lounge with panoramic city night view',
+      },
+      {
+        url: '/images/projects/project-pinnacle/amenities.jpg',
+        label: 'Skyline Terrace Deck',
+        category: 'Amenities',
+        altText: 'Luxury penthouse rooftop terrace with city views',
+      },
+      {
+        url: '/images/projects/project-pinnacle/entrance.jpg',
+        label: 'Grand Architectural Arrival Porte-Cochère',
+        category: 'Entrance',
+        altText: 'Double-height grand entrance with water feature and evening lights',
+      },
+    ],
+  },
+};
+
+const PROJECT_KEYS = ['bayview', 'heights', 'grandeur', 'oasis', 'pinnacle'];
+
+/**
+ * Deterministically maps any project to its distinct, dedicated image set.
+ * Uses normalized project name, project ID, or project code.
+ */
+export function getProjectImageSet(project?: Partial<PropertyProject> | null, fallbackIndex = 0): ProjectImageSet {
+  if (!project) {
+    const key = PROJECT_KEYS[fallbackIndex % PROJECT_KEYS.length];
+    return PROJECT_GALLERY_CATALOG[key];
   }
-  return DEFAULT_IMAGES[index % DEFAULT_IMAGES.length];
+
+  const name = (project.name || '').toLowerCase();
+  const code = (project.code || '').toLowerCase();
+  const id = (project.id || '').toLowerCase();
+
+  // 1. Direct Name / Key Matching
+  if (name.includes('bayview') || code === 'skb' || id.includes('bayview')) {
+    return PROJECT_GALLERY_CATALOG.bayview;
+  }
+  if (name.includes('height') || code === 'skh' || id.includes('height')) {
+    return PROJECT_GALLERY_CATALOG.heights;
+  }
+  if (name.includes('grandeur') || code === 'skg' || id.includes('grandeur')) {
+    return PROJECT_GALLERY_CATALOG.grandeur;
+  }
+  if (name.includes('oasis') || code === 'sko' || id.includes('oasis') || name.includes('villa')) {
+    return PROJECT_GALLERY_CATALOG.oasis;
+  }
+  if (name.includes('pinnacle') || code === 'skp' || id.includes('pinnacle')) {
+    return PROJECT_GALLERY_CATALOG.pinnacle;
+  }
+
+  // 2. Deterministic Hash Based on Project ID or Code (Guarantees different projects get different images)
+  const seedString = `${project.id || ''}_${project.code || ''}_${project.name || ''}_${fallbackIndex}`;
+  let hash = 0;
+  for (let i = 0; i < seedString.length; i++) {
+    hash = (hash << 5) - hash + seedString.charCodeAt(i);
+    hash |= 0;
+  }
+  const selectedIndex = Math.abs(hash + fallbackIndex) % PROJECT_KEYS.length;
+  const selectedKey = PROJECT_KEYS[selectedIndex];
+
+  return PROJECT_GALLERY_CATALOG[selectedKey];
+}
+
+/**
+ * Resolves single cover image metadata for backwards compatibility
+ */
+export function getProjectImage(project?: Partial<PropertyProject> | null, index = 0) {
+  const imageSet = getProjectImageSet(project, index);
+  return {
+    imageUrl: imageSet.cover,
+    category: imageSet.category,
+    badge: imageSet.badge,
+    altText: imageSet.gallery[0]?.altText || imageSet.badge,
+    gallery: imageSet.gallery,
+  };
+}
+
+/**
+ * Resolves unit image from configuration
+ */
+export function getUnitImage(unit?: Partial<PropertyUnit> | null, index = 0) {
+  const config = (unit?.configuration || '').toUpperCase();
+  if (config.includes('4 BHK') || config.includes('PENTHOUSE')) {
+    return PROJECT_GALLERY_CATALOG.pinnacle;
+  }
+  if (config.includes('3 BHK')) {
+    return PROJECT_GALLERY_CATALOG.heights;
+  }
+  if (config.includes('2 BHK') || config.includes('1 BHK')) {
+    return PROJECT_GALLERY_CATALOG.bayview;
+  }
+  if (config.includes('VILLA') || config.includes('PLOT')) {
+    return PROJECT_GALLERY_CATALOG.oasis;
+  }
+  const key = PROJECT_KEYS[index % PROJECT_KEYS.length];
+  return PROJECT_GALLERY_CATALOG[key];
 }

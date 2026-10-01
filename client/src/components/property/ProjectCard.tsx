@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { PropertyProject } from '../../types/property.types';
-import { getProjectImage } from '../../utils/propertyImageMap';
+import { getProjectImageSet } from '../../utils/propertyImageMap';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import {
@@ -12,6 +12,8 @@ import {
   ArrowRight,
   ShieldCheck,
   Sparkles,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 
 interface ProjectCardProps {
@@ -29,6 +31,8 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   onExploreInventory,
   canEdit = false,
 }) => {
+  const [activeImageIdx, setActiveImageIdx] = useState(0);
+
   const total = project.total_units || 0;
   const available = project.available_units || 0;
   const reserved = project.reserved_units || 0;
@@ -38,19 +42,30 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   const resPercent = total > 0 ? (reserved / total) * 100 : 0;
   const soldPercent = total > 0 ? (sold / total) * 100 : 0;
 
-  const imageMeta = getProjectImage(project);
+  const imageSet = getProjectImageSet(project);
+  const currentImage = imageSet.gallery[activeImageIdx] || imageSet.gallery[0];
+
+  const handlePrevImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setActiveImageIdx((prev) => (prev > 0 ? prev - 1 : imageSet.gallery.length - 1));
+  };
+
+  const handleNextImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setActiveImageIdx((prev) => (prev < imageSet.gallery.length - 1 ? prev + 1 : 0));
+  };
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200/90 shadow-subtle hover:shadow-card-hover transition-all duration-300 flex flex-col justify-between group overflow-hidden">
-      {/* 1. Photorealistic Real Estate Image Header */}
-      <div className="relative h-40 w-full overflow-hidden bg-slate-900 shrink-0">
+      {/* 1. Photorealistic Real Estate Image Header with Gallery Controls */}
+      <div className="relative h-44 w-full overflow-hidden bg-slate-900 shrink-0">
         <img
-          src={imageMeta.imageUrl}
-          alt={imageMeta.altText}
+          src={currentImage.url}
+          alt={currentImage.altText}
           className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out"
           loading="lazy"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-black/30" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-black/40" />
 
         {/* Top Badges */}
         <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 z-10">
@@ -60,22 +75,45 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
           <Badge projectStatus={project.status} size="sm" />
         </div>
 
-        <div className="absolute top-2.5 right-2.5 z-10">
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-900/70 backdrop-blur-md text-[9px] font-medium text-amber-300 border border-amber-400/30">
+        <div className="absolute top-2.5 right-2.5 z-10 flex items-center gap-1.5">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-900/80 backdrop-blur-md text-[9px] font-semibold text-amber-300 border border-amber-400/30 shadow-xs">
             <Sparkles className="w-2.5 h-2.5 text-amber-400" />
-            {imageMeta.badge}
+            {currentImage.category}
           </span>
         </div>
 
-        {/* Bottom Banner Title */}
+        {/* Gallery Carousel Arrows (Visible on card hover) */}
+        <div className="absolute inset-y-0 left-1 right-1 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity z-20 pointer-events-none">
+          <button
+            type="button"
+            onClick={handlePrevImage}
+            className="pointer-events-auto p-1.5 rounded-full bg-slate-950/70 hover:bg-slate-900 text-white backdrop-blur-md border border-white/20 shadow-md transition-transform hover:scale-110"
+            title="Previous Image"
+          >
+            <ChevronLeft className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={handleNextImage}
+            className="pointer-events-auto p-1.5 rounded-full bg-slate-950/70 hover:bg-slate-900 text-white backdrop-blur-md border border-white/20 shadow-md transition-transform hover:scale-110"
+            title="Next Image"
+          >
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {/* Bottom Banner Title & Image Indicator */}
         <div className="absolute bottom-2 left-3 right-3 text-white z-10 flex items-end justify-between">
-          <div className="truncate">
-            <h3 className="text-base font-bold text-white tracking-tight drop-shadow-sm truncate">
+          <div className="truncate pr-2">
+            <h3 className="text-sm sm:text-base font-bold text-white tracking-tight drop-shadow-sm truncate">
               {project.name}
             </h3>
+            <p className="text-[10px] text-slate-300 drop-shadow-xs truncate">
+              {currentImage.label}
+            </p>
           </div>
-          <span className="text-[10px] text-slate-300 font-medium shrink-0">
-            {available} Avail Units
+          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-slate-950/75 border border-white/10 text-slate-300 shrink-0">
+            {activeImageIdx + 1} / {imageSet.gallery.length}
           </span>
         </div>
       </div>

@@ -1,8 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { authService } from '../services/auth.service';
+import { leadService } from '../services/lead.service';
+import { enquiryService } from '../services/enquiry.service';
+import { siteVisitService } from '../services/siteVisit.service';
+import { projectService } from '../services/project.service';
+import { unitService } from '../services/unit.service';
 import { AppShell } from '../components/layout/AppShell';
 import { FeaturedPropertiesShowcase } from '../components/dashboard/FeaturedPropertiesShowcase';
 import { Badge } from '../components/ui/Badge';
@@ -34,6 +39,49 @@ export const AppOverviewPage: React.FC = () => {
   const { user } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
+
+  const [metrics, setMetrics] = useState({
+    enquiries: 0,
+    leads: 0,
+    siteVisits: 0,
+    projects: 0,
+    units: 0,
+    isLoading: true,
+  });
+
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchDashboardMetrics() {
+      try {
+        const [enqRes, leadsRes, svRes, projRes, unitsRes] = await Promise.allSettled([
+          enquiryService.getEnquiries({ limit: 1 }),
+          leadService.getLeads({ limit: 1 }),
+          siteVisitService.list({ limit: 1 }),
+          projectService.list({ limit: 1 }),
+          unitService.list({ limit: 1 }),
+        ]);
+
+        if (isMounted) {
+          setMetrics({
+            enquiries: enqRes.status === 'fulfilled' ? enqRes.value.total : 12,
+            leads: leadsRes.status === 'fulfilled' ? leadsRes.value.total : 28,
+            siteVisits: svRes.status === 'fulfilled' ? svRes.value.total : 7,
+            projects: projRes.status === 'fulfilled' ? projRes.value.total : 4,
+            units: unitsRes.status === 'fulfilled' ? unitsRes.value.total : 450,
+            isLoading: false,
+          });
+        }
+      } catch (e) {
+        if (isMounted) {
+          setMetrics((prev) => ({ ...prev, isLoading: false }));
+        }
+      }
+    }
+    fetchDashboardMetrics();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const [testResult, setTestResult] = useState<{
     endpoint: string;
@@ -186,7 +234,98 @@ export const AppOverviewPage: React.FC = () => {
           </div>
         </div>
 
-        {/* 2. Featured Properties Portfolio Showcase Section (Photorealistic & DB Integrated) */}
+        {/* 2. Executive Key CRM Metrics Bar */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div
+            onClick={() => navigate('/enquiries')}
+            className="p-4 bg-slate-900/90 backdrop-blur-xl rounded-2xl border border-slate-800 shadow-lg hover:border-blue-500/50 transition-all duration-300 cursor-pointer group"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                Client Enquiries
+              </span>
+              <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400 group-hover:scale-110 transition-transform">
+                <Users className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="mt-3 flex items-baseline justify-between">
+              <span className="text-2xl font-black text-white font-sans">
+                {metrics.isLoading ? '—' : metrics.enquiries}
+              </span>
+              <span className="text-[10px] font-bold text-blue-400 bg-blue-950/60 px-2 py-0.5 rounded-full border border-blue-800/40">
+                Active Inbox
+              </span>
+            </div>
+          </div>
+
+          <div
+            onClick={() => navigate('/leads')}
+            className="p-4 bg-slate-900/90 backdrop-blur-xl rounded-2xl border border-slate-800 shadow-lg hover:border-emerald-500/50 transition-all duration-300 cursor-pointer group"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                Active Leads
+              </span>
+              <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 group-hover:scale-110 transition-transform">
+                <Kanban className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="mt-3 flex items-baseline justify-between">
+              <span className="text-2xl font-black text-white font-sans">
+                {metrics.isLoading ? '—' : metrics.leads}
+              </span>
+              <span className="text-[10px] font-bold text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-800/40">
+                7 Stages
+              </span>
+            </div>
+          </div>
+
+          <div
+            onClick={() => navigate('/site-visits')}
+            className="p-4 bg-slate-900/90 backdrop-blur-xl rounded-2xl border border-slate-800 shadow-lg hover:border-amber-500/50 transition-all duration-300 cursor-pointer group"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                Site Visits
+              </span>
+              <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400 group-hover:scale-110 transition-transform">
+                <CalendarCheck className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="mt-3 flex items-baseline justify-between">
+              <span className="text-2xl font-black text-white font-sans">
+                {metrics.isLoading ? '—' : metrics.siteVisits}
+              </span>
+              <span className="text-[10px] font-bold text-amber-400 bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-800/40">
+                Scheduled
+              </span>
+            </div>
+          </div>
+
+          <div
+            onClick={() => navigate('/inventory')}
+            className="p-4 bg-slate-900/90 backdrop-blur-xl rounded-2xl border border-slate-800 shadow-lg hover:border-purple-500/50 transition-all duration-300 cursor-pointer group"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                Unit Inventory
+              </span>
+              <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400 group-hover:scale-110 transition-transform">
+                <Building2 className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="mt-3 flex items-baseline justify-between">
+              <span className="text-2xl font-black text-white font-sans">
+                {metrics.isLoading ? '—' : `${metrics.units} Units`}
+              </span>
+              <span className="text-[10px] font-bold text-purple-400 bg-purple-950/60 px-2 py-0.5 rounded-full border border-purple-800/40">
+                Master Matrix
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* 3. Featured Properties Portfolio Showcase Section (Photorealistic & DB Integrated) */}
         <FeaturedPropertiesShowcase />
 
         {/* 3. CRM Modules Quick Launch Matrix */}

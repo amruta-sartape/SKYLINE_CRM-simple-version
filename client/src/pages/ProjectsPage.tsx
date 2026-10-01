@@ -6,6 +6,7 @@ import type { PropertyProject, ProjectFormData } from '../types/property.types';
 import { ProjectCard } from '../components/property/ProjectCard';
 import { ProjectFormModal } from '../components/property/ProjectFormModal';
 import { ProjectDetailModal } from '../components/property/ProjectDetailModal';
+import { getProjectImage } from '../utils/propertyImageMap';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Alert } from '../components/ui/Alert';
@@ -341,12 +342,24 @@ export const ProjectsPage: React.FC = () => {
 
                   return (
                     <tr key={p.id} className="hover:bg-slate-50/70 transition-colors">
-                      <td className="py-3.5 px-4">
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-[10px] font-bold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded border border-slate-200">
-                            {p.code}
-                          </span>
-                          <span className="font-bold text-slate-900">{p.name}</span>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-2.5">
+                          <img
+                            src={getProjectImage(p).imageUrl}
+                            alt={p.name}
+                            className="w-9 h-9 rounded-lg object-cover border border-slate-200 shrink-0 shadow-2xs"
+                          />
+                          <div>
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-mono text-[9px] font-bold bg-slate-100 text-slate-600 px-1.5 py-0.2 rounded border border-slate-200">
+                                {p.code}
+                              </span>
+                              <span className="font-bold text-slate-900">{p.name}</span>
+                            </div>
+                            <span className="text-[10px] text-slate-400 block mt-0.5">
+                              {getProjectImage(p).badge}
+                            </span>
+                          </div>
                         </div>
                       </td>
                       <td className="py-3.5 px-4 text-slate-600">
