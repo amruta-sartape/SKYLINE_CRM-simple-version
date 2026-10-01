@@ -34,6 +34,7 @@ export interface PropertyTypeMetadata {
   description: string;
   iconName: string;
   tag: string;
+  image: string;
 }
 
 export interface ResidentialSpecs {
@@ -94,7 +95,7 @@ export interface DiscoveryProperty {
   price: number;
   priceLabel: string;
   pricePerSqft?: number;
-  availability: UnitAvailability | 'Ready to Move' | 'Under Construction' | 'Immediate Possession';
+  availability: UnitAvailability | 'Ready to Move' | 'Under Construction' | 'Immediate Possession' | string;
   status: ProjectStatus;
   images: {
     cover: string;

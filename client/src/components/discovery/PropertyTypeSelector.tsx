@@ -5,25 +5,7 @@ import {
 } from '../../types/discovery.types';
 import { PROPERTY_TYPES_CATALOG, MAIN_CATEGORIES } from '../../utils/discoveryData';
 import {
-  Building2,
-  Home,
-  Palmtree,
-  Rows,
-  Landmark,
   Sparkles,
-  Compass,
-  MapPin,
-  Maximize2,
-  Trees,
-  Briefcase,
-  ShoppingBag,
-  Store,
-  Building,
-  Boxes,
-  Layers,
-  Share2,
-  Network,
-  Shield,
   Search,
 } from 'lucide-react';
 
@@ -35,28 +17,6 @@ interface PropertyTypeSelectorProps {
   countsBySubtype: Record<string, number>;
   totalCount: number;
 }
-
-const ICON_MAP: Record<string, React.ReactNode> = {
-  Building2: <Building2 className="w-4 h-4" />,
-  Home: <Home className="w-4 h-4" />,
-  Palmtree: <Palmtree className="w-4 h-4" />,
-  Rows: <Rows className="w-4 h-4" />,
-  Landmark: <Landmark className="w-4 h-4" />,
-  Sparkles: <Sparkles className="w-4 h-4" />,
-  Compass: <Compass className="w-4 h-4" />,
-  MapPin: <MapPin className="w-4 h-4" />,
-  Maximize2: <Maximize2 className="w-4 h-4" />,
-  Trees: <Trees className="w-4 h-4" />,
-  Briefcase: <Briefcase className="w-4 h-4" />,
-  ShoppingBag: <ShoppingBag className="w-4 h-4" />,
-  Store: <Store className="w-4 h-4" />,
-  Building: <Building className="w-4 h-4" />,
-  Boxes: <Boxes className="w-4 h-4" />,
-  Layers: <Layers className="w-4 h-4" />,
-  Share2: <Share2 className="w-4 h-4" />,
-  Network: <Network className="w-4 h-4" />,
-  Shield: <Shield className="w-4 h-4" />,
-};
 
 export const PropertyTypeSelector: React.FC<PropertyTypeSelectorProps> = ({
   selectedCategory,
@@ -142,62 +102,79 @@ export const PropertyTypeSelector: React.FC<PropertyTypeSelectorProps> = ({
           )}
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 gap-2.5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-3">
           {filteredTypes.map((typeMeta) => {
             const isSelected = selectedSubtype === typeMeta.id;
             const count = countsBySubtype[typeMeta.id] || 0;
-            const icon = ICON_MAP[typeMeta.iconName] || <Building2 className="w-4 h-4" />;
 
             return (
               <button
                 key={typeMeta.id}
                 type="button"
                 onClick={() => onSelectSubtype(isSelected ? null : typeMeta.id)}
-                className={`p-3 rounded-xl border transition-all flex flex-col justify-between text-left group relative overflow-hidden ${
+                className={`h-32 sm:h-36 rounded-xl border transition-all duration-300 flex flex-col justify-between p-3 text-left group relative overflow-hidden shadow-md cursor-pointer ${
                   isSelected
-                    ? 'bg-slate-900 border-amber-400/80 ring-2 ring-amber-400/20 shadow-lg shadow-amber-500/10'
-                    : 'bg-slate-900/80 hover:bg-slate-900 border-slate-800/90 hover:border-slate-700 shadow-sm hover:shadow-md'
+                    ? 'border-amber-400 ring-2 ring-amber-400/50 shadow-xl shadow-amber-500/20 scale-[1.02]'
+                    : 'border-slate-800/90 hover:border-slate-600 hover:shadow-xl hover:scale-[1.01]'
                 }`}
               >
+                {/* 1. Real Property Image Background */}
+                <img
+                  src={typeMeta.image}
+                  alt={typeMeta.label}
+                  className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700 ease-out"
+                  loading="lazy"
+                />
+
+                {/* 2. Subtle Dark Gradient Overlay for Readability */}
+                <div
+                  className={`absolute inset-0 transition-colors duration-300 ${
+                    isSelected
+                      ? 'bg-gradient-to-t from-slate-950 via-slate-950/70 to-black/35'
+                      : 'bg-gradient-to-t from-slate-950 via-slate-950/75 to-black/45 group-hover:via-slate-950/60'
+                  }`}
+                />
+
+                {/* 3. Active Selection Ring & Corner Badge */}
                 {isSelected && (
-                  <span className="absolute top-0 right-0 w-2 h-2 rounded-bl bg-amber-400 shadow-sm shadow-amber-400" />
+                  <div className="absolute inset-0 bg-amber-500/10 border-2 border-amber-400 rounded-xl pointer-events-none" />
                 )}
 
-                <div className="flex items-center justify-between w-full">
-                  <div
-                    className={`p-2 rounded-lg transition-transform group-hover:scale-105 ${
+                {/* 4. Top Row: Category Tag & Available Count */}
+                <div className="relative z-10 flex items-center justify-between w-full">
+                  <span
+                    className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded backdrop-blur-md transition-colors ${
                       isSelected
-                        ? 'bg-amber-500/20 text-amber-300 border border-amber-400/30'
-                        : 'bg-slate-950 text-slate-400 group-hover:text-brand-400 border border-slate-800'
+                        ? 'bg-amber-400 text-slate-950 font-black shadow-xs'
+                        : 'bg-black/65 text-slate-300 border border-white/10'
                     }`}
                   >
-                    {icon}
-                  </div>
+                    {typeMeta.category}
+                  </span>
 
                   <span
-                    className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-full ${
+                    className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full backdrop-blur-md shadow-xs ${
                       isSelected
-                        ? 'bg-amber-500/20 text-amber-300 border border-amber-400/30'
-                        : 'bg-slate-950 text-slate-500 border border-slate-800'
+                        ? 'bg-amber-400 text-slate-950 font-black'
+                        : 'bg-black/75 text-amber-300 border border-amber-400/30'
                     }`}
                   >
                     {count}
                   </span>
                 </div>
 
-                <div className="mt-3">
-                  <span
-                    className={`text-xs font-bold block truncate ${
-                      isSelected
-                        ? 'text-white'
-                        : 'text-slate-200 group-hover:text-brand-300 transition-colors'
+                {/* 5. Bottom Row: Property Name & Description */}
+                <div className="relative z-10 space-y-0.5">
+                  <h4
+                    className={`text-xs sm:text-sm font-extrabold truncate drop-shadow-md transition-colors ${
+                      isSelected ? 'text-amber-300' : 'text-white group-hover:text-brand-300'
                     }`}
                   >
                     {typeMeta.label}
-                  </span>
-                  <span className="text-[10px] text-slate-500 block truncate mt-0.5">
-                    {typeMeta.tag}
-                  </span>
+                  </h4>
+                  <p className="text-[10px] text-slate-300 line-clamp-1 leading-snug drop-shadow font-normal">
+                    {typeMeta.description}
+                  </p>
                 </div>
               </button>
             );

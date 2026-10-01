@@ -16,6 +16,7 @@ export const PROPERTY_TYPES_CATALOG: PropertyTypeMetadata[] = [
     description: 'High-rise residential units with shared amenities & concierge',
     iconName: 'Building2',
     tag: 'High-Rise Living',
+    image: '/images/classifications/apartment.jpg',
   },
   {
     id: 'Flat',
@@ -24,6 +25,7 @@ export const PROPERTY_TYPES_CATALOG: PropertyTypeMetadata[] = [
     description: 'Contemporary multi-family flats in urban residential blocks',
     iconName: 'Home',
     tag: 'Urban Homes',
+    image: '/images/classifications/flat.jpg',
   },
   {
     id: 'Villa',
@@ -32,6 +34,7 @@ export const PROPERTY_TYPES_CATALOG: PropertyTypeMetadata[] = [
     description: 'Independent luxury homes with private lawns & pool decks',
     iconName: 'Palmtree',
     tag: 'Private Luxury',
+    image: '/images/classifications/villa.jpg',
   },
   {
     id: 'Row House',
@@ -40,6 +43,7 @@ export const PROPERTY_TYPES_CATALOG: PropertyTypeMetadata[] = [
     description: 'Multi-level attached homes with dedicated parking & private gardens',
     iconName: 'Rows',
     tag: 'Community Enclave',
+    image: '/images/classifications/row-house.jpg',
   },
   {
     id: 'Bungalow',
@@ -48,6 +52,7 @@ export const PROPERTY_TYPES_CATALOG: PropertyTypeMetadata[] = [
     description: 'Sprawling single or double-storey standalone estates',
     iconName: 'Landmark',
     tag: 'Estate Living',
+    image: '/images/classifications/bungalow.jpg',
   },
   {
     id: 'Penthouse',
@@ -56,6 +61,7 @@ export const PROPERTY_TYPES_CATALOG: PropertyTypeMetadata[] = [
     description: 'Top-floor sky suites with panoramic horizon views & terraces',
     iconName: 'Sparkles',
     tag: 'Sky Luxury',
+    image: '/images/classifications/penthouse.jpg',
   },
   {
     id: 'Studio',
@@ -64,6 +70,7 @@ export const PROPERTY_TYPES_CATALOG: PropertyTypeMetadata[] = [
     description: 'Smart compact living spaces optimized for urban professionals',
     iconName: 'Compass',
     tag: 'Compact Living',
+    image: '/images/classifications/studio.jpg',
   },
 
   // Land (3 types)
@@ -74,6 +81,7 @@ export const PROPERTY_TYPES_CATALOG: PropertyTypeMetadata[] = [
     description: 'Clear-title NA freehold residential land parcels with road frontage',
     iconName: 'MapPin',
     tag: 'Build Custom',
+    image: '/images/classifications/residential-plot.jpg',
   },
   {
     id: 'Commercial Plot',
@@ -82,6 +90,7 @@ export const PROPERTY_TYPES_CATALOG: PropertyTypeMetadata[] = [
     description: 'High-FSI commercial zoned plots on major transit corridors',
     iconName: 'Maximize2',
     tag: 'High FSI Land',
+    image: '/images/classifications/commercial-plot.jpg',
   },
   {
     id: 'Farm Land',
@@ -90,6 +99,7 @@ export const PROPERTY_TYPES_CATALOG: PropertyTypeMetadata[] = [
     description: 'Scenic fertile agricultural & agro-tourism land with water access',
     iconName: 'Trees',
     tag: 'Agro & Retreat',
+    image: '/images/classifications/farm-land.jpg',
   },
 
   // Commercial (5 types)
@@ -100,6 +110,7 @@ export const PROPERTY_TYPES_CATALOG: PropertyTypeMetadata[] = [
     description: 'Grade-A corporate office suites, IT parks & co-working floors',
     iconName: 'Briefcase',
     tag: 'Corporate Space',
+    image: '/images/classifications/office.jpg',
   },
   {
     id: 'Shop / Retail',
@@ -108,6 +119,7 @@ export const PROPERTY_TYPES_CATALOG: PropertyTypeMetadata[] = [
     description: 'High-footfall ground retail storefronts in shopping arcades',
     iconName: 'ShoppingBag',
     tag: 'High Footfall',
+    image: '/images/classifications/shop.jpg',
   },
   {
     id: 'Showroom',
@@ -116,6 +128,7 @@ export const PROPERTY_TYPES_CATALOG: PropertyTypeMetadata[] = [
     description: 'Double-height glass-front retail flagship display spaces',
     iconName: 'Store',
     tag: 'Main Road Facing',
+    image: '/images/classifications/showroom.jpg',
   },
   {
     id: 'Commercial Building',
@@ -124,6 +137,7 @@ export const PROPERTY_TYPES_CATALOG: PropertyTypeMetadata[] = [
     description: 'Standalone multi-storey commercial towers for single or multi-tenants',
     iconName: 'Building',
     tag: 'Standalone Tower',
+    image: '/images/classifications/commercial-building.jpg',
   },
   {
     id: 'Warehouse',
@@ -132,6 +146,7 @@ export const PROPERTY_TYPES_CATALOG: PropertyTypeMetadata[] = [
     description: 'Industrial grade logistics hubs with heavy loading bays & high clear height',
     iconName: 'Boxes',
     tag: 'Logistics Hub',
+    image: '/images/classifications/warehouse.jpg',
   },
 
   // Projects (4 types)
@@ -142,6 +157,7 @@ export const PROPERTY_TYPES_CATALOG: PropertyTypeMetadata[] = [
     description: 'Integrated business tech parks with retail hubs & conventions',
     iconName: 'Layers',
     tag: 'Business District',
+    image: '/images/classifications/commercial-project.jpg',
   },
   {
     id: 'Mixed-use Project',
@@ -150,6 +166,7 @@ export const PROPERTY_TYPES_CATALOG: PropertyTypeMetadata[] = [
     description: 'Vibrant developments combining residential, retail & office towers',
     iconName: 'Share2',
     tag: 'Live-Work-Play',
+    image: '/images/classifications/mixed-use.jpg',
   },
   {
     id: 'Township',
@@ -158,6 +175,7 @@ export const PROPERTY_TYPES_CATALOG: PropertyTypeMetadata[] = [
     description: 'Master-planned self-contained townships with schools & hospitals',
     iconName: 'Network',
     tag: 'Integrated Living',
+    image: '/images/classifications/township.jpg',
   },
   {
     id: 'Gated Community',
@@ -166,6 +184,7 @@ export const PROPERTY_TYPES_CATALOG: PropertyTypeMetadata[] = [
     description: 'Exclusive multi-acre gated enclaves with private clubhouses',
     iconName: 'Shield',
     tag: 'Secure Enclave',
+    image: '/images/classifications/gated-community.jpg',
   },
 ];
 
@@ -196,6 +215,7 @@ export function formatPrice(val: number): string {
 /**
  * Builds a comprehensive list of customer discovery properties by merging
  * real database Project/Unit records and realistic typed catalog properties.
+ * Every individual property has its own unique, non-overlapping image set.
  */
 export function buildDiscoveryCatalog(
   dbProjects: PropertyProject[] = [],
@@ -203,86 +223,81 @@ export function buildDiscoveryCatalog(
 ): DiscoveryProperty[] {
   const items: DiscoveryProperty[] = [];
 
-  // 1. Convert real database units into rich discovery properties
-  dbUnits.forEach((unit, idx) => {
-    const parentProject = dbProjects.find((p) => p.id === unit.project_id);
-    const projectName = parentProject?.name || unit.project_name || 'Skyline Bayview Heights';
-    const location = parentProject?.location || 'Marine Drive';
-    const city = parentProject?.city || unit.project_city || 'Mumbai';
-    const developer = parentProject?.developer || 'Skyline Infrastructure Group';
+  // 1. Convert real database projects into premier discovery properties
+  // (Ensures each project from Phase 3 has a dedicated, unique 4-image set)
+  if (dbProjects.length > 0) {
+    dbProjects.forEach((proj, idx) => {
+      const projectUnits = dbUnits.filter((u) => u.project_id === proj.id);
+      const minPrice = projectUnits.length > 0 ? Math.min(...projectUnits.map((u) => u.price)) : 16500000;
+      const maxPrice = projectUnits.length > 0 ? Math.max(...projectUnits.map((u) => u.price)) : 38000000;
+      const availableUnitsCount = projectUnits.filter((u) => u.availability_status === 'Available').length;
 
-    const config = (unit.configuration || '2 BHK').toUpperCase();
-    let subtype: PropertySubtype = 'Apartment';
-    let mainCategory: Exclude<PropertyMainCategory, 'All'> = 'Residential';
+      const name = proj.name.toLowerCase();
+      let subtype: PropertySubtype = 'Apartment';
+      let mainCategory: Exclude<PropertyMainCategory, 'All'> = 'Residential';
 
-    if (config.includes('PENTHOUSE')) {
-      subtype = 'Penthouse';
-    } else if (config.includes('VILLA')) {
-      subtype = 'Villa';
-    } else if (config.includes('STUDIO')) {
-      subtype = 'Studio';
-    } else if (config.includes('FLAT') || config.includes('1 BHK')) {
-      subtype = 'Flat';
-    } else if (config.includes('OFFICE')) {
-      subtype = 'Office';
-      mainCategory = 'Commercial';
-    }
+      if (name.includes('oasis') || name.includes('villa')) {
+        subtype = 'Villa';
+      } else if (name.includes('pinnacle')) {
+        subtype = 'Penthouse';
+      } else if (name.includes('heights') || name.includes('grandeur')) {
+        subtype = 'Flat';
+      }
 
-    const imgSet = getProjectImageSet(parentProject, idx);
+      const imgSet = getProjectImageSet(proj, idx);
 
-    const priceSqft = unit.carpet_area > 0 ? Math.round(unit.price / unit.carpet_area) : undefined;
+      const propItem: DiscoveryProperty = {
+        id: `prop_proj_${proj.id}`,
+        title: proj.name,
+        code: proj.code,
+        mainCategory,
+        subtype,
+        location: proj.location,
+        city: proj.city,
+        state: proj.state,
+        developer: proj.developer,
+        price: minPrice,
+        priceLabel: minPrice === maxPrice ? formatPrice(minPrice) : `From ${formatPrice(minPrice)}`,
+        pricePerSqft: Math.round(minPrice / 1250),
+        availability: availableUnitsCount > 0 ? `${availableUnitsCount} Units Ready` : 'Ready to Move',
+        status: proj.status,
+        images: {
+          cover: imgSet.cover,
+          gallery: imgSet.gallery,
+        },
+        highlights: [
+          `${proj.total_wings || 4} Residential Wings`,
+          `${proj.total_units || 48} Luxury Units`,
+          'Concierge & 5-Star Amenities',
+          'RERA Approved Development',
+        ],
+        description:
+          proj.description ||
+          `Iconic architectural residential development by ${proj.developer} situated in prime ${proj.location}, ${proj.city}. Featuring luxury residences, lifestyle clubhouses, and world-class landscaping.`,
+        featured: true,
+        linkedProjectId: proj.id,
+        residentialSpecs: {
+          bhk: subtype === 'Villa' ? '4 & 5 BHK Sky Villas' : subtype === 'Penthouse' ? '4 BHK Duplex Penthouse' : '2 & 3 BHK Luxury Residences',
+          bedrooms: subtype === 'Villa' ? 5 : subtype === 'Penthouse' ? 4 : 3,
+          bathrooms: subtype === 'Villa' ? 6 : subtype === 'Penthouse' ? 5 : 3,
+          carpetArea: subtype === 'Villa' ? 3400 : subtype === 'Penthouse' ? 2850 : 1350,
+          builtUpArea: subtype === 'Villa' ? 4200 : subtype === 'Penthouse' ? 3600 : 1750,
+          plotArea: subtype === 'Villa' ? 4500 : undefined,
+          floor: subtype === 'Penthouse' ? 'Top Levels (27-28)' : '14th Floor',
+          totalFloors: 28,
+          parking: '2 Covered Basement Slots',
+          societyOrProject: proj.name,
+          facing: 'East Facing Vastu',
+          terraceArea: subtype === 'Penthouse' ? 580 : undefined,
+        },
+      };
 
-    const discProp: DiscoveryProperty = {
-      id: `prop_unit_${unit.id}`,
-      title: `${unit.configuration} Unit ${unit.unit_number} at ${projectName}`,
-      code: unit.unit_number,
-      mainCategory,
-      subtype,
-      location,
-      city,
-      state: parentProject?.state || 'Maharashtra',
-      developer,
-      price: unit.price,
-      priceLabel: formatPrice(unit.price),
-      pricePerSqft: priceSqft,
-      availability: unit.availability_status,
-      status: parentProject?.status || 'Active',
-      images: {
-        cover: imgSet.cover,
-        gallery: imgSet.gallery,
-      },
-      highlights: [
-        `${unit.carpet_area} sq.ft Carpet Area`,
-        `Floor ${unit.floor} of ${parentProject?.total_wings ? parentProject.total_wings * 10 : 24}`,
-        `${unit.parking_type} Parking`,
-        unit.facing ? `${unit.facing} Facing` : 'Vastu Compliant',
-      ],
-      description:
-        unit.description ||
-        `Exquisitely designed ${unit.configuration} home in ${projectName}, ${location}, ${city}. Featuring panoramic views, premium finishes, and world-class residential amenities.`,
-      featured: idx < 3,
-      linkedProjectId: parentProject?.id,
-      linkedUnitId: unit.id,
-      residentialSpecs: {
-        bhk: unit.configuration,
-        bedrooms: parseInt(unit.configuration) || 2,
-        bathrooms: (parseInt(unit.configuration) || 2) + (unit.configuration.includes('4') ? 1 : 0),
-        carpetArea: unit.carpet_area || 1150,
-        builtUpArea: unit.built_up_area || Math.round((unit.carpet_area || 1150) * 1.3),
-        floor: unit.floor || 8,
-        totalFloors: 28,
-        parking: unit.parking_type === 'Included' ? '1 Covered Carport' : 'Optional Stack Parking',
-        societyOrProject: projectName,
-        facing: unit.facing || 'East Facing',
-        terraceArea: subtype === 'Penthouse' ? 450 : undefined,
-      },
-    };
+      items.push(propItem);
+    });
+  }
 
-    items.push(discProp);
-  });
-
-  // 2. Add realistic, high-grade typed discovery properties for remaining subtypes
-  // (Ensuring every single property subtype in the catalog has authentic, type-specific cards)
+  // 2. Add realistic, high-grade typed discovery properties for all remaining classifications
+  // (Ensuring every single property subtype in the catalog has authentic, type-specific cards with unique images)
   const supplementalProperties: DiscoveryProperty[] = [
     // --- RESIDENTIAL SUBTYPES ---
     {
@@ -301,25 +316,31 @@ export function buildDiscoveryCatalog(
       availability: 'Ready to Move',
       status: 'Active',
       images: {
-        cover: '/images/projects/project-oasis/exterior.jpg',
+        cover: '/images/properties/prop_res_row_01/cover.jpg',
         gallery: [
           {
-            url: '/images/projects/project-oasis/exterior.jpg',
+            url: '/images/properties/prop_res_row_01/cover.jpg',
             label: 'Private Garden Row House Facade',
             category: 'Exterior',
             altText: 'Modern multi-level row house with private lawn and parking',
           },
           {
-            url: '/images/projects/project-oasis/interior.jpg',
+            url: '/images/properties/prop_res_row_01/living.jpg',
             label: 'Open-Concept Living & Dining',
             category: 'Interior',
             altText: 'Spacious sunlit living room opening to backyard garden',
           },
           {
-            url: '/images/projects/project-heights/amenities.jpg',
+            url: '/images/properties/prop_res_row_01/amenities.jpg',
             label: 'Clubhouse & Tennis Court',
             category: 'Amenities',
             altText: 'Exclusive community clubhouse and landscaped grounds',
+          },
+          {
+            url: '/images/properties/prop_res_row_01/entrance.jpg',
+            label: 'Gated Boulevard Entrance',
+            category: 'Entrance',
+            altText: 'Gated entrance with paved driveway and landscape',
           },
         ],
       },
@@ -363,25 +384,31 @@ export function buildDiscoveryCatalog(
       availability: 'Immediate Possession',
       status: 'Active',
       images: {
-        cover: '/images/property-villa.jpg',
+        cover: '/images/properties/prop_res_bung_01/cover.jpg',
         gallery: [
           {
-            url: '/images/property-villa.jpg',
+            url: '/images/properties/prop_res_bung_01/cover.jpg',
             label: 'Bungalow Front Elevation & Lawns',
             category: 'Exterior',
             altText: 'Expansive private bungalow estate with manicured trees and circular driveway',
           },
           {
-            url: '/images/projects/project-oasis/interior.jpg',
+            url: '/images/properties/prop_res_bung_01/interior.jpg',
             label: 'Grand Double-Height Foyer',
             category: 'Interior',
             altText: 'Double-height living pavilion with imported marble floors',
           },
           {
-            url: '/images/projects/project-oasis/amenities.jpg',
-            label: 'Private Heated Plunge Pool',
+            url: '/images/properties/prop_res_bung_01/terrace.jpg',
+            label: 'Private Sky Pavilion & Deck',
             category: 'Amenities',
-            altText: 'Private swimming pool and poolside gazebo',
+            altText: 'Private outdoor lounge terrace overlooking lush estate grounds',
+          },
+          {
+            url: '/images/properties/prop_res_bung_01/entrance.jpg',
+            label: 'Grand Estate Portico',
+            category: 'Entrance',
+            altText: 'Private estate grand arrival gate and water feature',
           },
         ],
       },
@@ -409,6 +436,72 @@ export function buildDiscoveryCatalog(
         terraceArea: 850,
       },
     },
+    {
+      id: 'prop_res_studio_01',
+      title: 'Skyline SkyLoft Designer 1 BHK Studio Apartment',
+      code: 'SK-LOFT-402',
+      mainCategory: 'Residential',
+      subtype: 'Studio',
+      location: 'Indiranagar 100 ft Road',
+      city: 'Bangalore',
+      state: 'Karnataka',
+      developer: 'Skyline Lifestyle Homes',
+      price: 6800000,
+      priceLabel: '₹68.0 L',
+      pricePerSqft: 12360,
+      availability: 'Ready to Move',
+      status: 'Active',
+      images: {
+        cover: '/images/properties/prop_res_studio_01/cover.jpg',
+        gallery: [
+          {
+            url: '/images/properties/prop_res_studio_01/cover.jpg',
+            label: 'Open Plan Studio Loft',
+            category: 'Interior',
+            altText: 'Modern sunlit compact studio apartment with hardwood floors and city views',
+          },
+          {
+            url: '/images/properties/prop_res_studio_01/interior.jpg',
+            label: 'Integrated Kitchenette & Bar',
+            category: 'Interior',
+            altText: 'Sleek modular kitchenette with built-in appliances',
+          },
+          {
+            url: '/images/properties/prop_res_studio_01/amenities.jpg',
+            label: 'Rooftop Coworking & Cafe',
+            category: 'Amenities',
+            altText: 'Rooftop lounge, cafe, and high-speed Wi-Fi co-working pods',
+          },
+          {
+            url: '/images/properties/prop_res_studio_01/entrance.jpg',
+            label: 'Smart Keyless Building Entrance',
+            category: 'Entrance',
+            altText: 'Contemporary entrance lobby with smart digital access',
+          },
+        ],
+      },
+      highlights: [
+        '550 sq.ft Smart Studio Loft',
+        'Fully Furnished Modular Setup',
+        'High Rental Yield 6.2%',
+        'Smart Home Automation Included',
+      ],
+      description:
+        'Designer boutique studio apartment in the heart of Indiranagar. Ideal for tech entrepreneurs, young professionals, and high-yield real estate investors.',
+      featured: false,
+      residentialSpecs: {
+        bhk: 'Studio 1 RK',
+        bedrooms: 1,
+        bathrooms: 1,
+        carpetArea: 420,
+        builtUpArea: 550,
+        floor: '4th Floor',
+        totalFloors: 8,
+        parking: '1 Two-Wheeler + 1 Optional Car Bay',
+        societyOrProject: 'Skyline SkyLoft Boutique',
+        facing: 'North Facing',
+      },
+    },
 
     // --- LAND & PLOT SUBTYPES ---
     {
@@ -427,16 +520,22 @@ export function buildDiscoveryCatalog(
       availability: 'Ready to Move',
       status: 'Active',
       images: {
-        cover: '/images/projects/project-oasis/exterior.jpg',
+        cover: '/images/properties/prop_land_res_01/cover.jpg',
         gallery: [
           {
-            url: '/images/projects/project-oasis/exterior.jpg',
-            label: 'Gated Plot Enclave & Paved Boulevard',
+            url: '/images/properties/prop_land_res_01/cover.jpg',
+            label: 'Demarcated Sector Plot & Paved Boulevard',
             category: 'Exterior',
             altText: 'Paved wide sector roads with underground cabling and street lights',
           },
           {
-            url: '/images/projects/project-bayview/entrance.jpg',
+            url: '/images/properties/prop_land_res_01/context.jpg',
+            label: 'Lush Green Surrounding Enclave',
+            category: 'Exterior',
+            altText: 'Scenic green landscape surrounding the plotted development',
+          },
+          {
+            url: '/images/properties/prop_land_res_01/entrance.jpg',
             label: 'Grand Gated Archway & Security',
             category: 'Entrance',
             altText: '24/7 guarded boom barrier entrance gate with surveillance',
@@ -462,7 +561,7 @@ export function buildDiscoveryCatalog(
       },
     },
     {
-      id: 'prop_land_com_01',
+      id: 'prop_land_comm_01',
       title: 'Skyline Apex Commercial Development Plot',
       code: 'SK-CPL-02',
       mainCategory: 'Land',
@@ -477,13 +576,25 @@ export function buildDiscoveryCatalog(
       availability: 'Ready to Move',
       status: 'Active',
       images: {
-        cover: '/images/commercial-tower.jpg',
+        cover: '/images/properties/prop_land_comm_01/cover.jpg',
         gallery: [
           {
-            url: '/images/commercial-tower.jpg',
-            label: 'Commercial Corridor Frontage',
+            url: '/images/properties/prop_land_comm_01/cover.jpg',
+            label: 'Commercial Highway Frontage Plot',
             category: 'Exterior',
-            altText: 'Prime commercial plot location facing multi-lane highway',
+            altText: 'Prime commercial development land plot facing multi-lane arterial road',
+          },
+          {
+            url: '/images/properties/prop_land_comm_01/skyline.jpg',
+            label: 'Urban Skyline Backdrop',
+            category: 'Exterior',
+            altText: 'City skyline and IT park towers in immediate vicinity',
+          },
+          {
+            url: '/images/properties/prop_land_comm_01/corridor.jpg',
+            label: 'Adjoining Tech Corridor Towers',
+            category: 'Exterior',
+            altText: 'Adjacent modern glass tech park towers along the business corridor',
           },
         ],
       },
@@ -521,13 +632,25 @@ export function buildDiscoveryCatalog(
       availability: 'Immediate Possession',
       status: 'Active',
       images: {
-        cover: '/images/property-villa.jpg',
+        cover: '/images/properties/prop_land_farm_01/cover.jpg',
         gallery: [
           {
-            url: '/images/property-villa.jpg',
+            url: '/images/properties/prop_land_farm_01/cover.jpg',
             label: 'Scenic Mountain Valley Farm Parcel',
             category: 'Exterior',
             altText: 'Fertile green agricultural farmland with mountain backdrop',
+          },
+          {
+            url: '/images/properties/prop_land_farm_01/landscape.jpg',
+            label: 'Surveyed Boundary & Country Road',
+            category: 'Exterior',
+            altText: 'Wide agricultural access road with boundary fencing',
+          },
+          {
+            url: '/images/properties/prop_land_farm_01/lake.jpg',
+            label: 'Nearby Lake & Natural Stream',
+            category: 'Exterior',
+            altText: 'Scenic natural lake and green hillside panorama',
           },
         ],
       },
@@ -552,7 +675,7 @@ export function buildDiscoveryCatalog(
 
     // --- COMMERCIAL SUBTYPES ---
     {
-      id: 'prop_com_off_01',
+      id: 'prop_comm_off_01',
       title: 'Skyline Nexus Grade-A Executive Office Suite',
       code: 'SK-OFF-802',
       mainCategory: 'Commercial',
@@ -567,22 +690,28 @@ export function buildDiscoveryCatalog(
       availability: 'Ready to Move',
       status: 'Active',
       images: {
-        cover: '/images/commercial-tower.jpg',
+        cover: '/images/properties/prop_comm_off_01/cover.jpg',
         gallery: [
           {
-            url: '/images/commercial-tower.jpg',
+            url: '/images/properties/prop_comm_off_01/cover.jpg',
             label: 'Corporate Tech Tower Glass Facade',
             category: 'Exterior',
             altText: 'Modern commercial office building with glass facade and plaza',
           },
           {
-            url: '/images/projects/project-pinnacle/interior.jpg',
-            label: 'Fitted Executive Workspace',
+            url: '/images/properties/prop_comm_off_01/lounge.jpg',
+            label: 'Executive Boardroom & Sky Lounge',
             category: 'Interior',
             altText: 'Modern corporate executive suite with skyline views',
           },
           {
-            url: '/images/projects/project-bayview/entrance.jpg',
+            url: '/images/properties/prop_comm_off_01/tower.jpg',
+            label: 'Crown Glass Tower Elevation',
+            category: 'Exterior',
+            altText: 'Illuminated glass crown skyscraper elevation in evening lighting',
+          },
+          {
+            url: '/images/properties/prop_comm_off_01/entrance.jpg',
             label: 'Double-Height Corporate Lobby',
             category: 'Entrance',
             altText: 'Illuminated corporate lobby and turnstile security gate',
@@ -609,7 +738,7 @@ export function buildDiscoveryCatalog(
       },
     },
     {
-      id: 'prop_com_shop_01',
+      id: 'prop_comm_shop_01',
       title: 'Skyline Galleria Ground High-Street Retail Shop',
       code: 'SK-SH-G14',
       mainCategory: 'Commercial',
@@ -624,13 +753,25 @@ export function buildDiscoveryCatalog(
       availability: 'Ready to Move',
       status: 'Active',
       images: {
-        cover: '/images/commercial-tower.jpg',
+        cover: '/images/properties/prop_comm_shop_01/cover.jpg',
         gallery: [
           {
-            url: '/images/commercial-tower.jpg',
+            url: '/images/properties/prop_comm_shop_01/cover.jpg',
             label: 'Retail Arcade Boulevard Front',
             category: 'Exterior',
-            altText: 'High footfall ground floor retail plaza with pedestrian walkways',
+            altText: 'High footfall ground floor luxury boutique shop storefront',
+          },
+          {
+            url: '/images/properties/prop_comm_shop_01/interior.jpg',
+            label: 'Interior Display & Cashier Counter',
+            category: 'Interior',
+            altText: 'Fitted retail boutique interior with illuminated display shelves',
+          },
+          {
+            url: '/images/properties/prop_comm_shop_01/promenade.jpg',
+            label: 'Pedestrian Shopping Plaza',
+            category: 'Exterior',
+            altText: 'Lively pedestrian shopping promenade with fountains and cafes',
           },
         ],
       },
@@ -653,7 +794,7 @@ export function buildDiscoveryCatalog(
       },
     },
     {
-      id: 'prop_com_show_01',
+      id: 'prop_comm_show_01',
       title: 'Skyline Boulevard Prime Highway Automobile Showroom',
       code: 'SK-SHW-01',
       mainCategory: 'Commercial',
@@ -668,13 +809,25 @@ export function buildDiscoveryCatalog(
       availability: 'Immediate Possession',
       status: 'Active',
       images: {
-        cover: '/images/commercial-tower.jpg',
+        cover: '/images/properties/prop_comm_show_01/cover.jpg',
         gallery: [
           {
-            url: '/images/commercial-tower.jpg',
+            url: '/images/properties/prop_comm_show_01/cover.jpg',
             label: 'Highway Facing Showroom Glass Facade',
             category: 'Exterior',
-            altText: 'Double height commercial showroom with clear structural glazing',
+            altText: 'Double height commercial showroom with structural glazing and customer parking',
+          },
+          {
+            url: '/images/properties/prop_comm_show_01/exterior.jpg',
+            label: 'Corporate Tower Complex View',
+            category: 'Exterior',
+            altText: 'Modern commercial tower backdrop and illuminated facade',
+          },
+          {
+            url: '/images/properties/prop_comm_show_01/lounge.jpg',
+            label: 'Customer VIP Delivery Lounge',
+            category: 'Interior',
+            altText: 'VIP hospitality lounge and negotiation suite',
           },
         ],
       },
@@ -697,7 +850,64 @@ export function buildDiscoveryCatalog(
       },
     },
     {
-      id: 'prop_com_ware_01',
+      id: 'prop_comm_bldg_01',
+      title: 'Skyline Apex Standalone 12-Story Commercial Tower',
+      code: 'SK-BLDG-01',
+      mainCategory: 'Commercial',
+      subtype: 'Commercial Building',
+      location: 'Financial District, Gachibowli',
+      city: 'Hyderabad',
+      state: 'Telangana',
+      developer: 'Skyline Commercial Properties',
+      price: 240000000,
+      priceLabel: '₹24.0 Cr',
+      pricePerSqft: 18500,
+      availability: 'Ready to Move',
+      status: 'Active',
+      images: {
+        cover: '/images/properties/prop_comm_bldg_01/cover.jpg',
+        gallery: [
+          {
+            url: '/images/properties/prop_comm_bldg_01/cover.jpg',
+            label: '12-Story Glass Commercial Tower',
+            category: 'Exterior',
+            altText: 'Standalone modern commercial glass tower with illuminated crown',
+          },
+          {
+            url: '/images/properties/prop_comm_bldg_01/lobby.jpg',
+            label: 'Grand Triple-Height Entrance Foyer',
+            category: 'Entrance',
+            altText: 'Grand illuminated corporate entrance lobby and concierge',
+          },
+          {
+            url: '/images/properties/prop_comm_bldg_01/lounge.jpg',
+            label: 'Executive Penthouse Boardroom',
+            category: 'Interior',
+            altText: 'Rooftop boardroom suite overlooking the financial district skyline',
+          },
+        ],
+      },
+      highlights: [
+        '1,30,000 sq.ft Total Commercial Space',
+        'G+12 Floors with 3 Basements',
+        'Single Corporate Tenant / Subdivisible',
+        'LEED Gold Certified Green Building',
+      ],
+      description:
+        'Standalone Grade-A 12-story commercial corporate headquarters building in Gachibowli. Features 3 basement parking levels (250 cars), high-efficiency central HVAC, and 4 high-speed elevators.',
+      featured: true,
+      commercialSpecs: {
+        commercialArea: 130000,
+        floor: 'Entire Building (G + 12 Floors)',
+        building: 'Skyline Apex Corporate Tower',
+        frontage: '100 ft Four-Side Open Glass Facade',
+        ceilingHeight: '12 ft Floor-to-Floor Height',
+        furnishing: 'Warm Shell',
+        parking: '250 Basement Dedicated Parking Bays',
+      },
+    },
+    {
+      id: 'prop_comm_ware_01',
       title: 'Skyline Logistics Hub Grade-A Industrial Warehouse',
       code: 'SK-LOG-WH03',
       mainCategory: 'Commercial',
@@ -712,13 +922,25 @@ export function buildDiscoveryCatalog(
       availability: 'Ready to Move',
       status: 'Active',
       images: {
-        cover: '/images/commercial-tower.jpg',
+        cover: '/images/properties/prop_comm_ware_01/cover.jpg',
         gallery: [
           {
-            url: '/images/commercial-tower.jpg',
-            label: 'Industrial Logistics Park & Truck Apron',
+            url: '/images/properties/prop_comm_ware_01/cover.jpg',
+            label: 'Industrial Logistics Hub & Docks',
             category: 'Exterior',
-            altText: 'Modern industrial PEB warehouse building with loading docks',
+            altText: 'Modern industrial warehouse building with multiple hydraulic loading bays',
+          },
+          {
+            url: '/images/properties/prop_comm_ware_01/yard.jpg',
+            label: 'Asphalt Truck Court & Trailer Apron',
+            category: 'Exterior',
+            altText: 'Wide paved trailer turning court and container storage yard',
+          },
+          {
+            url: '/images/properties/prop_comm_ware_01/office.jpg',
+            label: 'Attached Two-Story Admin Office',
+            category: 'Interior',
+            altText: 'Air-conditioned logistics control room and admin office block',
           },
         ],
       },
@@ -744,6 +966,118 @@ export function buildDiscoveryCatalog(
 
     // --- MASTER PROJECTS SUBTYPES ---
     {
+      id: 'prop_proj_comm_01',
+      title: 'Skyline Horizon 25-Acre Integrated Tech Campus',
+      code: 'SK-TPK-01',
+      mainCategory: 'Projects',
+      subtype: 'Commercial Project',
+      location: 'HITEC City Phase 2',
+      city: 'Hyderabad',
+      state: 'Telangana',
+      developer: 'Skyline Mega Infrastructure Ltd',
+      price: 120000000,
+      priceLabel: 'From ₹12.0 Cr',
+      pricePerSqft: 14200,
+      availability: 'Under Construction',
+      status: 'Active',
+      images: {
+        cover: '/images/properties/prop_proj_comm_01/cover.jpg',
+        gallery: [
+          {
+            url: '/images/properties/prop_proj_comm_01/cover.jpg',
+            label: 'Tech Park Master Towers & Plaza',
+            category: 'Exterior',
+            altText: 'Corporate tech park towers surrounded by landscaped pedestrian boulevards',
+          },
+          {
+            url: '/images/properties/prop_proj_comm_01/plaza.jpg',
+            label: 'Central Water Plaza & Food Court',
+            category: 'Amenities',
+            altText: 'Central amphitheater, fountain plaza, and retail promenade',
+          },
+          {
+            url: '/images/properties/prop_proj_comm_01/tower.jpg',
+            label: 'Tower 1 Signature Facade',
+            category: 'Exterior',
+            altText: 'Glass curtain corporate office tower with evening architectural illumination',
+          },
+        ],
+      },
+      highlights: [
+        '25 Acres Integrated IT / ITeS Tech Park',
+        '2.5 Million sq.ft Commercial Space across 4 Towers',
+        'Convention Center, Food Court & Crèche',
+        'Metro Line Direct Pedestrian Skywalk',
+      ],
+      description:
+        'Premier 25-acre international tech campus in HITEC City. Designed for global MNCs, research centers, and tech unicorns with world-class campus amenities.',
+      featured: true,
+      projectSpecs: {
+        landParcel: '25 Acres Commercial Campus',
+        totalWings: 4,
+        totalUnits: 64,
+        availableUnits: 18,
+        phase: 'Phase 1 Ready / Phase 2 Q4 2027',
+        configurations: 'Warm Shell & Fully Managed Office Floors (15,000 - 65,000 sq.ft)',
+      },
+    },
+    {
+      id: 'prop_proj_mixed_01',
+      title: 'Skyline Urban Centre 15-Acre Mixed-Use Promenade',
+      code: 'SK-MXD-01',
+      mainCategory: 'Projects',
+      subtype: 'Mixed-use Project',
+      location: 'Senapati Bapat Road',
+      city: 'Pune',
+      state: 'Maharashtra',
+      developer: 'Skyline Mega Infrastructure Ltd',
+      price: 15500000,
+      priceLabel: 'From ₹1.55 Cr',
+      pricePerSqft: 12400,
+      availability: 'Under Construction',
+      status: 'Active',
+      images: {
+        cover: '/images/properties/prop_proj_mixed_01/cover.jpg',
+        gallery: [
+          {
+            url: '/images/properties/prop_proj_mixed_01/cover.jpg',
+            label: 'Mixed-Use Towers & Retail Promenade',
+            category: 'Exterior',
+            altText: 'Luxury residential towers above a vibrant illuminated retail shopping arcade',
+          },
+          {
+            url: '/images/properties/prop_proj_mixed_01/promenade.jpg',
+            label: 'High-Street Retail Boutique Arcade',
+            category: 'Exterior',
+            altText: 'Pedestrian shopping avenue with luxury boutiques and cafes',
+          },
+          {
+            url: '/images/properties/prop_proj_mixed_01/tower.jpg',
+            label: 'Twin Residential High-Rise Towers',
+            category: 'Exterior',
+            altText: 'Contemporary residential glass towers with skybridge',
+          },
+        ],
+      },
+      highlights: [
+        '15 Acres Live-Work-Play Destination',
+        'Residential Suites, Boutique Offices & Luxury Retail',
+        'Open-Air Amphitheater & F&B Promenade',
+        'Direct Access from Arterial Ring Road',
+      ],
+      description:
+        'A vibrant 15-acre urban lifestyle destination blending luxury residences, Grade-A boutique offices, high-street retail, and gourmet dining around a central water fountain plaza.',
+      featured: true,
+      projectSpecs: {
+        landParcel: '15 Acres Mixed-Use Urban District',
+        totalWings: 6,
+        totalUnits: 450,
+        availableUnits: 85,
+        phase: 'Phase 1 Delivery 2026',
+        configurations: '2, 3 BHK Residences, Boutique Offices & Retail Shops',
+      },
+    },
+    {
       id: 'prop_proj_town_01',
       title: 'Skyline Green Valley 60-Acre Integrated Township',
       code: 'SK-TWN-01',
@@ -759,19 +1093,25 @@ export function buildDiscoveryCatalog(
       availability: 'Under Construction',
       status: 'Active',
       images: {
-        cover: '/images/projects/project-grandeur/exterior.jpg',
+        cover: '/images/properties/prop_proj_town_01/cover.jpg',
         gallery: [
           {
-            url: '/images/projects/project-grandeur/exterior.jpg',
-            label: 'Township Master Aerial & Towers',
+            url: '/images/properties/prop_proj_town_01/cover.jpg',
+            label: 'Township Central Lake & Towers Aerial',
             category: 'Exterior',
-            altText: 'Mega master-planned residential towers surrounded by green parks',
+            altText: 'Mega master-planned residential towers around central lake and green parks',
           },
           {
-            url: '/images/projects/project-heights/amenities.jpg',
-            label: 'Central Clubhouse & Sports Complex',
+            url: '/images/properties/prop_proj_town_01/park.jpg',
+            label: 'Lush 10-Acre Botanical Central Park',
+            category: 'Exterior',
+            altText: 'Lush green parklands, jogging trails, and organic orchards',
+          },
+          {
+            url: '/images/properties/prop_proj_town_01/club.jpg',
+            label: 'Township Olympic Sports Arena & Club',
             category: 'Amenities',
-            altText: 'Township central sports complex, Olympic pool, and gardens',
+            altText: 'Clubhouse, Olympic swimming pool, tennis courts, and fitness center',
           },
         ],
       },
@@ -779,7 +1119,7 @@ export function buildDiscoveryCatalog(
         '60 Acres Integrated Smart Township',
         '1, 2 & 3 BHK High-Rise Residences',
         'ICSE School, Hospital & Retail Mall Inside',
-        '80% Open Green Space & Central Park',
+        '80% Open Green Space & Central Lake',
       ],
       description:
         'Pune’s premier 60-acre integrated smart township. Complete with international school, multi-specialty healthcare, high-street retail, 10-acre central sports arena, and 8 luxury towers.',
@@ -809,19 +1149,25 @@ export function buildDiscoveryCatalog(
       availability: 'Ready to Move',
       status: 'Active',
       images: {
-        cover: '/images/projects/project-oasis/exterior.jpg',
+        cover: '/images/properties/prop_proj_gate_01/cover.jpg',
         gallery: [
           {
-            url: '/images/projects/project-oasis/exterior.jpg',
-            label: 'Gated Enclave Boulevard & Villas',
-            category: 'Exterior',
-            altText: 'Lush gated villa community with palm avenues and water bodies',
+            url: '/images/properties/prop_proj_gate_01/cover.jpg',
+            label: 'Gated Community Grand Guarded Entrance',
+            category: 'Entrance',
+            altText: 'Exclusive gated community entrance with palm boulevard and security gate',
           },
           {
-            url: '/images/projects/project-oasis/interior.jpg',
-            label: 'Sample Designer Villa Lounge',
-            category: 'Interior',
-            altText: 'Sunlit designer living room overlooking private reflection pool',
+            url: '/images/properties/prop_proj_gate_01/villa.jpg',
+            label: 'Private Luxury Villa Enclave',
+            category: 'Exterior',
+            altText: 'Private villa residences with swimming pools and landscaped lawns',
+          },
+          {
+            url: '/images/properties/prop_proj_gate_01/avenue.jpg',
+            label: 'Tree-Lined Paved Community Avenues',
+            category: 'Exterior',
+            altText: 'Paved avenue roads with pedestrian walkways and manicured hedges',
           },
         ],
       },
