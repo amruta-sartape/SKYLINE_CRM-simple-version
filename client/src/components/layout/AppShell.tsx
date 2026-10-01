@@ -19,6 +19,7 @@ import {
   X,
   Sparkles,
   Compass,
+  ShieldCheck,
 } from 'lucide-react';
 
 interface AppShellProps {
@@ -40,6 +41,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   };
 
   const primaryRole = user?.roles?.[0] || 'AGENT';
+  const isAdmin = user?.roles?.includes('ADMIN' as any) || primaryRole === 'ADMIN';
 
   // Grouped Navigation Items matching actual supported CRM modules
   const navSections = [
@@ -63,6 +65,16 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
           icon: <Compass className="w-4 h-4" />,
           active: location.pathname === '/discovery' || location.pathname === '/explore',
         },
+        ...(isAdmin
+          ? [
+              {
+                name: 'Property Master (Admin)',
+                href: '/admin/properties',
+                icon: <ShieldCheck className="w-4 h-4 text-amber-400" />,
+                active: location.pathname.startsWith('/admin/properties'),
+              },
+            ]
+          : []),
         {
           name: 'Projects Master',
           href: '/properties',

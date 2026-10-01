@@ -9,7 +9,7 @@
     "start": "node dist/index.js",
     "dev": "tsx watch src/index.ts",
     "seed": "tsx src/db/seed.ts",
-    "test": "tsx src/tests/auth-e2e.test.ts && tsx src/tests/http-api.test.ts && tsx src/tests/phase2-e2e.test.ts && tsx src/tests/phase3-e2e.test.ts && tsx src/tests/phase4-e2e.test.ts"
+    "test": "tsx src/tests/auth-e2e.test.ts && tsx src/tests/http-api.test.ts && tsx src/tests/phase2-e2e.test.ts && tsx src/tests/phase3-e2e.test.ts && tsx src/tests/phase4-e2e.test.ts && tsx src/tests/phase5-e2e.test.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",

@@ -24,6 +24,7 @@ import { SiteVisitsPage } from './pages/SiteVisitsPage';
 import { SiteVisitDetailPage } from './pages/SiteVisitDetailPage';
 import { FollowUpsPage } from './pages/FollowUpsPage';
 import { FollowUpDetailPage } from './pages/FollowUpDetailPage';
+import { AdminPropertiesPage } from './pages/AdminPropertiesPage';
 
 // Public Route Guard (Redirects already authenticated users to Enquiries or Dashboard)
 const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -152,6 +153,15 @@ export const AppRoutes: React.FC = () => {
       />
 
       {/* Protected Phase 3 Property Catalog & Inventory Management */}
+      <Route
+        path="/admin/properties"
+        element={
+          <ProtectedRoute allowedRoles={['ADMIN']}>
+            <AdminPropertiesPage />
+          </ProtectedRoute>
+        }
+      />
+
       <Route
         path="/properties"
         element={

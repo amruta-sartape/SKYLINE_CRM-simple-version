@@ -288,6 +288,50 @@ CREATE TABLE IF NOT EXISTS site_visits (
 );
 
 -- ============================================================================
+-- PHASE 5: PROPERTY LISTINGS & IMAGE ASSETS TABLES (Admin Property Management)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS property_listings (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  code TEXT UNIQUE NOT NULL,
+  main_category TEXT NOT NULL, -- 'Residential', 'Land', 'Commercial', 'Projects'
+  subtype TEXT NOT NULL,
+  price REAL NOT NULL,
+  price_label TEXT,
+  price_per_sqft REAL,
+  location TEXT NOT NULL,
+  city TEXT NOT NULL,
+  state TEXT NOT NULL,
+  developer TEXT NOT NULL DEFAULT 'Skyline Realty Group',
+  availability TEXT NOT NULL DEFAULT 'Available',
+  status TEXT NOT NULL DEFAULT 'Active',
+  description TEXT,
+  highlights TEXT, -- JSON string array
+  address_details TEXT, -- JSON object
+  specs_data TEXT, -- JSON object
+  amenity_ids TEXT, -- JSON string array
+  cover_image TEXT,
+  is_active INTEGER NOT NULL DEFAULT 1,
+  created_by TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS property_images (
+  id TEXT PRIMARY KEY,
+  property_id TEXT NOT NULL,
+  url TEXT NOT NULL,
+  label TEXT NOT NULL,
+  category TEXT NOT NULL DEFAULT 'Exterior',
+  alt_text TEXT,
+  is_cover INTEGER NOT NULL DEFAULT 0,
+  display_order INTEGER NOT NULL DEFAULT 0,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (property_id) REFERENCES property_listings(id) ON DELETE CASCADE
+);
+
+-- ============================================================================
 -- INDEXES
 -- ============================================================================
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
@@ -330,4 +374,12 @@ CREATE INDEX IF NOT EXISTS idx_site_visits_unit_id ON site_visits(unit_id);
 CREATE INDEX IF NOT EXISTS idx_site_visits_assigned ON site_visits(assigned_user_id);
 CREATE INDEX IF NOT EXISTS idx_site_visits_status ON site_visits(visit_status);
 CREATE INDEX IF NOT EXISTS idx_site_visits_date ON site_visits(visit_date);
+
+-- Phase 5 Indexes
+CREATE INDEX IF NOT EXISTS idx_property_listings_category ON property_listings(main_category);
+CREATE INDEX IF NOT EXISTS idx_property_listings_subtype ON property_listings(subtype);
+CREATE INDEX IF NOT EXISTS idx_property_listings_active ON property_listings(is_active);
+CREATE INDEX IF NOT EXISTS idx_property_listings_code ON property_listings(code);
+CREATE INDEX IF NOT EXISTS idx_property_images_property ON property_images(property_id);
+
 

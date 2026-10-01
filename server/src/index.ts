@@ -14,6 +14,7 @@ import { unitRoutes } from './routes/unit.routes.js';
 import { amenityRoutes } from './routes/amenity.routes.js';
 import siteVisitRoutes from './routes/siteVisit.routes.js';
 import followUpRoutes from './routes/followUp.routes.js';
+import propertyListingRoutes from './routes/propertyListing.routes.js';
 import { errorHandler } from './middleware/error.middleware.js';
 
 const app = express();
@@ -28,8 +29,8 @@ app.use(
     credentials: true,
   })
 );
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 if (config.nodeEnv === 'development') {
   app.use(morgan('dev'));
@@ -41,7 +42,7 @@ app.get('/api/health', (req, res) => {
     status: 'online',
     app: 'SKYLINE CRM API',
     version: '1.0.0',
-    phase: 'Phase 4 - Site Visit & Complete Follow-up Management',
+    phase: 'Phase 5 - Admin Property Management & Image Uploads',
     timestamp: new Date().toISOString(),
   });
 });
@@ -57,6 +58,8 @@ app.use('/api/units', unitRoutes);
 app.use('/api/amenities', amenityRoutes);
 app.use('/api/site-visits', siteVisitRoutes);
 app.use('/api/follow-ups', followUpRoutes);
+app.use('/api/property-listings', propertyListingRoutes);
+
 
 // Catch 404
 app.use('/api/*', (req, res) => {

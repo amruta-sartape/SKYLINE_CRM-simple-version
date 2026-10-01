@@ -336,9 +336,79 @@ export function getPropertyArea(p: DiscoveryProperty): number {
  */
 export function buildDiscoveryCatalog(
   dbProjects: PropertyProject[] = [],
-  dbUnits: PropertyUnit[] = []
+  dbUnits: PropertyUnit[] = [],
+  dbListings: any[] = []
 ): DiscoveryProperty[] {
   const items: DiscoveryProperty[] = [];
+
+  // 0. Convert Admin-created DB Property Listings
+  if (dbListings && dbListings.length > 0) {
+    dbListings.forEach((l) => {
+      if (l.is_active === 0 || l.status === 'Archived') return;
+
+      const galleryImages =
+        l.images && l.images.length > 0
+          ? l.images.map((img: any) => ({
+              url: img.url,
+              label: img.label || l.title,
+              category: img.category || 'Exterior',
+              altText: img.alt_text || l.title,
+            }))
+          : l.cover_image
+          ? [
+              {
+                url: l.cover_image,
+                label: l.title,
+                category: 'Exterior',
+                altText: l.title,
+              },
+            ]
+          : [];
+
+      const cover =
+        l.cover_image || galleryImages[0]?.url || '/images/classifications/apartment.jpg';
+
+      const specs = l.specs_data || {};
+
+      const propItem: DiscoveryProperty = {
+        id: l.id,
+        title: l.title,
+        code: l.code,
+        mainCategory: l.main_category,
+        subtype: l.subtype,
+        location: l.location,
+        city: l.city,
+        state: l.state || 'Maharashtra',
+        developer: l.developer || 'Skyline Realty Group',
+        price: Number(l.price),
+        priceLabel: l.price_label || formatPrice(Number(l.price)),
+        pricePerSqft: l.price_per_sqft || Math.round(Number(l.price) / 1200),
+        availability: l.availability || 'Available',
+        status: (l.status as any) || 'Active',
+        images: {
+          cover,
+          gallery:
+            galleryImages.length > 0
+              ? galleryImages
+              : [{ url: cover, label: l.title, category: 'Exterior', altText: l.title }],
+        },
+        highlights: Array.isArray(l.highlights)
+          ? l.highlights
+          : typeof l.highlights === 'string'
+          ? JSON.parse(l.highlights)
+          : [],
+        description: l.description || `${l.title} in prime ${l.location}, ${l.city}.`,
+        featured: true,
+        residentialSpecs: specs.residentialSpecs || (l.main_category === 'Residential' ? specs : undefined),
+        landSpecs: specs.landSpecs || (l.main_category === 'Land' ? specs : undefined),
+        commercialSpecs: specs.commercialSpecs || (l.main_category === 'Commercial' ? specs : undefined),
+        projectSpecs: specs.projectSpecs || (l.main_category === 'Projects' ? specs : undefined),
+      };
+
+      items.push(propItem);
+    });
+  }
+
 
   // 1. Convert real database projects into premier discovery properties
   // (Ensures each project from Phase 3 has a dedicated, unique 4-image set)
