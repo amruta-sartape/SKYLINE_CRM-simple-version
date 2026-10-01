@@ -19,6 +19,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Images,
+  Compass,
 } from 'lucide-react';
 
 export const FeaturedPropertiesShowcase: React.FC = () => {
@@ -166,14 +167,23 @@ export const FeaturedPropertiesShowcase: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate('/discovery')}
+            leftIcon={<Compass className="w-3.5 h-3.5 text-amber-400" />}
+            className="text-xs font-bold text-slate-300 hover:text-white hover:bg-slate-800/80 border-slate-700 bg-slate-900/60"
+          >
+            Property Discovery
+          </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={() => navigate('/properties')}
             className="text-xs font-bold text-slate-300 hover:text-white hover:bg-slate-800/80 border-slate-700 bg-slate-900/60"
           >
-            All Projects ({projects.length})
+            Projects Master ({projects.length})
           </Button>
           <Button
             variant="primary"

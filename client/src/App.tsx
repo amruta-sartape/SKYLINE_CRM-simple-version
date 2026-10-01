@@ -16,6 +16,7 @@ import { LeadsPage } from './pages/LeadsPage';
 import { LeadPipelinePage } from './pages/LeadPipelinePage';
 import { LeadDetailPage } from './pages/LeadDetailPage';
 import { ProjectsPage } from './pages/ProjectsPage';
+import { PropertyDiscoveryPage } from './pages/PropertyDiscoveryPage';
 import { InventoryPage } from './pages/InventoryPage';
 import { UnitDetailPage } from './pages/UnitDetailPage';
 import { SiteVisitsPage } from './pages/SiteVisitsPage';
@@ -111,6 +112,24 @@ export const AppRoutes: React.FC = () => {
         element={
           <ProtectedRoute>
             <LeadDetailPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Protected Customer Property Discovery & Catalog */}
+      <Route
+        path="/discovery"
+        element={
+          <ProtectedRoute>
+            <PropertyDiscoveryPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/explore"
+        element={
+          <ProtectedRoute>
+            <PropertyDiscoveryPage />
           </ProtectedRoute>
         }
       />

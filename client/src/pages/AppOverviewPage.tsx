@@ -38,6 +38,7 @@ import {
   TrendingUp,
   Clock,
   CheckCheck,
+  Compass,
 } from 'lucide-react';
 
 export const AppOverviewPage: React.FC = () => {
@@ -163,6 +164,14 @@ export const AppOverviewPage: React.FC = () => {
   };
 
   const quickNavModules = [
+    {
+      name: 'Property Discovery',
+      desc: 'Browse by property types & investment specs',
+      href: '/discovery',
+      icon: <Compass className="w-5 h-5 text-amber-500" />,
+      badge: 'Interactive',
+      color: 'border-amber-200 bg-amber-50/50 hover:border-amber-300',
+    },
     {
       name: 'Client Enquiries',
       desc: 'Capture & convert customer leads',

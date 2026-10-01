@@ -18,6 +18,7 @@ import {
   Menu,
   X,
   Sparkles,
+  Compass,
 } from 'lucide-react';
 
 interface AppShellProps {
@@ -56,6 +57,12 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     {
       title: 'Real Estate Portfolio',
       items: [
+        {
+          name: 'Property Discovery',
+          href: '/discovery',
+          icon: <Compass className="w-4 h-4" />,
+          active: location.pathname === '/discovery' || location.pathname === '/explore',
+        },
         {
           name: 'Projects Master',
           href: '/properties',
