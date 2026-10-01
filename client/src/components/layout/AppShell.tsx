@@ -13,16 +13,11 @@ import {
   Home,
   CalendarCheck,
   PhoneCall,
-  TrendingUp,
-  CreditCard,
-  BarChart3,
   LogOut,
   ChevronDown,
   Menu,
   X,
   Sparkles,
-  Lock,
-  Building,
 } from 'lucide-react';
 
 interface AppShellProps {
@@ -45,86 +40,77 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
 
   const primaryRole = user?.roles?.[0] || 'AGENT';
 
-  // Navigation Items
-  const navItems = [
+  // Grouped Navigation Items matching actual supported CRM modules
+  const navSections = [
     {
-      name: 'Client Enquiries',
-      href: '/enquiries',
-      icon: <MessageSquare className="w-4 h-4" />,
-      active: location.pathname === '/enquiries',
-      status: 'Active',
+      title: 'Executive',
+      items: [
+        {
+          name: 'Executive Dashboard',
+          href: '/',
+          icon: <LayoutDashboard className="w-4 h-4" />,
+          active: location.pathname === '/',
+        },
+      ],
     },
     {
-      name: 'Leads Management',
-      href: '/leads',
-      icon: <Users className="w-4 h-4" />,
-      active:
-        location.pathname === '/leads' ||
-        (location.pathname.startsWith('/leads/') && location.pathname !== '/leads/pipeline'),
-      status: 'Active',
+      title: 'Real Estate Portfolio',
+      items: [
+        {
+          name: 'Projects Master',
+          href: '/properties',
+          icon: <Building2 className="w-4 h-4" />,
+          active: location.pathname === '/properties',
+        },
+        {
+          name: 'Property Inventory',
+          href: '/inventory',
+          icon: <Home className="w-4 h-4" />,
+          active: location.pathname === '/inventory' || location.pathname.startsWith('/inventory/'),
+        },
+      ],
     },
     {
-      name: 'Lead Pipeline',
-      href: '/leads/pipeline',
-      icon: <Kanban className="w-4 h-4" />,
-      active: location.pathname === '/leads/pipeline',
-      status: 'Active',
+      title: 'Lead Pipeline',
+      items: [
+        {
+          name: 'Client Enquiries',
+          href: '/enquiries',
+          icon: <MessageSquare className="w-4 h-4" />,
+          active: location.pathname === '/enquiries',
+        },
+        {
+          name: 'Leads Management',
+          href: '/leads',
+          icon: <Users className="w-4 h-4" />,
+          active:
+            location.pathname === '/leads' ||
+            (location.pathname.startsWith('/leads/') && location.pathname !== '/leads/pipeline'),
+        },
+        {
+          name: 'Pipeline Board',
+          href: '/leads/pipeline',
+          icon: <Kanban className="w-4 h-4" />,
+          active: location.pathname === '/leads/pipeline',
+        },
+      ],
     },
     {
-      name: 'Site Visits & Tours',
-      href: '/site-visits',
-      icon: <CalendarCheck className="w-4 h-4" />,
-      active: location.pathname === '/site-visits' || location.pathname.startsWith('/site-visits/'),
-      status: 'Active',
-    },
-    {
-      name: 'Follow-Up Tasks',
-      href: '/follow-ups',
-      icon: <PhoneCall className="w-4 h-4" />,
-      active: location.pathname === '/follow-ups' || location.pathname.startsWith('/follow-ups/'),
-      status: 'Active',
-    },
-    {
-      name: 'Projects Master',
-      href: '/properties',
-      icon: <Building2 className="w-4 h-4" />,
-      active: location.pathname === '/properties',
-      status: 'Active',
-    },
-    {
-      name: 'Property Inventory',
-      href: '/inventory',
-      icon: <Home className="w-4 h-4" />,
-      active: location.pathname === '/inventory' || location.pathname.startsWith('/inventory/'),
-      status: 'Active',
-    },
-    {
-      name: 'Executive Dashboard',
-      href: '/',
-      icon: <LayoutDashboard className="w-4 h-4" />,
-      active: location.pathname === '/',
-      status: 'Active',
-    },
-    {
-      name: 'Deals & Sales Pipeline',
-      href: '#sales',
-      icon: <TrendingUp className="w-4 h-4" />,
-      locked: true,
-      status: 'Phase 5',
-    },
-    {
-      name: 'Finance & Payments',
-      href: '#finance',
-      icon: <CreditCard className="w-4 h-4" />,
-      locked: true,
-      status: 'Phase 6',
-    },
-    {
-      name: 'Reports & Analytics',
-      href: '#reports',
-      icon: <BarChart3 className="w-4 h-4" />,
-      locked: true,
-      status: 'Phase 9',
+      title: 'Site Operations',
+      items: [
+        {
+          name: 'Site Visits & Tours',
+          href: '/site-visits',
+          icon: <CalendarCheck className="w-4 h-4" />,
+          active: location.pathname === '/site-visits' || location.pathname.startsWith('/site-visits/'),
+        },
+        {
+          name: 'Follow-Up Tasks',
+          href: '/follow-ups',
+          icon: <PhoneCall className="w-4 h-4" />,
+          active: location.pathname === '/follow-ups' || location.pathname.startsWith('/follow-ups/'),
+        },
+      ],
     },
   ];
 
@@ -250,57 +236,46 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
           }`}
         >
           <div className="bg-slate-900/85 backdrop-blur-xl rounded-2xl border border-slate-800/90 p-4 shadow-xl space-y-5 sticky top-22">
-            <div>
-              <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
-                <span>CRM Workspace</span>
-                <Building className="w-3.5 h-3.5 text-slate-500" />
-              </div>
-              <nav className="mt-2 space-y-1">
-                {navItems.map((item) =>
-                  item.locked ? (
-                    <div
-                      key={item.name}
-                      className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-slate-500 cursor-not-allowed opacity-60"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        {item.icon}
-                        <span>{item.name}</span>
-                      </div>
-                      <span className="flex items-center gap-1 text-[10px] text-slate-500 font-normal">
-                        <Lock className="w-3 h-3" />
-                        <span>{item.status}</span>
-                      </span>
-                    </div>
-                  ) : (
-                    <Link
-                      key={item.name}
-                      to={item.href}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all ${
-                        item.active
-                          ? 'bg-gradient-to-r from-brand-600 to-blue-600 text-white font-bold shadow-md shadow-brand-600/20'
-                          : 'text-slate-300 hover:text-white hover:bg-slate-800/70'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        {item.icon}
-                        <span>{item.name}</span>
-                      </div>
-                      {item.active && <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 shadow-sm shadow-emerald-400" />}
-                    </Link>
-                  )
-                )}
-              </nav>
+            <div className="space-y-4">
+              {navSections.map((section) => (
+                <div key={section.title} className="space-y-1">
+                  <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+                    <span>{section.title}</span>
+                  </div>
+                  <nav className="space-y-1">
+                    {section.items.map((item) => (
+                      <Link
+                        key={item.name}
+                        to={item.href}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all ${
+                          item.active
+                            ? 'bg-gradient-to-r from-brand-600 to-blue-600 text-white font-bold shadow-md shadow-brand-600/20'
+                            : 'text-slate-300 hover:text-white hover:bg-slate-800/70'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          {item.icon}
+                          <span>{item.name}</span>
+                        </div>
+                        {item.active && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 shadow-sm shadow-emerald-400" />
+                        )}
+                      </Link>
+                    ))}
+                  </nav>
+                </div>
+              ))}
             </div>
 
             {/* Status Information Box */}
             <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 text-left">
               <div className="flex items-center gap-1.5 text-white font-bold text-xs">
                 <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                <span>Real Estate Operating System</span>
+                <span>Real Estate OS Active</span>
               </div>
               <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
-                Live inventory tracking, site tour scheduler, lead qualification & Customer 360 are active.
+                Live inventory tracking, site tour scheduler, lead qualification & Customer 360 are operational.
               </p>
             </div>
 

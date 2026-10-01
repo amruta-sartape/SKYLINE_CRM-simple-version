@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { projectService, ProjectFilters } from '../services/project.service';
 import type { PropertyProject, ProjectFormData } from '../types/property.types';
+import { AppShell } from '../components/layout/AppShell';
 import { ProjectCard } from '../components/property/ProjectCard';
 import { ProjectFormModal } from '../components/property/ProjectFormModal';
 import { ProjectDetailModal } from '../components/property/ProjectDetailModal';
@@ -97,7 +98,8 @@ export const ProjectsPage: React.FC = () => {
   const cities = Array.from(new Set(projects.map((p) => p.city).filter(Boolean)));
 
   return (
-    <div className="space-y-6">
+    <AppShell>
+      <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -433,5 +435,6 @@ export const ProjectsPage: React.FC = () => {
         onExploreInventory={handleExploreInventory}
       />
     </div>
+    </AppShell>
   );
 };

@@ -193,9 +193,91 @@ const PROJECT_GALLERY_CATALOG: Record<string, ProjectImageSet> = {
       },
     ],
   },
+
+  // 6. Skyline Nexus Commercial & Tech Park (BKC / Financial District)
+  commercial: {
+    projectId: 'proj_skyline_commercial',
+    cover: '/images/commercial-tower.jpg',
+    category: 'Grade-A Commercial Office Towers',
+    badge: 'Corporate Tech Park',
+    gallery: [
+      {
+        url: '/images/commercial-tower.jpg',
+        label: 'Glass Curtain Corporate Tower & Plaza',
+        category: 'Exterior',
+        altText: 'Modern commercial office building with glass facade and landscaped fountain plaza',
+      },
+      {
+        url: '/images/projects/project-pinnacle/interior.jpg',
+        label: 'Executive Boardroom & Sky Lounge',
+        category: 'Interior',
+        altText: 'Modern corporate executive suite with skyline views',
+      },
+      {
+        url: '/images/projects/project-heights/amenities.jpg',
+        label: 'Business Center & Wellness Club',
+        category: 'Amenities',
+        altText: 'Corporate wellness center and business club',
+      },
+      {
+        url: '/images/projects/project-bayview/entrance.jpg',
+        label: 'Corporate Double-Height Reception',
+        category: 'Entrance',
+        altText: 'Illuminated corporate lobby and turnstile security gate',
+      },
+    ],
+  },
 };
 
-const PROJECT_KEYS = ['bayview', 'heights', 'grandeur', 'oasis', 'pinnacle'];
+const PROJECT_KEYS = ['bayview', 'heights', 'grandeur', 'oasis', 'pinnacle', 'commercial'];
+
+/**
+ * Reusable Property Image Classification Library
+ */
+export const PROPERTY_IMAGE_LIBRARY = {
+  apartments: {
+    title: 'Luxury High-Rise Apartments & Flats',
+    cover: '/images/projects/project-bayview/exterior.jpg',
+    interior: '/images/projects/project-bayview/interior.jpg',
+    amenities: '/images/projects/project-bayview/amenities.jpg',
+    entrance: '/images/projects/project-bayview/entrance.jpg',
+  },
+  twinTowers: {
+    title: 'Contemporary Twin Towers & Suites',
+    cover: '/images/projects/project-heights/exterior.jpg',
+    interior: '/images/projects/project-heights/interior.jpg',
+    amenities: '/images/projects/project-heights/amenities.jpg',
+    entrance: '/images/projects/project-heights/entrance.jpg',
+  },
+  ecoCondos: {
+    title: 'Eco-Luxury Terraced Condominiums',
+    cover: '/images/projects/project-grandeur/exterior.jpg',
+    interior: '/images/projects/project-grandeur/interior.jpg',
+    amenities: '/images/projects/project-grandeur/amenities.jpg',
+    entrance: '/images/projects/project-grandeur/entrance.jpg',
+  },
+  villas: {
+    title: 'Resort Villas & Private Estates',
+    cover: '/images/projects/project-oasis/exterior.jpg',
+    interior: '/images/projects/project-oasis/interior.jpg',
+    amenities: '/images/projects/project-oasis/amenities.jpg',
+    entrance: '/images/projects/project-oasis/entrance.jpg',
+  },
+  penthouses: {
+    title: 'Iconic Sky Villas & Penthouse Lounges',
+    cover: '/images/projects/project-pinnacle/exterior.jpg',
+    interior: '/images/projects/project-pinnacle/interior.jpg',
+    amenities: '/images/projects/project-pinnacle/amenities.jpg',
+    entrance: '/images/projects/project-pinnacle/entrance.jpg',
+  },
+  commercial: {
+    title: 'Grade-A Commercial & Office Parks',
+    cover: '/images/commercial-tower.jpg',
+    interior: '/images/projects/project-pinnacle/interior.jpg',
+    amenities: '/images/projects/project-heights/amenities.jpg',
+    entrance: '/images/projects/project-bayview/entrance.jpg',
+  },
+};
 
 /**
  * Deterministically maps any project to its distinct, dedicated image set.
@@ -212,6 +294,9 @@ export function getProjectImageSet(project?: Partial<PropertyProject> | null, fa
   const id = (project.id || '').toLowerCase();
 
   // 1. Direct Name / Key Matching
+  if (name.includes('commercial') || name.includes('office') || name.includes('tech') || code === 'skc') {
+    return PROJECT_GALLERY_CATALOG.commercial;
+  }
   if (name.includes('bayview') || code === 'skb' || id.includes('bayview')) {
     return PROJECT_GALLERY_CATALOG.bayview;
   }
@@ -256,10 +341,13 @@ export function getProjectImage(project?: Partial<PropertyProject> | null, index
 }
 
 /**
- * Resolves unit image from configuration
+ * Resolves unit image from configuration or property type
  */
 export function getUnitImage(unit?: Partial<PropertyUnit> | null, index = 0) {
   const config = (unit?.configuration || '').toUpperCase();
+  if (config.includes('COMMERCIAL') || config.includes('OFFICE')) {
+    return PROJECT_GALLERY_CATALOG.commercial;
+  }
   if (config.includes('4 BHK') || config.includes('PENTHOUSE')) {
     return PROJECT_GALLERY_CATALOG.pinnacle;
   }
@@ -269,7 +357,7 @@ export function getUnitImage(unit?: Partial<PropertyUnit> | null, index = 0) {
   if (config.includes('2 BHK') || config.includes('1 BHK')) {
     return PROJECT_GALLERY_CATALOG.bayview;
   }
-  if (config.includes('VILLA') || config.includes('PLOT')) {
+  if (config.includes('VILLA') || config.includes('PLOT') || config.includes('BUNGALOW')) {
     return PROJECT_GALLERY_CATALOG.oasis;
   }
   const key = PROJECT_KEYS[index % PROJECT_KEYS.length];

@@ -13,6 +13,7 @@ import type {
 } from '../types/property.types';
 import { UnitAvailabilityModal } from '../components/property/UnitAvailabilityModal';
 import { UnitFormModal } from '../components/property/UnitFormModal';
+import { AppShell } from '../components/layout/AppShell';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Alert } from '../components/ui/Alert';
@@ -93,30 +94,34 @@ export const UnitDetailPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="p-16 text-center text-slate-400">
-        <div className="animate-spin w-8 h-8 border-3 border-brand-600 border-t-transparent rounded-full mx-auto mb-3" />
-        <p className="text-xs font-medium">Loading unit specification profile...</p>
-      </div>
+      <AppShell>
+        <div className="p-16 text-center text-slate-400">
+          <div className="animate-spin w-8 h-8 border-3 border-brand-600 border-t-transparent rounded-full mx-auto mb-3" />
+          <p className="text-xs font-medium">Loading unit specification profile...</p>
+        </div>
+      </AppShell>
     );
   }
 
   if (error || !unit) {
     return (
-      <div className="space-y-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => navigate('/inventory')}
-          leftIcon={<ArrowLeft className="w-3.5 h-3.5" />}
-        >
-          Back to Inventory
-        </Button>
-        <Alert
-          variant="error"
-          title="Not Found"
-          message={error || 'Unit specifications could not be found.'}
-        />
-      </div>
+      <AppShell>
+        <div className="space-y-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate('/inventory')}
+            leftIcon={<ArrowLeft className="w-3.5 h-3.5" />}
+          >
+            Back to Inventory
+          </Button>
+          <Alert
+            variant="error"
+            title="Not Found"
+            message={error || 'Unit specifications could not be found.'}
+          />
+        </div>
+      </AppShell>
     );
   }
 
@@ -126,7 +131,8 @@ export const UnitDetailPage: React.FC = () => {
   );
 
   return (
-    <div className="space-y-6">
+    <AppShell>
+      <div className="space-y-6">
       {/* Top Breadcrumb & Actions Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200/90 shadow-subtle">
         <div className="flex items-center gap-3">
@@ -419,5 +425,6 @@ export const UnitDetailPage: React.FC = () => {
         amenities={amenities}
       />
     </div>
+    </AppShell>
   );
 };

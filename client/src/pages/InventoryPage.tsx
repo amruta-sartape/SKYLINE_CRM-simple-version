@@ -18,6 +18,7 @@ import { InventoryStats } from '../components/property/InventoryStats';
 import { UnitFormModal } from '../components/property/UnitFormModal';
 import { UnitAvailabilityModal } from '../components/property/UnitAvailabilityModal';
 import { FloorMatrixView } from '../components/property/FloorMatrixView';
+import { AppShell } from '../components/layout/AppShell';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Alert } from '../components/ui/Alert';
@@ -233,7 +234,8 @@ export const InventoryPage: React.FC = () => {
   const totalPages = Math.ceil(totalUnits / limit) || 1;
 
   return (
-    <div className="space-y-6">
+    <AppShell>
+      <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -759,5 +761,6 @@ export const InventoryPage: React.FC = () => {
         userRole={userPrimaryRole}
       />
     </div>
+    </AppShell>
   );
 };

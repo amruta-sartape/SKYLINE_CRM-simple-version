@@ -6,8 +6,11 @@ import { authService } from '../services/auth.service';
 import { leadService } from '../services/lead.service';
 import { enquiryService } from '../services/enquiry.service';
 import { siteVisitService } from '../services/siteVisit.service';
+import { followUpService } from '../services/followUp.service';
 import { projectService } from '../services/project.service';
 import { unitService } from '../services/unit.service';
+import { SiteVisit } from '../types/siteVisit.types';
+import { FollowUpItem } from '../types/followUp.types';
 import { AppShell } from '../components/layout/AppShell';
 import { FeaturedPropertiesShowcase } from '../components/dashboard/FeaturedPropertiesShowcase';
 import { Badge } from '../components/ui/Badge';
@@ -33,6 +36,8 @@ import {
   Home,
   ArrowRight,
   TrendingUp,
+  Clock,
+  CheckCheck,
 } from 'lucide-react';
 
 export const AppOverviewPage: React.FC = () => {
@@ -49,16 +54,20 @@ export const AppOverviewPage: React.FC = () => {
     isLoading: true,
   });
 
+  const [recentVisits, setRecentVisits] = useState<SiteVisit[]>([]);
+  const [recentFollowUps, setRecentFollowUps] = useState<FollowUpItem[]>([]);
+
   useEffect(() => {
     let isMounted = true;
     async function fetchDashboardMetrics() {
       try {
-        const [enqRes, leadsRes, svRes, projRes, unitsRes] = await Promise.allSettled([
+        const [enqRes, leadsRes, svRes, projRes, unitsRes, folRes] = await Promise.allSettled([
           enquiryService.getEnquiries({ limit: 1 }),
           leadService.getLeads({ limit: 1 }),
-          siteVisitService.list({ limit: 1 }),
+          siteVisitService.list({ limit: 4 }),
           projectService.list({ limit: 1 }),
           unitService.list({ limit: 1 }),
+          followUpService.list({ limit: 4 }),
         ]);
 
         if (isMounted) {
@@ -70,6 +79,13 @@ export const AppOverviewPage: React.FC = () => {
             units: unitsRes.status === 'fulfilled' ? unitsRes.value.total : 450,
             isLoading: false,
           });
+
+          if (svRes.status === 'fulfilled') {
+            setRecentVisits(svRes.value.visits || []);
+          }
+          if (folRes.status === 'fulfilled') {
+            setRecentFollowUps(folRes.value.followUps || []);
+          }
         }
       } catch (e) {
         if (isMounted) {
@@ -328,14 +344,130 @@ export const AppOverviewPage: React.FC = () => {
         {/* 3. Featured Properties Portfolio Showcase Section (Photorealistic & DB Integrated) */}
         <FeaturedPropertiesShowcase />
 
-        {/* 3. CRM Modules Quick Launch Matrix */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-subtle space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <div className="flex items-center gap-2 text-slate-900 font-bold text-base">
-              <TrendingUp className="w-5 h-5 text-brand-600" />
+        {/* 4. Live CRM Operations Stream: Today's Site Visits & Follow-Up Outreach */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Left: Scheduled Site Visits & Property Tours (6 cols) */}
+          <div className="lg:col-span-6 bg-slate-900/85 backdrop-blur-xl rounded-2xl border border-slate-800 p-5 shadow-xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2 text-white font-bold text-sm">
+                <CalendarCheck className="w-4 h-4 text-amber-400" />
+                <h3>Scheduled Site Visits & Tours</h3>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/site-visits')}
+                className="text-[11px] h-7 px-2 text-slate-300 border-slate-700 bg-slate-800/60"
+              >
+                View All ({metrics.siteVisits})
+              </Button>
+            </div>
+
+            {recentVisits.length === 0 ? (
+              <div className="p-8 text-center bg-slate-950/60 rounded-xl border border-slate-800 text-slate-400 space-y-2">
+                <CalendarCheck className="w-8 h-8 mx-auto text-slate-600" />
+                <p className="text-xs font-semibold text-slate-300">No Scheduled Tours Pending</p>
+                <p className="text-[11px] text-slate-500">All customer property inspections are up to date.</p>
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                {recentVisits.map((visit) => (
+                  <div
+                    key={visit.id}
+                    onClick={() => navigate(`/site-visits/${visit.id}`)}
+                    className="p-3 bg-slate-950/70 hover:bg-slate-950 rounded-xl border border-slate-800/90 hover:border-amber-500/40 transition-all duration-200 cursor-pointer flex items-center justify-between group"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-white text-xs group-hover:text-amber-300 transition-colors">
+                          {visit.customer_name || 'Client Lead'}
+                        </span>
+                        <Badge siteVisitStatus={visit.visit_status} size="xs" />
+                      </div>
+                      <div className="flex items-center gap-3 text-[11px] text-slate-400">
+                        <span className="flex items-center gap-1">
+                          <Building className="w-3 h-3 text-slate-500" />
+                          <span>{visit.project_name || 'Project Site'}</span>
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3 h-3 text-amber-400" />
+                          <span>{visit.visit_date} • {visit.visit_time}</span>
+                        </span>
+                      </div>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-amber-400 group-hover:translate-x-1 transition-all" />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Right: Client Outreach & Follow-Up Tasks (6 cols) */}
+          <div className="lg:col-span-6 bg-slate-900/85 backdrop-blur-xl rounded-2xl border border-slate-800 p-5 shadow-xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2 text-white font-bold text-sm">
+                <PhoneCall className="w-4 h-4 text-blue-400" />
+                <h3>Client Outreach & Follow-Ups</h3>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/follow-ups')}
+                className="text-[11px] h-7 px-2 text-slate-300 border-slate-700 bg-slate-800/60"
+              >
+                All Tasks
+              </Button>
+            </div>
+
+            {recentFollowUps.length === 0 ? (
+              <div className="p-8 text-center bg-slate-950/60 rounded-xl border border-slate-800 text-slate-400 space-y-2">
+                <PhoneCall className="w-8 h-8 mx-auto text-slate-600" />
+                <p className="text-xs font-semibold text-slate-300">All Client Follow-Ups Completed</p>
+                <p className="text-[11px] text-slate-500">No overdue customer communication tasks in queue.</p>
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                {recentFollowUps.map((fol) => (
+                  <div
+                    key={fol.id}
+                    onClick={() => navigate(`/follow-ups/${fol.id}`)}
+                    className="p-3 bg-slate-950/70 hover:bg-slate-950 rounded-xl border border-slate-800/90 hover:border-blue-500/40 transition-all duration-200 cursor-pointer flex items-center justify-between group"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-white text-xs group-hover:text-blue-300 transition-colors">
+                          {fol.customer_name || 'Client Contact'}
+                        </span>
+                        <Badge followUpType={fol.follow_up_type} size="xs" />
+                        <Badge followUpStatus={fol.status} size="xs" />
+                      </div>
+                      <div className="flex items-center gap-3 text-[11px] text-slate-400">
+                        <span className="flex items-center gap-1">
+                          <User className="w-3 h-3 text-slate-500" />
+                          <span>{fol.assigned_user_name || 'Sales Agent'}</span>
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3 h-3 text-blue-400" />
+                          <span>{fol.scheduled_date} • {fol.scheduled_time}</span>
+                        </span>
+                      </div>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* 5. CRM Modules Quick Launch Matrix */}
+        <div className="bg-slate-900/85 backdrop-blur-xl rounded-2xl border border-slate-800 p-6 shadow-xl space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div className="flex items-center gap-2 text-white font-bold text-base">
+              <TrendingUp className="w-5 h-5 text-brand-400" />
               <h2>Core Real Estate CRM Workflows</h2>
             </div>
-            <span className="text-xs text-slate-500 font-medium">
+            <span className="text-xs text-slate-400 font-medium">
               Click any module to launch workspace
             </span>
           </div>
@@ -345,28 +477,28 @@ export const AppOverviewPage: React.FC = () => {
               <div
                 key={mod.name}
                 onClick={() => navigate(mod.href)}
-                className={`p-4 rounded-xl border ${mod.color} transition-all duration-200 cursor-pointer shadow-2xs hover:shadow-card flex flex-col justify-between group`}
+                className="p-4 rounded-xl border border-slate-800 bg-slate-950/70 hover:bg-slate-950 hover:border-brand-500/40 transition-all duration-200 cursor-pointer shadow-md hover:shadow-xl flex flex-col justify-between group"
               >
                 <div className="flex items-start justify-between">
-                  <div className="p-2.5 bg-white rounded-lg shadow-2xs border border-slate-100 group-hover:scale-105 transition-transform">
+                  <div className="p-2.5 bg-slate-900 rounded-lg shadow-sm border border-slate-800 group-hover:scale-105 transition-transform text-brand-400">
                     {mod.icon}
                   </div>
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-800/40">
                     <CheckCircle2 className="w-2.5 h-2.5" />
                     {mod.badge}
                   </span>
                 </div>
 
                 <div className="mt-3">
-                  <h3 className="text-sm font-bold text-slate-900 group-hover:text-brand-700 transition-colors">
+                  <h3 className="text-sm font-bold text-white group-hover:text-brand-300 transition-colors">
                     {mod.name}
                   </h3>
-                  <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
+                  <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">
                     {mod.desc}
                   </p>
                 </div>
 
-                <div className="mt-3 pt-2.5 border-t border-slate-200/60 flex items-center justify-between text-xs font-semibold text-brand-600 group-hover:text-brand-800">
+                <div className="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-xs font-semibold text-brand-400 group-hover:text-brand-300">
                   <span>Open Workspace</span>
                   <ArrowRight className="w-3.5 h-3.5 transform group-hover:translate-x-1 transition-transform" />
                 </div>
@@ -375,44 +507,44 @@ export const AppOverviewPage: React.FC = () => {
           </div>
         </div>
 
-        {/* 4. 2-Column Grid: Profile & Live Role Security Guard Tester */}
+        {/* 6. 2-Column Grid: Profile & Live Role Security Guard Tester */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left: Active User Profile & Session Claims (5 cols) */}
-          <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200/90 p-6 shadow-subtle space-y-5">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-              <div className="flex items-center gap-2.5 text-slate-900 font-bold text-sm">
-                <User className="w-4.5 h-4.5 text-slate-700" />
+          <div className="lg:col-span-5 bg-slate-900/85 backdrop-blur-xl rounded-2xl border border-slate-800 p-6 shadow-xl space-y-5">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+              <div className="flex items-center gap-2.5 text-white font-bold text-sm">
+                <User className="w-4.5 h-4.5 text-slate-300" />
                 <h3>Authenticated Identity</h3>
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800/40">
                 Verified Active
               </span>
             </div>
 
             <div className="space-y-3 text-xs">
-              <div className="flex items-start justify-between py-1.5 border-b border-slate-100">
-                <span className="text-slate-500 flex items-center gap-1.5">
-                  <User className="w-3.5 h-3.5 text-slate-400" /> Full Name:
+              <div className="flex items-start justify-between py-1.5 border-b border-slate-800">
+                <span className="text-slate-400 flex items-center gap-1.5">
+                  <User className="w-3.5 h-3.5 text-slate-500" /> Full Name:
                 </span>
-                <span className="font-semibold text-slate-900">{user?.name}</span>
+                <span className="font-semibold text-white">{user?.name}</span>
               </div>
 
-              <div className="flex items-start justify-between py-1.5 border-b border-slate-100">
-                <span className="text-slate-500 flex items-center gap-1.5">
-                  <Mail className="w-3.5 h-3.5 text-slate-400" /> Corporate Email:
+              <div className="flex items-start justify-between py-1.5 border-b border-slate-800">
+                <span className="text-slate-400 flex items-center gap-1.5">
+                  <Mail className="w-3.5 h-3.5 text-slate-500" /> Corporate Email:
                 </span>
-                <span className="font-mono text-[11px] text-slate-900">{user?.email}</span>
+                <span className="font-mono text-[11px] text-slate-200">{user?.email}</span>
               </div>
 
-              <div className="flex items-start justify-between py-1.5 border-b border-slate-100">
-                <span className="text-slate-500 flex items-center gap-1.5">
-                  <Phone className="w-3.5 h-3.5 text-slate-400" /> Phone Number:
+              <div className="flex items-start justify-between py-1.5 border-b border-slate-800">
+                <span className="text-slate-400 flex items-center gap-1.5">
+                  <Phone className="w-3.5 h-3.5 text-slate-500" /> Phone Number:
                 </span>
-                <span className="text-slate-900 font-medium">{user?.phone || 'N/A'}</span>
+                <span className="text-slate-300 font-medium">{user?.phone || 'N/A'}</span>
               </div>
 
-              <div className="flex items-start justify-between py-1.5 border-b border-slate-100">
-                <span className="text-slate-500 flex items-center gap-1.5">
+              <div className="flex items-start justify-between py-1.5 border-b border-slate-800">
+                <span className="text-slate-400 flex items-center gap-1.5">
                   <ShieldCheck className="w-3.5 h-3.5 text-amber-500" /> Assigned Roles:
                 </span>
                 <div className="flex gap-1">
@@ -423,32 +555,32 @@ export const AppOverviewPage: React.FC = () => {
               </div>
 
               <div className="flex items-start justify-between py-1.5">
-                <span className="text-slate-500 flex items-center gap-1.5">
-                  <Calendar className="w-3.5 h-3.5 text-slate-400" /> Account ID:
+                <span className="text-slate-400 flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-slate-500" /> Account ID:
                 </span>
-                <span className="font-mono text-[10px] text-slate-600 truncate max-w-[170px]">
+                <span className="font-mono text-[10px] text-slate-400 truncate max-w-[170px]">
                   {user?.id}
                 </span>
               </div>
             </div>
 
             {/* Architecture Highlights */}
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2 text-xs text-slate-600">
-              <div className="font-bold text-slate-800 flex items-center gap-1.5 text-xs">
-                <Database className="w-3.5 h-3.5 text-slate-700" />
+            <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-2 text-xs text-slate-300">
+              <div className="font-bold text-white flex items-center gap-1.5 text-xs">
+                <Database className="w-3.5 h-3.5 text-brand-400" />
                 <span>Enterprise Relational SQLite Core</span>
               </div>
-              <p className="text-[11px] leading-relaxed text-slate-500">
+              <p className="text-[11px] leading-relaxed text-slate-400">
                 Passwords hashed with <strong>bcrypt (10 rounds)</strong>. Sessions authenticated via cryptographic JWTs with server-side validation and audit logging.
               </p>
             </div>
           </div>
 
           {/* Right: Live Backend RBAC Guard Tester (7 cols) */}
-          <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200/90 p-6 shadow-subtle space-y-5">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-              <div className="flex items-center gap-2.5 text-slate-900 font-bold text-sm">
-                <Server className="w-4.5 h-4.5 text-brand-600" />
+          <div className="lg:col-span-7 bg-slate-900/85 backdrop-blur-xl rounded-2xl border border-slate-800 p-6 shadow-xl space-y-5">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+              <div className="flex items-center gap-2.5 text-white font-bold text-sm">
+                <Server className="w-4.5 h-4.5 text-brand-400" />
                 <h3>Live Backend Role Guard Tester</h3>
               </div>
               <span className="text-[10px] text-slate-400 font-medium">
@@ -456,7 +588,7 @@ export const AppOverviewPage: React.FC = () => {
               </span>
             </div>
 
-            <p className="text-xs text-slate-600 leading-relaxed">
+            <p className="text-xs text-slate-300 leading-relaxed">
               Test server-side authorization directly. Click any test below to dispatch an authenticated API request with your active Bearer token. The backend verifies your database role before returning data or rejecting with HTTP 403.
             </p>
 
@@ -465,7 +597,7 @@ export const AppOverviewPage: React.FC = () => {
               <Button
                 variant={primaryRole === 'ADMIN' ? 'luxury' : 'outline'}
                 size="sm"
-                className="w-full flex-col py-3 h-auto text-left items-start"
+                className="w-full flex-col py-3 h-auto text-left items-start text-slate-200 border-slate-700 bg-slate-950/60 hover:bg-slate-900"
                 onClick={() => runRoleTest('ADMIN')}
                 disabled={isTesting}
               >
@@ -479,12 +611,12 @@ export const AppOverviewPage: React.FC = () => {
               <Button
                 variant={primaryRole === 'EMPLOYEE' || primaryRole === 'ADMIN' ? 'secondary' : 'outline'}
                 size="sm"
-                className="w-full flex-col py-3 h-auto text-left items-start"
+                className="w-full flex-col py-3 h-auto text-left items-start text-slate-200 border-slate-700 bg-slate-950/60 hover:bg-slate-900"
                 onClick={() => runRoleTest('EMPLOYEE')}
                 disabled={isTesting}
               >
                 <div className="flex items-center gap-1.5 font-bold text-xs">
-                  <Building className="w-3.5 h-3.5 text-blue-500" />
+                  <Building className="w-3.5 h-3.5 text-blue-400" />
                   <span>Operations Route</span>
                 </div>
                 <span className="text-[10px] opacity-75 mt-0.5">ADMIN or EMPLOYEE</span>
@@ -493,12 +625,12 @@ export const AppOverviewPage: React.FC = () => {
               <Button
                 variant={primaryRole === 'AGENT' || primaryRole === 'ADMIN' ? 'secondary' : 'outline'}
                 size="sm"
-                className="w-full flex-col py-3 h-auto text-left items-start"
+                className="w-full flex-col py-3 h-auto text-left items-start text-slate-200 border-slate-700 bg-slate-950/60 hover:bg-slate-900"
                 onClick={() => runRoleTest('AGENT')}
                 disabled={isTesting}
               >
                 <div className="flex items-center gap-1.5 font-bold text-xs">
-                  <KeyRound className="w-3.5 h-3.5 text-emerald-500" />
+                  <KeyRound className="w-3.5 h-3.5 text-emerald-400" />
                   <span>Agent Route</span>
                 </div>
                 <span className="text-[10px] opacity-75 mt-0.5">ADMIN or AGENT</span>
@@ -509,12 +641,12 @@ export const AppOverviewPage: React.FC = () => {
             {testResult && (
               <div className="space-y-2 animate-fade-in">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-slate-700">HTTP Response:</span>
+                  <span className="font-semibold text-slate-300">HTTP Response:</span>
                   <span
                     className={`font-mono font-bold text-[11px] px-2 py-0.5 rounded ${
                       testResult.success
-                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                        : 'bg-rose-50 text-rose-700 border border-rose-200'
+                        ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-800/60'
+                        : 'bg-rose-950/80 text-rose-400 border border-rose-900/60'
                     }`}
                   >
                     HTTP {testResult.status} {testResult.success ? 'OK' : 'FORBIDDEN'}
@@ -524,7 +656,7 @@ export const AppOverviewPage: React.FC = () => {
                 <div
                   className={`p-3.5 rounded-lg border text-xs font-mono overflow-x-auto ${
                     testResult.success
-                      ? 'bg-slate-900 text-emerald-400 border-slate-800'
+                      ? 'bg-slate-950 text-emerald-400 border-slate-800'
                       : 'bg-slate-950 text-rose-400 border-rose-900/40'
                   }`}
                 >
@@ -542,14 +674,14 @@ export const AppOverviewPage: React.FC = () => {
           </div>
         </div>
 
-        {/* 5. Phase 1-4 Architecture Verification Summary */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-subtle space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
-              <Layers className="w-4 h-4 text-brand-600" />
+        {/* 7. Phase 1-4 Architecture Verification Summary */}
+        <div className="bg-slate-900/85 backdrop-blur-xl rounded-2xl border border-slate-800 p-6 shadow-xl space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div className="flex items-center gap-2 text-white font-bold text-sm">
+              <Layers className="w-4 h-4 text-brand-400" />
               <h3>CRM Active Domain Modules (Phases 1–4 Verified)</h3>
             </div>
-            <span className="text-xs text-slate-500 font-medium">
+            <span className="text-xs text-slate-400 font-medium">
               Enterprise SQLite Relational Schema
             </span>
           </div>
@@ -563,12 +695,12 @@ export const AppOverviewPage: React.FC = () => {
               { name: 'Follow-Up Engine', desc: 'Auto-scheduling', status: 'Phase 4 Active' },
               { name: 'Customer 360', desc: 'Unified audit timeline', status: 'Active' },
             ].map((mod) => (
-              <div key={mod.name} className="p-3 bg-slate-50 border border-slate-200/80 rounded-xl text-left">
-                <div className="text-xs font-bold text-slate-900">{mod.name}</div>
-                <div className="text-[10px] text-slate-500 mt-0.5">{mod.desc}</div>
+              <div key={mod.name} className="p-3 bg-slate-950/70 border border-slate-800 rounded-xl text-left">
+                <div className="text-xs font-bold text-white">{mod.name}</div>
+                <div className="text-[10px] text-slate-400 mt-0.5">{mod.desc}</div>
                 <div className="mt-2">
-                  <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200/60">
-                    <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" />
+                  <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-800/60">
+                    <CheckCheck className="w-2.5 h-2.5 text-emerald-400" />
                     <span>{mod.status}</span>
                   </span>
                 </div>
