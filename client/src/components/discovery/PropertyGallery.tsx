@@ -156,6 +156,7 @@ export const PropertyGallery: React.FC<PropertyGalleryProps> = ({
             }}
             className="p-2 rounded-xl bg-black/70 hover:bg-black text-white border border-white/20 backdrop-blur-md shadow-lg transition-colors cursor-pointer"
             title="Expand Fullscreen Gallery"
+            aria-label="Expand fullscreen photo gallery"
           >
             <Maximize2 className="w-4 h-4" />
           </button>
@@ -172,6 +173,7 @@ export const PropertyGallery: React.FC<PropertyGalleryProps> = ({
               }}
               className="pointer-events-auto p-2.5 rounded-full bg-slate-950/80 hover:bg-slate-900 text-white border border-white/15 backdrop-blur-md opacity-80 group-hover:opacity-100 hover:scale-110 transition-all cursor-pointer shadow-lg"
               title="Previous Image (←)"
+              aria-label="Previous photo"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -183,6 +185,7 @@ export const PropertyGallery: React.FC<PropertyGalleryProps> = ({
               }}
               className="pointer-events-auto p-2.5 rounded-full bg-slate-950/80 hover:bg-slate-900 text-white border border-white/15 backdrop-blur-md opacity-80 group-hover:opacity-100 hover:scale-110 transition-all cursor-pointer shadow-lg"
               title="Next Image (→)"
+              aria-label="Next photo"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -289,6 +292,7 @@ export const PropertyGallery: React.FC<PropertyGalleryProps> = ({
                 onClick={() => setIsLightboxOpen(false)}
                 className="p-2 rounded-full bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition-colors cursor-pointer"
                 title="Close Lightbox (Esc)"
+                aria-label="Close fullscreen gallery"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -314,6 +318,7 @@ export const PropertyGallery: React.FC<PropertyGalleryProps> = ({
                   onClick={handlePrev}
                   className="absolute left-2 sm:left-4 p-3 rounded-full bg-black/70 hover:bg-black text-white border border-white/20 backdrop-blur-md transition-all hover:scale-110 cursor-pointer shadow-2xl"
                   title="Previous Photo (Left Arrow)"
+                  aria-label="Previous photo"
                 >
                   <ChevronLeft className="w-6 h-6" />
                 </button>
@@ -322,6 +327,7 @@ export const PropertyGallery: React.FC<PropertyGalleryProps> = ({
                   onClick={handleNext}
                   className="absolute right-2 sm:right-4 p-3 rounded-full bg-black/70 hover:bg-black text-white border border-white/20 backdrop-blur-md transition-all hover:scale-110 cursor-pointer shadow-2xl"
                   title="Next Photo (Right Arrow)"
+                  aria-label="Next photo"
                 >
                   <ChevronRight className="w-6 h-6" />
                 </button>

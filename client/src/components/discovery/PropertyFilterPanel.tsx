@@ -160,8 +160,9 @@ export const PropertyFilterPanel: React.FC<PropertyFilterPanelProps> = ({
               <button
                 type="button"
                 onClick={() => onChangeFilters({ query: '' })}
-                className="p-1 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
+                className="p-1 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white absolute right-3 top-1/2 -translate-y-1/2 transition-colors cursor-pointer"
                 title="Clear search query"
+                aria-label="Clear search query"
               >
                 <X className="w-3.5 h-3.5" />
               </button>

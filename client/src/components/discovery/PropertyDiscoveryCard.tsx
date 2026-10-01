@@ -83,16 +83,18 @@ export const PropertyDiscoveryCard: React.FC<PropertyDiscoveryCardProps> = ({
             <button
               type="button"
               onClick={handlePrevImage}
-              className="pointer-events-auto p-1.5 rounded-full bg-black/70 hover:bg-black text-white transition-colors"
+              className="pointer-events-auto p-1.5 rounded-full bg-black/70 hover:bg-black text-white transition-colors cursor-pointer"
               title="Previous Photo"
+              aria-label="Previous photo"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
             </button>
             <button
               type="button"
               onClick={handleNextImage}
-              className="pointer-events-auto p-1.5 rounded-full bg-black/70 hover:bg-black text-white transition-colors"
+              className="pointer-events-auto p-1.5 rounded-full bg-black/70 hover:bg-black text-white transition-colors cursor-pointer"
               title="Next Photo"
+              aria-label="Next photo"
             >
               <ChevronRight className="w-3.5 h-3.5" />
             </button>
