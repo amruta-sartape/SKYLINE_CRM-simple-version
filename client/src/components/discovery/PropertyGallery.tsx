@@ -113,7 +113,7 @@ export const PropertyGallery: React.FC<PropertyGalleryProps> = ({
     <div className="space-y-3 text-left">
       {/* 1. Large Primary Hero Display */}
       <div
-        className="relative h-72 sm:h-96 md:h-[420px] w-full rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 shadow-2xl group cursor-pointer select-none"
+        className="relative h-72 sm:h-96 md:h-[420px] w-full rounded-2xl overflow-hidden bg-stone-900 border border-stone-200/90 shadow-sm group cursor-pointer select-none"
         onClick={() => setIsLightboxOpen(true)}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
@@ -130,22 +130,22 @@ export const PropertyGallery: React.FC<PropertyGalleryProps> = ({
         />
 
         {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-black/20 to-black/40 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-black/15 to-black/30 pointer-events-none" />
 
         {/* Top Badges */}
         <div className="absolute top-3.5 left-3.5 flex items-center gap-2 z-10">
-          <span className="px-3 py-1 rounded-full bg-slate-950/85 backdrop-blur-md text-xs font-bold text-amber-300 border border-amber-400/30 shadow-md flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+          <span className="px-3 py-1 rounded-full bg-white/95 backdrop-blur-md text-xs font-bold text-stone-800 border border-stone-200/80 shadow-xs flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-amber-700" />
             {propertySubtype}
           </span>
-          <span className="px-2.5 py-1 rounded-md bg-black/75 backdrop-blur-md text-[11px] font-bold text-slate-300 border border-white/10 uppercase tracking-wider">
+          <span className="px-2.5 py-1 rounded-md bg-stone-900/80 backdrop-blur-md text-[11px] font-bold text-stone-200 border border-white/10 uppercase tracking-wider">
             {currentImage.category}
           </span>
         </div>
 
         {/* Top Right: Code & Fullscreen Toggle Button */}
         <div className="absolute top-3.5 right-3.5 flex items-center gap-2 z-10">
-          <span className="px-2.5 py-1 rounded-md bg-slate-900/90 backdrop-blur-md text-xs font-mono font-bold text-slate-200 border border-slate-700">
+          <span className="px-2.5 py-1 rounded-md bg-stone-900/85 backdrop-blur-md text-xs font-mono font-bold text-stone-200 border border-stone-700">
             {propertyCode}
           </span>
           <button
@@ -154,7 +154,7 @@ export const PropertyGallery: React.FC<PropertyGalleryProps> = ({
               e.stopPropagation();
               setIsLightboxOpen(true);
             }}
-            className="p-2 rounded-xl bg-black/70 hover:bg-black text-white border border-white/20 backdrop-blur-md shadow-lg transition-colors cursor-pointer"
+            className="p-2 rounded-xl bg-stone-900/80 hover:bg-stone-900 text-white border border-white/20 backdrop-blur-md shadow-md transition-colors cursor-pointer"
             title="Expand Fullscreen Gallery"
             aria-label="Expand fullscreen photo gallery"
           >
@@ -171,7 +171,7 @@ export const PropertyGallery: React.FC<PropertyGalleryProps> = ({
                 e.stopPropagation();
                 handlePrev();
               }}
-              className="pointer-events-auto p-2.5 rounded-full bg-slate-950/80 hover:bg-slate-900 text-white border border-white/15 backdrop-blur-md opacity-80 group-hover:opacity-100 hover:scale-110 transition-all cursor-pointer shadow-lg"
+              className="pointer-events-auto p-2.5 rounded-full bg-stone-900/80 hover:bg-stone-900 text-white border border-white/15 backdrop-blur-md opacity-80 group-hover:opacity-100 hover:scale-105 transition-all cursor-pointer shadow-md"
               title="Previous Image (←)"
               aria-label="Previous photo"
             >
@@ -183,7 +183,7 @@ export const PropertyGallery: React.FC<PropertyGalleryProps> = ({
                 e.stopPropagation();
                 handleNext();
               }}
-              className="pointer-events-auto p-2.5 rounded-full bg-slate-950/80 hover:bg-slate-900 text-white border border-white/15 backdrop-blur-md opacity-80 group-hover:opacity-100 hover:scale-110 transition-all cursor-pointer shadow-lg"
+              className="pointer-events-auto p-2.5 rounded-full bg-stone-900/80 hover:bg-stone-900 text-white border border-white/15 backdrop-blur-md opacity-80 group-hover:opacity-100 hover:scale-105 transition-all cursor-pointer shadow-md"
               title="Next Image (→)"
               aria-label="Next photo"
             >
@@ -195,15 +195,15 @@ export const PropertyGallery: React.FC<PropertyGalleryProps> = ({
         {/* Bottom Bar: Image Label, Caption & Counter */}
         <div className="absolute bottom-3.5 left-4 right-4 flex items-end justify-between text-white z-10 pointer-events-none">
           <div className="space-y-0.5 max-w-[70%]">
-            <p className="text-xs sm:text-sm font-extrabold text-white drop-shadow-md truncate">
+            <p className="text-xs sm:text-sm font-bold text-white drop-shadow-md truncate">
               {currentImage.label}
             </p>
-            <p className="text-[11px] text-slate-300 drop-shadow truncate font-normal">
+            <p className="text-[11px] text-stone-300 drop-shadow truncate font-normal">
               {propertyTitle}
             </p>
           </div>
 
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/75 backdrop-blur-md border border-white/20 text-xs font-mono font-bold text-amber-300 shadow-md">
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-stone-900/85 backdrop-blur-md border border-white/20 text-xs font-mono font-bold text-white shadow-md">
             <Camera className="w-3.5 h-3.5 text-amber-400" />
             <span>
               {activeIndex + 1} / {images.length}
@@ -224,28 +224,28 @@ export const PropertyGallery: React.FC<PropertyGalleryProps> = ({
                 onClick={() => setActiveIndex(idx)}
                 className={`relative h-18 sm:h-20 rounded-xl overflow-hidden border-2 transition-all duration-200 group cursor-pointer ${
                   isSelected
-                    ? 'border-amber-400 ring-2 ring-amber-400/40 shadow-lg scale-[1.02]'
-                    : 'border-slate-800 hover:border-slate-600 opacity-70 hover:opacity-100'
+                    ? 'border-amber-700 ring-2 ring-amber-700/30 shadow-xs scale-[1.02]'
+                    : 'border-stone-200 hover:border-stone-400 opacity-80 hover:opacity-100'
                 }`}
               >
                 <img
                   src={img.url}
                   alt={img.altText || img.label}
-                  className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-300"
+                  className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
                   loading="lazy"
                 />
                 <div
                   className={`absolute inset-0 transition-colors ${
                     isSelected
-                      ? 'bg-amber-400/10'
-                      : 'bg-black/40 group-hover:bg-transparent'
+                      ? 'bg-amber-700/10'
+                      : 'bg-black/30 group-hover:bg-transparent'
                   }`}
                 />
                 <span className="absolute bottom-1 left-1.5 right-1.5 text-[10px] font-bold text-white truncate drop-shadow-md text-left">
                   {img.category}
                 </span>
                 {isSelected && (
-                  <span className="absolute top-1 right-1.5 w-2 h-2 rounded-full bg-amber-400 shadow-xs" />
+                  <span className="absolute top-1 right-1.5 w-2 h-2 rounded-full bg-amber-600 shadow-xs" />
                 )}
               </button>
             );
@@ -273,24 +273,24 @@ export const PropertyGallery: React.FC<PropertyGalleryProps> = ({
                 <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/30 text-xs font-bold">
                   {propertySubtype}
                 </span>
-                <span className="text-sm font-extrabold text-white">
+                <span className="text-sm font-bold text-white">
                   {propertyTitle}
                 </span>
-                <span className="text-xs font-mono text-slate-400">
+                <span className="text-xs font-mono text-stone-400">
                   ({propertyCode})
                 </span>
               </div>
-              <p className="text-xs text-slate-400">{currentImage.label}</p>
+              <p className="text-xs text-stone-400">{currentImage.label}</p>
             </div>
 
             <div className="flex items-center gap-3">
-              <span className="px-3 py-1 rounded-full bg-slate-900 border border-slate-700 text-xs font-mono text-amber-300 font-bold">
+              <span className="px-3 py-1 rounded-full bg-stone-900 border border-stone-700 text-xs font-mono text-amber-300 font-bold">
                 {activeIndex + 1} of {images.length}
               </span>
               <button
                 type="button"
                 onClick={() => setIsLightboxOpen(false)}
-                className="p-2 rounded-full bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition-colors cursor-pointer"
+                className="p-2 rounded-full bg-stone-900 hover:bg-stone-800 text-stone-300 hover:text-white border border-stone-700 transition-colors cursor-pointer"
                 title="Close Lightbox (Esc)"
                 aria-label="Close fullscreen gallery"
               >
@@ -348,7 +348,7 @@ export const PropertyGallery: React.FC<PropertyGalleryProps> = ({
                 className={`h-14 w-20 rounded-lg overflow-hidden border-2 shrink-0 transition-all cursor-pointer ${
                   activeIndex === idx
                     ? 'border-amber-400 scale-105 ring-2 ring-amber-400/40'
-                    : 'border-slate-800 opacity-60 hover:opacity-100'
+                    : 'border-stone-800 opacity-60 hover:opacity-100'
                 }`}
               >
                 <img

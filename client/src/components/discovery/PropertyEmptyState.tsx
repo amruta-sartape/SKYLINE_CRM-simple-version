@@ -16,25 +16,25 @@ export const PropertyEmptyState: React.FC<PropertyEmptyStateProps> = ({
   selectedCategory,
 }) => {
   return (
-    <div className="p-12 sm:p-16 text-center bg-slate-900/80 backdrop-blur-xl rounded-2xl border border-slate-800 shadow-xl space-y-4 max-w-xl mx-auto">
-      <div className="w-14 h-14 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center mx-auto text-amber-400 shadow-md">
+    <div className="p-12 sm:p-16 text-center bg-white rounded-2xl border border-stone-200/90 shadow-xs space-y-4 max-w-xl mx-auto">
+      <div className="w-14 h-14 rounded-2xl bg-amber-50 border border-amber-200/60 flex items-center justify-center mx-auto text-amber-800 shadow-xs">
         <Building2 className="w-7 h-7" />
       </div>
 
       <div className="space-y-1.5">
-        <h3 className="text-base sm:text-lg font-bold text-white">
+        <h3 className="text-base sm:text-lg font-bold text-stone-900">
           No Properties Found
         </h3>
-        <p className="text-xs text-slate-400 leading-relaxed max-w-md mx-auto">
+        <p className="text-xs text-stone-500 leading-relaxed max-w-md mx-auto">
           {searchTerm ? (
             <>
-              No properties matched your search term <strong className="text-slate-200">"{searchTerm}"</strong> in{' '}
+              No properties matched your search term <strong className="text-stone-800">"{searchTerm}"</strong> in{' '}
               {selectedSubtype || selectedCategory || 'the catalog'}.
             </>
           ) : (
             <>
               There are currently no active listings under{' '}
-              <strong className="text-amber-300">{selectedSubtype || selectedCategory}</strong>. Try browsing another real estate category or clearing filters.
+              <strong className="text-amber-900">{selectedSubtype || selectedCategory}</strong>. Try browsing another real estate category or clearing filters.
             </>
           )}
         </p>
@@ -46,7 +46,7 @@ export const PropertyEmptyState: React.FC<PropertyEmptyStateProps> = ({
           size="sm"
           onClick={onReset}
           leftIcon={<RotateCcw className="w-3.5 h-3.5" />}
-          className="text-xs font-bold shadow-md shadow-brand-600/20 bg-gradient-to-r from-brand-600 to-blue-600 border-0"
+          className="text-xs font-semibold bg-stone-900 hover:bg-stone-800 text-white border-0 shadow-xs"
         >
           Browse All Properties
         </Button>

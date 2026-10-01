@@ -43,10 +43,10 @@ export const PropertyDiscoveryCard: React.FC<PropertyDiscoveryCardProps> = ({
   };
 
   return (
-    <div className="bg-slate-900/90 backdrop-blur-xl rounded-2xl border border-slate-800/90 hover:border-brand-500/50 shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col justify-between overflow-hidden group text-left relative">
+    <div className="bg-white rounded-2xl border border-stone-200/90 hover:border-stone-400/80 shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between overflow-hidden group text-left relative">
       {/* 1. Photorealistic Real Estate Image Header & Gallery Controls */}
       <div
-        className="relative h-48 sm:h-52 w-full overflow-hidden bg-slate-950 shrink-0 cursor-pointer"
+        className="relative h-48 sm:h-52 w-full overflow-hidden bg-stone-100 shrink-0 cursor-pointer"
         onClick={() => onViewDetails(property)}
       >
         <img
@@ -55,12 +55,12 @@ export const PropertyDiscoveryCard: React.FC<PropertyDiscoveryCardProps> = ({
           className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
           loading="lazy"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-black/40" />
+        <div className="absolute inset-0 bg-gradient-to-t from-stone-950/75 via-stone-950/10 to-transparent" />
 
         {/* Top Badges */}
         <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 z-10">
-          <span className="px-2.5 py-0.5 rounded-full bg-slate-950/85 backdrop-blur-md text-[10px] font-bold text-amber-300 border border-amber-400/30 shadow-xs flex items-center gap-1">
-            <Sparkles className="w-2.5 h-2.5 text-amber-400" />
+          <span className="px-2.5 py-0.5 rounded-full bg-white/95 backdrop-blur-md text-[10px] font-bold text-stone-800 border border-stone-200/80 shadow-xs flex items-center gap-1">
+            <Sparkles className="w-2.5 h-2.5 text-amber-700" />
             {property.subtype}
           </span>
           <Badge projectStatus={property.status} size="xs" />
@@ -68,11 +68,11 @@ export const PropertyDiscoveryCard: React.FC<PropertyDiscoveryCardProps> = ({
 
         <div className="absolute top-2.5 right-2.5 z-10 flex items-center gap-1.5">
           {gallery.length > 1 && (
-            <span className="px-2 py-0.5 rounded-full bg-black/70 backdrop-blur-md text-[9px] font-mono font-bold text-white border border-white/20">
+            <span className="px-2 py-0.5 rounded-full bg-stone-900/80 backdrop-blur-md text-[9px] font-mono font-bold text-white border border-white/20">
               {activeImageIdx + 1} / {gallery.length}
             </span>
           )}
-          <span className="px-2 py-0.5 rounded-md bg-slate-900/80 backdrop-blur-md text-[10px] font-bold uppercase tracking-wider text-slate-300 border border-slate-700">
+          <span className="px-2 py-0.5 rounded-md bg-stone-900/80 backdrop-blur-md text-[10px] font-bold uppercase tracking-wider text-stone-200 border border-stone-700/60">
             {property.code}
           </span>
         </div>
@@ -83,7 +83,7 @@ export const PropertyDiscoveryCard: React.FC<PropertyDiscoveryCardProps> = ({
             <button
               type="button"
               onClick={handlePrevImage}
-              className="pointer-events-auto p-1.5 rounded-full bg-black/70 hover:bg-black text-white transition-colors cursor-pointer"
+              className="pointer-events-auto p-1.5 rounded-full bg-stone-900/80 hover:bg-stone-900 text-white transition-colors cursor-pointer"
               title="Previous Photo"
               aria-label="Previous photo"
             >
@@ -92,7 +92,7 @@ export const PropertyDiscoveryCard: React.FC<PropertyDiscoveryCardProps> = ({
             <button
               type="button"
               onClick={handleNextImage}
-              className="pointer-events-auto p-1.5 rounded-full bg-black/70 hover:bg-black text-white transition-colors cursor-pointer"
+              className="pointer-events-auto p-1.5 rounded-full bg-stone-900/80 hover:bg-stone-900 text-white transition-colors cursor-pointer"
               title="Next Photo"
               aria-label="Next photo"
             >
@@ -104,19 +104,19 @@ export const PropertyDiscoveryCard: React.FC<PropertyDiscoveryCardProps> = ({
         {/* Bottom Banner Image Info: Price & Area */}
         <div className="absolute bottom-2.5 left-3.5 right-3.5 flex items-end justify-between text-white z-10">
           <div>
-            <span className="text-[10px] text-slate-300 block font-medium uppercase tracking-wider">
+            <span className="text-[10px] text-stone-300 block font-medium uppercase tracking-wider">
               Investment Price
             </span>
-            <span className="text-lg font-extrabold text-white tracking-tight font-sans">
+            <span className="text-lg font-bold text-white tracking-tight font-sans">
               {property.priceLabel}
             </span>
           </div>
 
           <div className="text-right">
-            <span className="text-[10px] text-slate-300 block font-medium uppercase tracking-wider">
+            <span className="text-[10px] text-stone-300 block font-medium uppercase tracking-wider">
               Availability
             </span>
-            <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-400">
+            <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-300">
               <CheckCircle2 className="w-3 h-3" />
               {property.availability}
             </span>
@@ -131,22 +131,22 @@ export const PropertyDiscoveryCard: React.FC<PropertyDiscoveryCardProps> = ({
           <div>
             <h3
               onClick={() => onViewDetails(property)}
-              className="text-sm sm:text-base font-extrabold text-white group-hover:text-brand-300 transition-colors line-clamp-1 cursor-pointer"
+              className="text-sm sm:text-base font-bold text-stone-900 group-hover:text-amber-800 transition-colors line-clamp-1 cursor-pointer"
             >
               {property.title}
             </h3>
-            <div className="flex items-center gap-1.5 text-xs text-slate-400 mt-1">
-              <MapPin className="w-3.5 h-3.5 text-brand-400 shrink-0" />
-              <span className="truncate">
+            <div className="flex items-center gap-1.5 text-xs text-stone-500 mt-1">
+              <MapPin className="w-3.5 h-3.5 text-stone-400 shrink-0" />
+              <span className="truncate font-medium">
                 {property.location}, {property.city}
               </span>
-              <span className="text-slate-600">•</span>
-              <span className="text-[11px] text-slate-500 truncate">{property.developer}</span>
+              <span className="text-stone-300">•</span>
+              <span className="text-[11px] text-stone-400 truncate">{property.developer}</span>
             </div>
           </div>
 
           {/* 3. TYPE-SPECIFIC SPECIFICATIONS (Strict field relevance rules) */}
-          <div className="p-3 bg-slate-950/70 rounded-xl border border-slate-800 text-xs space-y-1.5">
+          <div className="p-3 bg-stone-50 rounded-xl border border-stone-200/80 text-xs space-y-1.5">
             {/* A. RESIDENTIAL (Apartment, Flat, Studio) */}
             {property.residentialSpecs &&
               (property.subtype === 'Apartment' ||
@@ -154,20 +154,20 @@ export const PropertyDiscoveryCard: React.FC<PropertyDiscoveryCardProps> = ({
                 property.subtype === 'Studio') && (
                 <>
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-slate-400">Configuration:</span>
-                    <span className="font-bold text-white">
+                    <span className="text-stone-500">Configuration:</span>
+                    <span className="font-semibold text-stone-900">
                       {property.residentialSpecs.bhk} ({property.residentialSpecs.carpetArea} sq.ft)
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-slate-400">Floor Level:</span>
-                    <span className="font-semibold text-slate-300">
+                    <span className="text-stone-500">Floor Level:</span>
+                    <span className="font-medium text-stone-700">
                       Floor {property.residentialSpecs.floor} of {property.residentialSpecs.totalFloors}
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-slate-400">Parking & Facing:</span>
-                    <span className="text-slate-300">
+                    <span className="text-stone-500">Parking & Facing:</span>
+                    <span className="text-stone-700">
                       {property.residentialSpecs.parking} • {property.residentialSpecs.facing}
                     </span>
                   </div>
@@ -181,22 +181,22 @@ export const PropertyDiscoveryCard: React.FC<PropertyDiscoveryCardProps> = ({
                 property.subtype === 'Row House') && (
                 <>
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-slate-400">Layout:</span>
-                    <span className="font-bold text-amber-300">
+                    <span className="text-stone-500">Layout:</span>
+                    <span className="font-bold text-amber-900">
                       {property.residentialSpecs.bhk} ({property.residentialSpecs.bedrooms} Beds •{' '}
                       {property.residentialSpecs.bathrooms} Baths)
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-slate-400">Built-Up / Plot Area:</span>
-                    <span className="font-semibold text-slate-300">
+                    <span className="text-stone-500">Built-Up / Plot Area:</span>
+                    <span className="font-medium text-stone-700">
                       {property.residentialSpecs.builtUpArea} sq.ft Built •{' '}
                       {property.residentialSpecs.plotArea} sq.ft Plot
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-slate-400">Private Parking:</span>
-                    <span className="text-slate-300">{property.residentialSpecs.parking}</span>
+                    <span className="text-stone-500">Private Parking:</span>
+                    <span className="text-stone-700">{property.residentialSpecs.parking}</span>
                   </div>
                 </>
               )}
@@ -205,20 +205,20 @@ export const PropertyDiscoveryCard: React.FC<PropertyDiscoveryCardProps> = ({
             {property.residentialSpecs && property.subtype === 'Penthouse' && (
               <>
                 <div className="flex items-center justify-between text-[11px]">
-                  <span className="text-slate-400">Sky Residence:</span>
-                  <span className="font-bold text-amber-300">
+                  <span className="text-stone-500">Sky Residence:</span>
+                  <span className="font-bold text-amber-900">
                     {property.residentialSpecs.bhk} ({property.residentialSpecs.carpetArea} sq.ft)
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-[11px]">
-                  <span className="text-slate-400">Private Sky Terrace:</span>
-                  <span className="font-semibold text-slate-200">
+                  <span className="text-stone-500">Private Sky Terrace:</span>
+                  <span className="font-medium text-stone-700">
                     {property.residentialSpecs.terraceArea} sq.ft Private Deck
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-[11px]">
-                  <span className="text-slate-400">Level & Podiums:</span>
-                  <span className="text-slate-300">
+                  <span className="text-stone-500">Level & Podiums:</span>
+                  <span className="text-stone-700">
                     Top Level • {property.residentialSpecs.parking}
                   </span>
                 </div>
@@ -229,20 +229,20 @@ export const PropertyDiscoveryCard: React.FC<PropertyDiscoveryCardProps> = ({
             {property.landSpecs && (
               <>
                 <div className="flex items-center justify-between text-[11px]">
-                  <span className="text-slate-400">Plot Dimension:</span>
-                  <span className="font-bold text-emerald-300">
+                  <span className="text-stone-500">Plot Dimension:</span>
+                  <span className="font-bold text-emerald-800">
                     {property.landSpecs.plotArea} ({property.landSpecs.dimensions})
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-[11px]">
-                  <span className="text-slate-400">Road Frontage:</span>
-                  <span className="font-semibold text-slate-300">
+                  <span className="text-stone-500">Road Frontage:</span>
+                  <span className="font-medium text-stone-700">
                     {property.landSpecs.roadWidth} • {property.landSpecs.facing}
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-[11px]">
-                  <span className="text-slate-400">Zoning Title:</span>
-                  <span className="text-slate-300 truncate max-w-[200px]">
+                  <span className="text-stone-500">Zoning Title:</span>
+                  <span className="text-stone-700 truncate max-w-[200px]">
                     {property.landSpecs.zoning || property.landSpecs.utilities}
                   </span>
                 </div>
@@ -253,21 +253,21 @@ export const PropertyDiscoveryCard: React.FC<PropertyDiscoveryCardProps> = ({
             {property.commercialSpecs && (
               <>
                 <div className="flex items-center justify-between text-[11px]">
-                  <span className="text-slate-400">Commercial Space:</span>
-                  <span className="font-bold text-blue-300">
+                  <span className="text-stone-500">Commercial Space:</span>
+                  <span className="font-bold text-stone-900">
                     {property.commercialSpecs.commercialArea.toLocaleString('en-IN')} sq.ft (
                     {property.commercialSpecs.furnishing || 'Fitted Space'})
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-[11px]">
-                  <span className="text-slate-400">Building / Level:</span>
-                  <span className="font-semibold text-slate-300">
+                  <span className="text-stone-500">Building / Level:</span>
+                  <span className="font-medium text-stone-700">
                     {property.commercialSpecs.floor || property.commercialSpecs.building}
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-[11px]">
-                  <span className="text-slate-400">Frontage / Access:</span>
-                  <span className="text-slate-300 truncate max-w-[200px]">
+                  <span className="text-stone-500">Frontage / Access:</span>
+                  <span className="text-stone-700 truncate max-w-[200px]">
                     {property.commercialSpecs.frontage || property.commercialSpecs.parking}
                   </span>
                 </div>
@@ -278,22 +278,21 @@ export const PropertyDiscoveryCard: React.FC<PropertyDiscoveryCardProps> = ({
             {property.projectSpecs && (
               <>
                 <div className="flex items-center justify-between text-[11px]">
-                  <span className="text-slate-400">Master Development:</span>
-                  <span className="font-bold text-purple-300">
+                  <span className="text-stone-500">Master Development:</span>
+                  <span className="font-bold text-amber-900">
                     {property.projectSpecs.landParcel} ({property.projectSpecs.totalWings} Towers)
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-[11px]">
-                  <span className="text-slate-400">Configurations:</span>
-                  <span className="font-semibold text-slate-300">
+                  <span className="text-stone-500">Configurations:</span>
+                  <span className="font-medium text-stone-700">
                     {property.projectSpecs.configurations}
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-[11px]">
-                  <span className="text-slate-400">Active Inventory:</span>
-                  <span className="text-emerald-400 font-bold">
-                    {property.projectSpecs.availableUnits} of {property.projectSpecs.totalUnits} Units
-                    Ready
+                  <span className="text-stone-500">Active Inventory:</span>
+                  <span className="text-emerald-700 font-semibold">
+                    {property.projectSpecs.availableUnits} of {property.projectSpecs.totalUnits} Units Ready
                   </span>
                 </div>
               </>
@@ -305,7 +304,7 @@ export const PropertyDiscoveryCard: React.FC<PropertyDiscoveryCardProps> = ({
             {property.highlights.slice(0, 3).map((h, i) => (
               <span
                 key={i}
-                className="text-[10px] font-medium bg-slate-950 text-slate-300 px-2 py-0.5 rounded border border-slate-800 truncate"
+                className="text-[10px] font-medium bg-stone-100 text-stone-600 px-2 py-0.5 rounded border border-stone-200 truncate"
               >
                 {h}
               </span>
@@ -314,13 +313,13 @@ export const PropertyDiscoveryCard: React.FC<PropertyDiscoveryCardProps> = ({
         </div>
 
         {/* Footer Actions */}
-        <div className="pt-3 border-t border-slate-800 flex items-center justify-between gap-2.5">
+        <div className="pt-3 border-t border-stone-100 flex items-center justify-between gap-2.5">
           <Button
             variant="outline"
             size="sm"
             onClick={() => onViewDetails(property)}
             leftIcon={<Eye className="w-3.5 h-3.5" />}
-            className="w-1/2 text-xs font-bold text-slate-200 hover:text-white hover:bg-slate-800 border-slate-700 bg-slate-900/80"
+            className="w-1/2 text-xs font-semibold text-stone-700 hover:text-stone-900 hover:bg-stone-100 border-stone-200 bg-white"
           >
             Details
           </Button>
@@ -330,7 +329,7 @@ export const PropertyDiscoveryCard: React.FC<PropertyDiscoveryCardProps> = ({
             size="sm"
             onClick={() => (onInquire ? onInquire(property) : onViewDetails(property))}
             rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
-            className="w-1/2 text-xs font-bold shadow-md shadow-brand-600/20 bg-gradient-to-r from-brand-600 to-blue-600 border-0"
+            className="w-1/2 text-xs font-semibold bg-stone-900 hover:bg-stone-800 text-white border-0 shadow-xs"
           >
             Explore
           </Button>

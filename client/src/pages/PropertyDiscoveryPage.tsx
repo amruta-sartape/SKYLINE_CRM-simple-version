@@ -382,13 +382,13 @@ export const PropertyDiscoveryPage: React.FC = () => {
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div
                 key={i}
-                className="h-96 bg-slate-900/80 rounded-2xl border border-slate-800 overflow-hidden"
+                className="h-96 bg-white rounded-2xl border border-stone-200/90 overflow-hidden"
               >
-                <div className="h-48 bg-slate-800" />
+                <div className="h-48 bg-stone-100" />
                 <div className="p-4 space-y-3">
-                  <div className="h-4 bg-slate-800 rounded w-3/4" />
-                  <div className="h-3 bg-slate-800/60 rounded w-1/2" />
-                  <div className="h-16 bg-slate-800/40 rounded w-full mt-4" />
+                  <div className="h-4 bg-stone-100 rounded w-3/4" />
+                  <div className="h-3 bg-stone-100/60 rounded w-1/2" />
+                  <div className="h-16 bg-stone-50 rounded w-full mt-4" />
                 </div>
               </div>
             ))}

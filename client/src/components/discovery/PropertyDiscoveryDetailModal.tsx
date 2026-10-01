@@ -48,22 +48,22 @@ export const PropertyDiscoveryDetailModal: React.FC<PropertyDiscoveryDetailModal
       footer={
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 w-full">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-extrabold text-slate-900 font-sans">
+            <span className="text-sm font-bold text-stone-900 font-sans">
               {property.priceLabel}
             </span>
             <Badge projectStatus={property.status} size="sm" />
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto">
-            <Button variant="outline" size="sm" onClick={onClose} className="w-1/3 sm:w-auto text-xs">
+            <Button variant="outline" size="sm" onClick={onClose} className="w-1/3 sm:w-auto text-xs border-stone-300 text-stone-700">
               Close
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={handleScheduleVisit}
-              leftIcon={<CalendarCheck className="w-3.5 h-3.5 text-amber-500" />}
-              className="w-1/3 sm:w-auto text-xs"
+              leftIcon={<CalendarCheck className="w-3.5 h-3.5 text-amber-700" />}
+              className="w-1/3 sm:w-auto text-xs border-stone-300 text-stone-700"
             >
               Tour Site
             </Button>
@@ -72,7 +72,7 @@ export const PropertyDiscoveryDetailModal: React.FC<PropertyDiscoveryDetailModal
               size="sm"
               onClick={handleOpenFullProfile}
               rightIcon={<ExternalLink className="w-3.5 h-3.5" />}
-              className="w-1/3 sm:w-auto text-xs font-bold"
+              className="w-1/3 sm:w-auto text-xs font-semibold bg-stone-900 hover:bg-stone-800 text-white border-0 shadow-xs"
             >
               Full Profile
             </Button>
@@ -90,66 +90,65 @@ export const PropertyDiscoveryDetailModal: React.FC<PropertyDiscoveryDetailModal
           propertySubtype={property.subtype}
         />
 
-
         {/* 2. Overview & Developer Bar */}
-        <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+        <div className="p-3.5 bg-stone-50 rounded-xl border border-stone-200 space-y-2">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-            <div className="flex items-center gap-2 text-slate-700">
-              <MapPin className="w-4 h-4 text-brand-600 shrink-0" />
+            <div className="flex items-center gap-2 text-stone-700">
+              <MapPin className="w-4 h-4 text-stone-400 shrink-0" />
               <span>
-                <strong>Location:</strong> {property.location}, {property.city}, {property.state}
+                <strong className="text-stone-900">Location:</strong> {property.location}, {property.city}, {property.state}
               </span>
             </div>
-            <div className="flex items-center gap-2 text-slate-700">
-              <ShieldCheck className="w-4 h-4 text-amber-500 shrink-0" />
+            <div className="flex items-center gap-2 text-stone-700">
+              <ShieldCheck className="w-4 h-4 text-amber-700 shrink-0" />
               <span>
-                <strong>Developer:</strong> {property.developer}
+                <strong className="text-stone-900">Developer:</strong> {property.developer}
               </span>
             </div>
           </div>
-          <p className="text-slate-600 leading-relaxed text-xs pt-1 border-t border-slate-200/80">
+          <p className="text-stone-600 leading-relaxed text-xs pt-1 border-t border-stone-200">
             {property.description}
           </p>
         </div>
 
         {/* 3. Detailed Specifications Grid */}
         <div>
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">
             Property Specifications
           </h4>
 
           {/* Residential Specifications */}
           {property.residentialSpecs && (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              <div className="p-2.5 bg-white border border-slate-200 rounded-lg">
-                <span className="text-[10px] text-slate-400 uppercase font-bold block">Configuration</span>
-                <span className="font-bold text-slate-800 text-xs mt-0.5 block">{property.residentialSpecs.bhk}</span>
+              <div className="p-2.5 bg-white border border-stone-200 rounded-lg">
+                <span className="text-[10px] text-stone-500 uppercase font-bold block">Configuration</span>
+                <span className="font-bold text-stone-900 text-xs mt-0.5 block">{property.residentialSpecs.bhk}</span>
               </div>
-              <div className="p-2.5 bg-white border border-slate-200 rounded-lg">
-                <span className="text-[10px] text-slate-400 uppercase font-bold block">Carpet Area</span>
-                <span className="font-bold text-slate-800 text-xs mt-0.5 block">{property.residentialSpecs.carpetArea} sq.ft</span>
+              <div className="p-2.5 bg-white border border-stone-200 rounded-lg">
+                <span className="text-[10px] text-stone-500 uppercase font-bold block">Carpet Area</span>
+                <span className="font-bold text-stone-900 text-xs mt-0.5 block">{property.residentialSpecs.carpetArea} sq.ft</span>
               </div>
               {property.residentialSpecs.builtUpArea && (
-                <div className="p-2.5 bg-white border border-slate-200 rounded-lg">
-                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Built-Up Area</span>
-                  <span className="font-bold text-slate-800 text-xs mt-0.5 block">{property.residentialSpecs.builtUpArea} sq.ft</span>
+                <div className="p-2.5 bg-white border border-stone-200 rounded-lg">
+                  <span className="text-[10px] text-stone-500 uppercase font-bold block">Built-Up Area</span>
+                  <span className="font-bold text-stone-900 text-xs mt-0.5 block">{property.residentialSpecs.builtUpArea} sq.ft</span>
                 </div>
               )}
               {property.residentialSpecs.plotArea && (
-                <div className="p-2.5 bg-white border border-slate-200 rounded-lg">
-                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Plot Parcel</span>
-                  <span className="font-bold text-slate-800 text-xs mt-0.5 block">{property.residentialSpecs.plotArea} sq.ft</span>
+                <div className="p-2.5 bg-white border border-stone-200 rounded-lg">
+                  <span className="text-[10px] text-stone-500 uppercase font-bold block">Plot Parcel</span>
+                  <span className="font-bold text-stone-900 text-xs mt-0.5 block">{property.residentialSpecs.plotArea} sq.ft</span>
                 </div>
               )}
               {property.residentialSpecs.floor !== undefined && (
-                <div className="p-2.5 bg-white border border-slate-200 rounded-lg">
-                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Floor Level</span>
-                  <span className="font-bold text-slate-800 text-xs mt-0.5 block">Floor {property.residentialSpecs.floor}</span>
+                <div className="p-2.5 bg-white border border-stone-200 rounded-lg">
+                  <span className="text-[10px] text-stone-500 uppercase font-bold block">Floor Level</span>
+                  <span className="font-bold text-stone-900 text-xs mt-0.5 block">Floor {property.residentialSpecs.floor}</span>
                 </div>
               )}
-              <div className="p-2.5 bg-white border border-slate-200 rounded-lg">
-                <span className="text-[10px] text-slate-400 uppercase font-bold block">Dedicated Parking</span>
-                <span className="font-bold text-slate-800 text-xs mt-0.5 block truncate">{property.residentialSpecs.parking}</span>
+              <div className="p-2.5 bg-white border border-stone-200 rounded-lg">
+                <span className="text-[10px] text-stone-500 uppercase font-bold block">Dedicated Parking</span>
+                <span className="font-bold text-stone-900 text-xs mt-0.5 block truncate">{property.residentialSpecs.parking}</span>
               </div>
             </div>
           )}
@@ -157,32 +156,32 @@ export const PropertyDiscoveryDetailModal: React.FC<PropertyDiscoveryDetailModal
           {/* Land Specifications */}
           {property.landSpecs && (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              <div className="p-2.5 bg-white border border-slate-200 rounded-lg">
-                <span className="text-[10px] text-slate-400 uppercase font-bold block">Plot Area</span>
-                <span className="font-bold text-slate-800 text-xs mt-0.5 block">{property.landSpecs.plotArea}</span>
+              <div className="p-2.5 bg-white border border-stone-200 rounded-lg">
+                <span className="text-[10px] text-stone-500 uppercase font-bold block">Plot Area</span>
+                <span className="font-bold text-emerald-800 text-xs mt-0.5 block">{property.landSpecs.plotArea}</span>
               </div>
               {property.landSpecs.dimensions && (
-                <div className="p-2.5 bg-white border border-slate-200 rounded-lg">
-                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Dimensions</span>
-                  <span className="font-bold text-slate-800 text-xs mt-0.5 block">{property.landSpecs.dimensions}</span>
+                <div className="p-2.5 bg-white border border-stone-200 rounded-lg">
+                  <span className="text-[10px] text-stone-500 uppercase font-bold block">Dimensions</span>
+                  <span className="font-bold text-stone-900 text-xs mt-0.5 block">{property.landSpecs.dimensions}</span>
                 </div>
               )}
               {property.landSpecs.roadWidth && (
-                <div className="p-2.5 bg-white border border-slate-200 rounded-lg">
-                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Road Access</span>
-                  <span className="font-bold text-slate-800 text-xs mt-0.5 block">{property.landSpecs.roadWidth}</span>
+                <div className="p-2.5 bg-white border border-stone-200 rounded-lg">
+                  <span className="text-[10px] text-stone-500 uppercase font-bold block">Road Access</span>
+                  <span className="font-bold text-stone-900 text-xs mt-0.5 block">{property.landSpecs.roadWidth}</span>
                 </div>
               )}
               {property.landSpecs.zoning && (
-                <div className="p-2.5 bg-white border border-slate-200 rounded-lg">
-                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Zoning</span>
-                  <span className="font-bold text-slate-800 text-xs mt-0.5 block">{property.landSpecs.zoning}</span>
+                <div className="p-2.5 bg-white border border-stone-200 rounded-lg">
+                  <span className="text-[10px] text-stone-500 uppercase font-bold block">Zoning</span>
+                  <span className="font-bold text-amber-900 text-xs mt-0.5 block">{property.landSpecs.zoning}</span>
                 </div>
               )}
               {property.landSpecs.utilities && (
-                <div className="p-2.5 bg-white border border-slate-200 rounded-lg col-span-2">
-                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Utilities Ready</span>
-                  <span className="font-bold text-slate-800 text-xs mt-0.5 block">{property.landSpecs.utilities}</span>
+                <div className="p-2.5 bg-white border border-stone-200 rounded-lg col-span-2">
+                  <span className="text-[10px] text-stone-500 uppercase font-bold block">Utilities Ready</span>
+                  <span className="font-bold text-stone-900 text-xs mt-0.5 block">{property.landSpecs.utilities}</span>
                 </div>
               )}
             </div>
@@ -191,33 +190,33 @@ export const PropertyDiscoveryDetailModal: React.FC<PropertyDiscoveryDetailModal
           {/* Commercial Specifications */}
           {property.commercialSpecs && (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              <div className="p-2.5 bg-white border border-slate-200 rounded-lg">
-                <span className="text-[10px] text-slate-400 uppercase font-bold block">Commercial Area</span>
-                <span className="font-bold text-slate-800 text-xs mt-0.5 block">
+              <div className="p-2.5 bg-white border border-stone-200 rounded-lg">
+                <span className="text-[10px] text-stone-500 uppercase font-bold block">Commercial Area</span>
+                <span className="font-bold text-stone-900 text-xs mt-0.5 block">
                   {property.commercialSpecs.commercialArea.toLocaleString('en-IN')} sq.ft
                 </span>
               </div>
-              <div className="p-2.5 bg-white border border-slate-200 rounded-lg">
-                <span className="text-[10px] text-slate-400 uppercase font-bold block">Building & Floor</span>
-                <span className="font-bold text-slate-800 text-xs mt-0.5 block">
+              <div className="p-2.5 bg-white border border-stone-200 rounded-lg">
+                <span className="text-[10px] text-stone-500 uppercase font-bold block">Building & Floor</span>
+                <span className="font-bold text-stone-900 text-xs mt-0.5 block">
                   {property.commercialSpecs.floor || property.commercialSpecs.building}
                 </span>
               </div>
-              <div className="p-2.5 bg-white border border-slate-200 rounded-lg">
-                <span className="text-[10px] text-slate-400 uppercase font-bold block">Furnishing</span>
-                <span className="font-bold text-slate-800 text-xs mt-0.5 block">
+              <div className="p-2.5 bg-white border border-stone-200 rounded-lg">
+                <span className="text-[10px] text-stone-500 uppercase font-bold block">Furnishing</span>
+                <span className="font-bold text-amber-900 text-xs mt-0.5 block">
                   {property.commercialSpecs.furnishing || 'Fitted Space'}
                 </span>
               </div>
               {property.commercialSpecs.ceilingHeight && (
-                <div className="p-2.5 bg-white border border-slate-200 rounded-lg">
-                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Clear Height</span>
-                  <span className="font-bold text-slate-800 text-xs mt-0.5 block">{property.commercialSpecs.ceilingHeight}</span>
+                <div className="p-2.5 bg-white border border-stone-200 rounded-lg">
+                  <span className="text-[10px] text-stone-500 uppercase font-bold block">Clear Height</span>
+                  <span className="font-bold text-stone-900 text-xs mt-0.5 block">{property.commercialSpecs.ceilingHeight}</span>
                 </div>
               )}
-              <div className="p-2.5 bg-white border border-slate-200 rounded-lg col-span-2">
-                <span className="text-[10px] text-slate-400 uppercase font-bold block">Parking & Access</span>
-                <span className="font-bold text-slate-800 text-xs mt-0.5 block">{property.commercialSpecs.parking}</span>
+              <div className="p-2.5 bg-white border border-stone-200 rounded-lg col-span-2">
+                <span className="text-[10px] text-stone-500 uppercase font-bold block">Parking & Access</span>
+                <span className="font-bold text-stone-900 text-xs mt-0.5 block">{property.commercialSpecs.parking}</span>
               </div>
             </div>
           )}
@@ -225,17 +224,17 @@ export const PropertyDiscoveryDetailModal: React.FC<PropertyDiscoveryDetailModal
           {/* Project Specifications */}
           {property.projectSpecs && (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              <div className="p-2.5 bg-white border border-slate-200 rounded-lg">
-                <span className="text-[10px] text-slate-400 uppercase font-bold block">Master Land Parcel</span>
-                <span className="font-bold text-slate-800 text-xs mt-0.5 block">{property.projectSpecs.landParcel}</span>
+              <div className="p-2.5 bg-white border border-stone-200 rounded-lg">
+                <span className="text-[10px] text-stone-500 uppercase font-bold block">Master Land Parcel</span>
+                <span className="font-bold text-amber-900 text-xs mt-0.5 block">{property.projectSpecs.landParcel}</span>
               </div>
-              <div className="p-2.5 bg-white border border-slate-200 rounded-lg">
-                <span className="text-[10px] text-slate-400 uppercase font-bold block">Towers / Wings</span>
-                <span className="font-bold text-slate-800 text-xs mt-0.5 block">{property.projectSpecs.totalWings} Buildings</span>
+              <div className="p-2.5 bg-white border border-stone-200 rounded-lg">
+                <span className="text-[10px] text-stone-500 uppercase font-bold block">Towers / Wings</span>
+                <span className="font-bold text-stone-900 text-xs mt-0.5 block">{property.projectSpecs.totalWings} Buildings</span>
               </div>
-              <div className="p-2.5 bg-white border border-slate-200 rounded-lg">
-                <span className="text-[10px] text-slate-400 uppercase font-bold block">Ready Inventory</span>
-                <span className="font-bold text-emerald-700 text-xs mt-0.5 block">
+              <div className="p-2.5 bg-white border border-stone-200 rounded-lg">
+                <span className="text-[10px] text-stone-500 uppercase font-bold block">Ready Inventory</span>
+                <span className="font-bold text-emerald-800 text-xs mt-0.5 block">
                   {property.projectSpecs.availableUnits} of {property.projectSpecs.totalUnits} Units
                 </span>
               </div>
@@ -245,13 +244,13 @@ export const PropertyDiscoveryDetailModal: React.FC<PropertyDiscoveryDetailModal
 
         {/* 4. Highlights Chips */}
         <div className="space-y-1.5 pt-1">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">
             Key Real Estate Highlights
           </span>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
             {property.highlights.map((h, i) => (
-              <div key={i} className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg border border-slate-100 text-slate-700">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+              <div key={i} className="flex items-center gap-2 p-2 bg-stone-50 rounded-lg border border-stone-200 text-stone-700">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
                 <span className="text-[11px] font-medium">{h}</span>
               </div>
             ))}
