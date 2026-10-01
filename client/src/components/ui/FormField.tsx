@@ -27,7 +27,7 @@ export const FormField: React.FC<FormFieldProps> = ({
         <div className="flex items-center justify-between">
           <label
             htmlFor={htmlFor}
-            className="block text-xs font-semibold text-slate-700 tracking-wide uppercase"
+            className="block text-xs font-semibold text-slate-700 dark:text-slate-200 tracking-wide uppercase"
           >
             {label}
             {required && <span className="text-rose-500 ml-1 font-bold">*</span>}
@@ -40,7 +40,7 @@ export const FormField: React.FC<FormFieldProps> = ({
       {error ? (
         <p
           id={htmlFor ? `${htmlFor}-error` : undefined}
-          className="flex items-center gap-1.5 text-xs text-rose-600 font-medium mt-1 animate-fade-in"
+          className="flex items-center gap-1.5 text-xs text-rose-500 font-medium mt-1 animate-fade-in"
           role="alert"
         >
           <AlertCircle className="w-3.5 h-3.5 shrink-0" />
@@ -49,7 +49,7 @@ export const FormField: React.FC<FormFieldProps> = ({
       ) : helperText ? (
         <p
           id={htmlFor ? `${htmlFor}-helper` : undefined}
-          className="text-xs text-slate-500 mt-1"
+          className="text-xs text-slate-400 mt-1"
         >
           {helperText}
         </p>

@@ -3,10 +3,8 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { AuthLayout } from '../components/auth/AuthLayout';
-import { FormField } from '../components/ui/FormField';
 import { Input } from '../components/ui/Input';
 import { PasswordInput } from '../components/ui/PasswordInput';
-import { Checkbox } from '../components/ui/Checkbox';
 import { Button } from '../components/ui/Button';
 import { Alert } from '../components/ui/Alert';
 import { validateLoginForm } from '../utils/validation';
@@ -108,11 +106,11 @@ export const LoginPage: React.FC = () => {
 
   return (
     <AuthLayout
-      title="Sign in to your account"
-      subtitle="Enter your real estate corporate credentials to access the CRM."
+      title="Sign In to Skyline CRM"
+      subtitle="Enter your real estate corporate credentials to access the portal."
       badgeText="Secure Portal Access"
     >
-      <div className="space-y-6">
+      <div className="space-y-5">
         {/* Server Error Alert */}
         {serverError && (
           <Alert
@@ -124,48 +122,46 @@ export const LoginPage: React.FC = () => {
         )}
 
         {/* Demo Fast Fill Pill Switcher */}
-        <div className="p-3 bg-slate-50 border border-slate-200/80 rounded-lg text-left">
-          <div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center justify-between">
+        <div className="p-3 bg-slate-950/60 border border-slate-800 rounded-xl text-left">
+          <div className="text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-2 flex items-center justify-between">
             <span>Quick Test Credentials:</span>
-            <span className="text-[10px] text-brand-600 font-medium">Click to populate</span>
+            <span className="text-[10px] text-amber-400 font-medium">Click to populate</span>
           </div>
           <div className="grid grid-cols-3 gap-1.5">
             <button
               type="button"
               onClick={() => handleQuickFill('ADMIN')}
-              className="flex items-center justify-center gap-1.5 py-1.5 px-2 bg-white hover:bg-amber-50 text-slate-700 hover:text-amber-800 border border-slate-200 hover:border-amber-300 rounded text-xs font-semibold transition-all shadow-2xs"
+              className="flex items-center justify-center gap-1.5 py-1.5 px-2 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 hover:border-amber-400/60 rounded-lg text-xs font-semibold transition-all shadow-sm"
             >
-              <ShieldCheck className="w-3.5 h-3.5 text-amber-600" />
+              <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
               <span>Admin</span>
             </button>
             <button
               type="button"
               onClick={() => handleQuickFill('EMPLOYEE')}
-              className="flex items-center justify-center gap-1.5 py-1.5 px-2 bg-white hover:bg-blue-50 text-slate-700 hover:text-blue-800 border border-slate-200 hover:border-blue-300 rounded text-xs font-semibold transition-all shadow-2xs"
+              className="flex items-center justify-center gap-1.5 py-1.5 px-2 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 hover:border-blue-400/60 rounded-lg text-xs font-semibold transition-all shadow-sm"
             >
-              <Briefcase className="w-3.5 h-3.5 text-blue-600" />
+              <Briefcase className="w-3.5 h-3.5 text-blue-400" />
               <span>Operations</span>
             </button>
             <button
               type="button"
               onClick={() => handleQuickFill('AGENT')}
-              className="flex items-center justify-center gap-1.5 py-1.5 px-2 bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-slate-200 hover:border-emerald-300 rounded text-xs font-semibold transition-all shadow-2xs"
+              className="flex items-center justify-center gap-1.5 py-1.5 px-2 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 hover:border-emerald-400/60 rounded-lg text-xs font-semibold transition-all shadow-sm"
             >
-              <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
+              <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
               <span>Agent</span>
             </button>
           </div>
         </div>
 
         {/* Login Form */}
-        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+        <form onSubmit={handleSubmit} className="space-y-4 text-left" noValidate>
           {/* Email */}
-          <FormField
-            label="Corporate Email Address"
-            htmlFor="email"
-            required
-            error={errors.email}
-          >
+          <div className="space-y-1.5">
+            <label className="block text-xs font-bold text-slate-200 uppercase tracking-wider">
+              Corporate Email <span className="text-rose-400">*</span>
+            </label>
             <Input
               id="email"
               name="email"
@@ -176,18 +172,19 @@ export const LoginPage: React.FC = () => {
               value={formData.email}
               onChange={handleChange}
               error={errors.email}
-              leftIcon={<Mail className="w-4 h-4" />}
+              leftIcon={<Mail className="w-4 h-4 text-slate-400" />}
               disabled={isSubmitting}
             />
-          </FormField>
+            {errors.email && (
+              <p className="text-xs text-rose-400 mt-1 font-medium">{errors.email}</p>
+            )}
+          </div>
 
           {/* Password */}
-          <FormField
-            label="Password"
-            htmlFor="password"
-            required
-            error={errors.password}
-          >
+          <div className="space-y-1.5">
+            <label className="block text-xs font-bold text-slate-200 uppercase tracking-wider">
+              Password <span className="text-rose-400">*</span>
+            </label>
             <PasswordInput
               id="password"
               name="password"
@@ -198,22 +195,28 @@ export const LoginPage: React.FC = () => {
               error={errors.password}
               disabled={isSubmitting}
             />
-          </FormField>
+            {errors.password && (
+              <p className="text-xs text-rose-400 mt-1 font-medium">{errors.password}</p>
+            )}
+          </div>
 
           {/* Remember Me & Forgot Password */}
           <div className="flex items-center justify-between pt-1">
-            <Checkbox
-              id="rememberMe"
-              name="rememberMe"
-              label="Remember this device"
-              checked={formData.rememberMe}
-              onChange={handleChange}
-              disabled={isSubmitting}
-            />
+            <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-300 select-none">
+              <input
+                type="checkbox"
+                name="rememberMe"
+                checked={formData.rememberMe}
+                onChange={handleChange}
+                disabled={isSubmitting}
+                className="w-4 h-4 rounded bg-slate-800 border-slate-600 text-brand-600 focus:ring-brand-500"
+              />
+              <span>Remember this device</span>
+            </label>
 
             <Link
               to="/forgot-password"
-              className="text-xs font-semibold text-brand-600 hover:text-brand-700 transition-colors hover:underline focus:outline-none focus:ring-1 focus:ring-brand-500 rounded"
+              className="text-xs font-semibold text-brand-300 hover:text-brand-200 transition-colors hover:underline focus:outline-none focus:ring-1 focus:ring-brand-400 rounded"
             >
               Forgot password?
             </Link>
@@ -225,7 +228,7 @@ export const LoginPage: React.FC = () => {
               type="submit"
               variant="primary"
               size="lg"
-              className="w-full"
+              className="w-full bg-gradient-to-r from-brand-600 via-blue-600 to-brand-700 hover:from-brand-500 hover:to-brand-600 text-white shadow-lg border-0"
               isLoading={isSubmitting}
               rightIcon={<ArrowRight className="w-4 h-4" />}
             >
@@ -235,12 +238,12 @@ export const LoginPage: React.FC = () => {
         </form>
 
         {/* Link to Register */}
-        <div className="pt-4 border-t border-slate-100 text-center">
-          <p className="text-xs text-slate-600">
+        <div className="pt-3 border-t border-slate-800 text-center">
+          <p className="text-xs text-slate-300">
             Need an agent account?{' '}
             <Link
               to="/register"
-              className="font-bold text-slate-900 hover:text-brand-600 transition-colors hover:underline"
+              className="font-bold text-amber-400 hover:text-amber-300 transition-colors hover:underline"
             >
               Register as Real Estate Agent
             </Link>
