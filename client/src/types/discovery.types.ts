@@ -118,3 +118,24 @@ export interface DiscoveryProperty {
   linkedProjectId?: string;
   linkedUnitId?: string;
 }
+
+export interface DiscoveryFilters {
+  query: string;
+  category: PropertyMainCategory;
+  subtype: PropertySubtype | null;
+  city: string;
+  pricePreset: string;
+  minPrice: number | null;
+  maxPrice: number | null;
+  areaPreset: string;
+  minArea: number | null;
+  maxArea: number | null;
+  availability: string;
+  bhk: string[];
+  parking: string;
+  furnishing: string;
+  zoning: string;
+  facing: string;
+  sortBy: 'featured' | 'price-asc' | 'price-desc' | 'area-asc' | 'area-desc' | 'code-asc';
+}
+

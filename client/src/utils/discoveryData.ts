@@ -212,6 +212,123 @@ export function formatPrice(val: number): string {
   return `₹${val.toLocaleString('en-IN')}`;
 }
 
+export interface PricePreset {
+  id: string;
+  label: string;
+  min: number | null;
+  max: number | null;
+}
+
+export const PRICE_PRESETS: PricePreset[] = [
+  { id: 'all', label: 'All Budgets', min: null, max: null },
+  { id: 'under-50l', label: 'Under ₹50 Lakh', min: 0, max: 5000000 },
+  { id: '50l-1cr', label: '₹50 Lakh – ₹1 Crore', min: 5000000, max: 10000000 },
+  { id: '1cr-3cr', label: '₹1 Crore – ₹3 Crore', min: 10000000, max: 30000000 },
+  { id: '3cr-5cr', label: '₹3 Crore – ₹5 Crore', min: 30000000, max: 50000000 },
+  { id: '5cr-10cr', label: '₹5 Crore – ₹10 Crore', min: 50000000, max: 100000000 },
+  { id: 'above-10cr', label: 'Above ₹10 Crore', min: 100000000, max: null },
+];
+
+export interface AreaPreset {
+  id: string;
+  label: string;
+  min: number | null;
+  max: number | null;
+}
+
+export const AREA_PRESETS: AreaPreset[] = [
+  { id: 'all', label: 'All Sizes', min: null, max: null },
+  { id: 'under-1000', label: 'Under 1,000 sq.ft', min: 0, max: 1000 },
+  { id: '1000-2000', label: '1,000 – 2,000 sq.ft', min: 1000, max: 2000 },
+  { id: '2000-3500', label: '2,000 – 3,500 sq.ft', min: 2000, max: 3500 },
+  { id: '3500-5000', label: '3,500 – 5,000 sq.ft', min: 3500, max: 5000 },
+  { id: 'above-5000', label: 'Above 5,000 sq.ft', min: 5000, max: null },
+];
+
+export const BHK_OPTIONS = [
+  { id: '1 BHK', label: '1 BHK / Studio' },
+  { id: '2 BHK', label: '2 BHK' },
+  { id: '3 BHK', label: '3 BHK' },
+  { id: '4 BHK', label: '4 BHK' },
+  { id: '5 BHK+', label: '5 BHK+' },
+];
+
+export const AVAILABILITY_OPTIONS = [
+  { id: 'All', label: 'All Availabilities' },
+  { id: 'Ready to Move', label: 'Ready to Move' },
+  { id: 'Under Construction', label: 'Under Construction' },
+  { id: 'Immediate Possession', label: 'Immediate Possession' },
+];
+
+export const FURNISHING_OPTIONS = [
+  { id: 'All', label: 'All Furnishing' },
+  { id: 'Bare Shell', label: 'Bare Shell' },
+  { id: 'Warm Shell', label: 'Warm Shell' },
+  { id: 'Fully Furnished', label: 'Fully Furnished' },
+  { id: 'Plug & Play', label: 'Plug & Play' },
+];
+
+export const ZONING_OPTIONS = [
+  { id: 'All', label: 'All Zoning Types' },
+  { id: 'Residential R-Zone', label: 'Residential R-Zone' },
+  { id: 'Commercial High-FSI', label: 'Commercial High-FSI' },
+  { id: 'Agricultural & Agro', label: 'Agricultural & Agro' },
+];
+
+export const FACING_OPTIONS = [
+  { id: 'All', label: 'All Facings' },
+  { id: 'East', label: 'East Facing / Vastu' },
+  { id: 'North', label: 'North Facing' },
+  { id: 'West', label: 'West Facing' },
+  { id: 'South', label: 'South Facing' },
+  { id: 'Corner', label: 'Corner / Road Facing' },
+];
+
+export const PARKING_OPTIONS = [
+  { id: 'All', label: 'Any Parking' },
+  { id: '1+', label: '1+ Car Parking' },
+  { id: '2+', label: '2+ Car Parking' },
+  { id: '3+', label: '3+ Cars / Portico' },
+];
+
+export const SORT_OPTIONS = [
+  { id: 'featured', label: 'Featured & Recommended' },
+  { id: 'price-asc', label: 'Price: Low to High' },
+  { id: 'price-desc', label: 'Price: High to Low' },
+  { id: 'area-asc', label: 'Area: Low to High' },
+  { id: 'area-desc', label: 'Area: High to Low' },
+  { id: 'code-asc', label: 'Property Code / ID' },
+];
+
+export function getPropertyArea(p: DiscoveryProperty): number {
+  if (p.residentialSpecs) {
+    return p.residentialSpecs.carpetArea || p.residentialSpecs.builtUpArea || p.residentialSpecs.plotArea || 0;
+  }
+  if (p.commercialSpecs) {
+    return p.commercialSpecs.commercialArea || 0;
+  }
+  if (p.landSpecs) {
+    const text = p.landSpecs.plotArea || '';
+    if (text.includes('Acre')) {
+      const match = text.match(/([\d.]+)\s*Acre/i);
+      if (match) return parseFloat(match[1]) * 43560;
+    }
+    const cleanNum = text.replace(/,/g, '').match(/\d+/);
+    if (cleanNum) return parseInt(cleanNum[0], 10);
+    return 0;
+  }
+  if (p.projectSpecs) {
+    const text = p.projectSpecs.landParcel || '';
+    if (text.includes('Acre')) {
+      const match = text.match(/([\d.]+)\s*Acre/i);
+      if (match) return parseFloat(match[1]) * 43560;
+    }
+    return 10000;
+  }
+  return 0;
+}
+
+
 /**
  * Builds a comprehensive list of customer discovery properties by merging
  * real database Project/Unit records and realistic typed catalog properties.
