@@ -24,6 +24,7 @@ import {
   MessageSquare,
   Users,
   Video,
+  Building,
 } from 'lucide-react';
 
 export const FollowUpDetailPage: React.FC = () => {
@@ -278,6 +279,58 @@ export const FollowUpDetailPage: React.FC = () => {
                 )}
               </div>
             </div>
+
+            {/* Property Interest */}
+            {(followUp.property_cover_image || followUp.property_title || followUp.project_name) && (
+              <div className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-subtle space-y-3">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                    <Building className="w-4 h-4 text-brand-600" />
+                    <span>Property Context</span>
+                  </h2>
+                  {followUp.property_id && (
+                    <Link
+                      to={`/discovery/${followUp.property_id}`}
+                      className="text-xs font-semibold text-brand-600 hover:text-brand-800 flex items-center gap-1"
+                    >
+                      <span>Explore</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </Link>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200/80 rounded-xl">
+                  {followUp.property_cover_image ? (
+                    <img
+                      src={followUp.property_cover_image}
+                      alt={followUp.property_title || 'Property'}
+                      className="w-12 h-12 rounded-lg object-cover border border-slate-200 shrink-0"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-lg bg-slate-200 flex items-center justify-center shrink-0">
+                      <Building className="w-5 h-5 text-slate-500" />
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1 text-xs">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {followUp.property_code && (
+                        <span className="font-mono text-[9px] bg-amber-100 text-amber-800 px-1.5 py-0.2 rounded font-bold">
+                          {followUp.property_code}
+                        </span>
+                      )}
+                      {followUp.property_subtype && (
+                        <span className="text-[10px] text-slate-500 font-medium">
+                          {followUp.property_subtype}
+                        </span>
+                      )}
+                    </div>
+                    <div className="font-bold text-slate-900 truncate mt-0.5">
+                      {followUp.property_title || followUp.project_name}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Executive Assignment & System Metadata */}
             <div className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-subtle space-y-4">

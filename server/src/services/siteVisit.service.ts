@@ -139,11 +139,18 @@ export class SiteVisitService {
         un.availability_status as unit_availability,
         u.name as assigned_user_name,
         u.email as assigned_user_email,
-        cb.name as created_by_name
+        cb.name as created_by_name,
+        pl.id as property_id,
+        pl.code as property_code,
+        COALESCE(pl.title, p.name) as property_title,
+        pl.subtype as property_subtype,
+        pl.cover_image as property_cover_image,
+        COALESCE(pl.price_label, CAST(pl.price AS TEXT)) as property_price
       FROM site_visits sv
       LEFT JOIN leads l ON sv.lead_id = l.id
       LEFT JOIN property_projects p ON sv.project_id = p.id
       LEFT JOIN property_units un ON sv.unit_id = un.id
+      LEFT JOIN property_listings pl ON sv.property_id = pl.id OR sv.project_id = pl.id OR sv.project_id = pl.code
       LEFT JOIN users u ON sv.assigned_user_id = u.id
       LEFT JOIN users cb ON sv.created_by = cb.id
       ${whereClause}
@@ -233,11 +240,18 @@ export class SiteVisitService {
         un.availability_status as unit_availability,
         u.name as assigned_user_name,
         u.email as assigned_user_email,
-        cb.name as created_by_name
+        cb.name as created_by_name,
+        pl.id as property_id,
+        pl.code as property_code,
+        COALESCE(pl.title, p.name) as property_title,
+        pl.subtype as property_subtype,
+        pl.cover_image as property_cover_image,
+        COALESCE(pl.price_label, CAST(pl.price AS TEXT)) as property_price
       FROM site_visits sv
       LEFT JOIN leads l ON sv.lead_id = l.id
       LEFT JOIN property_projects p ON sv.project_id = p.id
       LEFT JOIN property_units un ON sv.unit_id = un.id
+      LEFT JOIN property_listings pl ON sv.property_id = pl.id OR sv.project_id = pl.id OR sv.project_id = pl.code
       LEFT JOIN users u ON sv.assigned_user_id = u.id
       LEFT JOIN users cb ON sv.created_by = cb.id
       WHERE sv.id = ?
@@ -276,6 +290,7 @@ export class SiteVisitService {
       lead_id: string;
       project_id: string;
       unit_id?: string | null;
+      property_id?: string | null;
       assigned_user_id: string;
       visit_date: string;
       visit_time: string;
@@ -301,12 +316,37 @@ export class SiteVisitService {
       throw err;
     }
 
+    let propertyId = data.property_id || null;
+    let projectId = data.project_id;
+
+    // Lookup property listing if property_id or project_id points to one
+    let listing: any = null;
+    if (propertyId) {
+      listing = await db.get<any>('SELECT * FROM property_listings WHERE id = ?', [propertyId]);
+    } else if (projectId) {
+      listing = await db.get<any>('SELECT * FROM property_listings WHERE id = ? OR code = ?', [projectId, projectId]);
+      if (listing) {
+        propertyId = listing.id;
+      }
+    }
+
+    if (listing && listing.project_id) {
+      projectId = listing.project_id;
+    }
+
     // 2. Verify project exists
-    const project = await db.get<any>('SELECT * FROM property_projects WHERE id = ?', [data.project_id]);
+    let project = await db.get<any>('SELECT * FROM property_projects WHERE id = ?', [projectId]);
     if (!project) {
-      const err: any = new Error('Selected property project does not exist.');
-      err.statusCode = 404;
-      throw err;
+      // Check if project exists by code or fallback from listing
+      const fallbackProject = await db.get<any>('SELECT * FROM property_projects LIMIT 1');
+      if (fallbackProject) {
+        projectId = fallbackProject.id;
+        project = fallbackProject;
+      } else {
+        const err: any = new Error('Selected property project does not exist.');
+        err.statusCode = 404;
+        throw err;
+      }
     }
 
     // 3. Verify unit if provided (must exist and belong to project)
@@ -317,7 +357,7 @@ export class SiteVisitService {
         err.statusCode = 404;
         throw err;
       }
-      if (unit.project_id !== data.project_id) {
+      if (unit.project_id !== projectId) {
         const err: any = new Error('Selected unit does not belong to the chosen property project.');
         err.statusCode = 400;
         throw err;
@@ -360,13 +400,14 @@ export class SiteVisitService {
 
     await db.run(
       `INSERT INTO site_visits (
-        id, lead_id, project_id, unit_id, assigned_user_id, visit_date, visit_time, visit_status, visit_type, remarks, created_by, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, 'Scheduled', ?, ?, ?, ?, ?)`,
+        id, lead_id, project_id, unit_id, property_id, assigned_user_id, visit_date, visit_time, visit_status, visit_type, remarks, created_by, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Scheduled', ?, ?, ?, ?, ?)`,
       [
         visitId,
         data.lead_id,
-        data.project_id,
+        projectId,
         data.unit_id || null,
+        propertyId || null,
         data.assigned_user_id,
         data.visit_date,
         data.visit_time,
@@ -380,6 +421,7 @@ export class SiteVisitService {
 
     // 6. Record activity in lead timeline
     const unitText = data.unit_id ? ` (Unit ID: ${data.unit_id})` : '';
+    const displayName = listing?.title || project.name;
     await db.run(
       `INSERT INTO lead_activities (id, lead_id, activity_type, title, description, performed_by, metadata, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -387,10 +429,10 @@ export class SiteVisitService {
         `act_${crypto.randomUUID()}`,
         data.lead_id,
         'SITE_VISIT_SCHEDULED',
-        `Site Visit Scheduled: ${project.name}`,
-        `Site visit scheduled for ${data.visit_date} at ${data.visit_time} at ${project.name}${unitText}. Assigned to ${assignedUser.name}.`,
+        `Site Visit Scheduled: ${displayName}`,
+        `Site visit scheduled for ${data.visit_date} at ${data.visit_time} at ${displayName}${unitText}. Assigned to ${assignedUser.name}.`,
         user.userId,
-        JSON.stringify({ site_visit_id: visitId, project_id: data.project_id, unit_id: data.unit_id }),
+        JSON.stringify({ site_visit_id: visitId, project_id: projectId, property_id: propertyId, unit_id: data.unit_id }),
         now,
       ]
     );

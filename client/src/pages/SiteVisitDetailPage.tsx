@@ -192,10 +192,60 @@ export const SiteVisitDetailPage: React.FC = () => {
 
             {/* Property Specification Details */}
             <div className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-subtle space-y-4">
-              <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                <Building className="w-4 h-4 text-brand-600" />
-                <span>Property & Unit Information</span>
-              </h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                  <Building className="w-4 h-4 text-brand-600" />
+                  <span>Property & Unit Information</span>
+                </h2>
+                {visit.property_id && (
+                  <Link
+                    to={`/discovery/${visit.property_id}`}
+                    className="text-xs font-semibold text-brand-600 hover:text-brand-800 flex items-center gap-1"
+                  >
+                    <span>View Property</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </Link>
+                )}
+              </div>
+
+              {/* Property Cover Banner if available */}
+              {(visit.property_cover_image || visit.property_title) && (
+                <div className="p-3 bg-slate-900 rounded-xl text-white flex items-center gap-3.5 border border-slate-800">
+                  {visit.property_cover_image ? (
+                    <img
+                      src={visit.property_cover_image}
+                      alt={visit.property_title || 'Property Cover'}
+                      className="w-14 h-14 rounded-lg object-cover border border-white/10 shrink-0"
+                    />
+                  ) : (
+                    <div className="w-14 h-14 rounded-lg bg-slate-800 flex items-center justify-center shrink-0">
+                      <Building className="w-6 h-6 text-brand-400" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {visit.property_code && (
+                        <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                          {visit.property_code}
+                        </span>
+                      )}
+                      {visit.property_subtype && (
+                        <span className="text-[11px] text-slate-300 font-medium">
+                          {visit.property_subtype}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-sm font-bold text-white truncate mt-0.5">
+                      {visit.property_title || visit.project_name}
+                    </div>
+                    {visit.property_price && (
+                      <div className="text-xs font-bold text-emerald-400 mt-0.5">
+                        {visit.property_price}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-4 bg-slate-50/70 rounded-xl border border-slate-200/60 space-y-2">

@@ -147,12 +147,18 @@ export class FollowUpService {
         l.email as customer_email,
         u.name as assigned_user_name,
         cb.name as created_by_name,
-        p.name as project_name
+        p.name as project_name,
+        pl.id as property_id,
+        COALESCE(pl.title, p.name) as property_title,
+        pl.code as property_code,
+        pl.subtype as property_subtype,
+        pl.cover_image as property_cover_image
       FROM follow_ups f
       LEFT JOIN leads l ON f.lead_id = l.id
       LEFT JOIN users u ON COALESCE(f.assigned_user_id, f.executive_id) = u.id
       LEFT JOIN users cb ON f.created_by = cb.id
       LEFT JOIN property_projects p ON l.project_id = p.id
+      LEFT JOIN property_listings pl ON l.property_id = pl.id OR l.project_id = pl.id OR l.interested_property = pl.id OR l.interested_property = pl.title
       ${whereClause}
       ORDER BY ${sortField} ${sortOrder}, COALESCE(f.scheduled_time, f.followup_time) ${sortOrder}
       LIMIT ? OFFSET ?
@@ -251,12 +257,18 @@ export class FollowUpService {
         l.email as customer_email,
         u.name as assigned_user_name,
         cb.name as created_by_name,
-        p.name as project_name
+        p.name as project_name,
+        pl.id as property_id,
+        COALESCE(pl.title, p.name) as property_title,
+        pl.code as property_code,
+        pl.subtype as property_subtype,
+        pl.cover_image as property_cover_image
       FROM follow_ups f
       LEFT JOIN leads l ON f.lead_id = l.id
       LEFT JOIN users u ON COALESCE(f.assigned_user_id, f.executive_id) = u.id
       LEFT JOIN users cb ON f.created_by = cb.id
       LEFT JOIN property_projects p ON l.project_id = p.id
+      LEFT JOIN property_listings pl ON l.property_id = pl.id OR l.project_id = pl.id OR l.interested_property = pl.id OR l.interested_property = pl.title
       WHERE f.id = ?
     `;
 

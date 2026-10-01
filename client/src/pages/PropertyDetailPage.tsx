@@ -95,11 +95,12 @@ export const PropertyDetailPage: React.FC = () => {
     try {
       await enquiryService.createEnquiry({
         ...formData,
-        interested_property: property?.linkedProjectId || property?.title || '',
+        property_id: property?.id,
+        interested_property: property?.title || formData.interested_property,
       });
       showToast({
         variant: 'success',
-        message: 'Enquiry registered successfully! An executive will contact you shortly.',
+        message: 'Enquiry registered successfully! Inbound lead captured with full property interest.',
       });
       setIsEnquiryModalOpen(false);
     } catch (err: any) {
@@ -693,6 +694,16 @@ export const PropertyDetailPage: React.FC = () => {
         <ScheduleSiteVisitModal
           isOpen={isSiteVisitModalOpen}
           onClose={() => setIsSiteVisitModalOpen(false)}
+          preselectedProperty={property ? {
+            id: property.id,
+            title: property.title,
+            code: property.code,
+            project_id: property.linkedProjectId,
+            cover_image: property.images.cover,
+            subtype: property.subtype,
+            city: property.city,
+            price_formatted: property.priceLabel,
+          } : null}
           onSuccess={() => {
             setIsSiteVisitModalOpen(false);
             showToast({
@@ -706,6 +717,16 @@ export const PropertyDetailPage: React.FC = () => {
           isOpen={isEnquiryModalOpen}
           onClose={() => setIsEnquiryModalOpen(false)}
           onSubmit={handleEnquirySubmit}
+          initialPropertyContext={property ? {
+            id: property.id,
+            title: property.title,
+            code: property.code,
+            subtype: property.subtype,
+            city: property.city,
+            price: property.price,
+            price_formatted: property.priceLabel,
+            cover_image: property.images.cover,
+          } : null}
           executives={executives}
         />
       </div>

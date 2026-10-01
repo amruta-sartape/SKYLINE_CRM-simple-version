@@ -124,12 +124,18 @@ export class EnquiryService {
         u.email as assigned_email,
         cb.name as created_by_name,
         p.name as project_name,
-        un.unit_number as unit_number
+        un.unit_number as unit_number,
+        pl.code as property_code,
+        COALESCE(pl.title, e.interested_property) as property_title,
+        pl.subtype as property_subtype,
+        pl.price as property_price,
+        pl.cover_image as property_cover_image
       FROM enquiries e
       LEFT JOIN users u ON e.assigned_to = u.id
       LEFT JOIN users cb ON e.created_by = cb.id
       LEFT JOIN property_projects p ON e.project_id = p.id
       LEFT JOIN property_units un ON e.unit_id = un.id
+      LEFT JOIN property_listings pl ON e.property_id = pl.id OR e.interested_property = pl.id OR e.interested_property = pl.title
       ${whereClause}
       ORDER BY ${sortField} ${sortOrder}
       LIMIT ? OFFSET ?
@@ -157,12 +163,18 @@ export class EnquiryService {
         u.email as assigned_email,
         cb.name as created_by_name,
         p.name as project_name,
-        un.unit_number as unit_number
+        un.unit_number as unit_number,
+        pl.code as property_code,
+        COALESCE(pl.title, e.interested_property) as property_title,
+        pl.subtype as property_subtype,
+        pl.price as property_price,
+        pl.cover_image as property_cover_image
       FROM enquiries e
       LEFT JOIN users u ON e.assigned_to = u.id
       LEFT JOIN users cb ON e.created_by = cb.id
       LEFT JOIN property_projects p ON e.project_id = p.id
       LEFT JOIN property_units un ON e.unit_id = un.id
+      LEFT JOIN property_listings pl ON e.property_id = pl.id OR e.interested_property = pl.id OR e.interested_property = pl.title
       WHERE e.id = ?
     `;
 
@@ -197,6 +209,7 @@ export class EnquiryService {
       assigned_to?: string | null;
       project_id?: string | null;
       unit_id?: string | null;
+      property_id?: string | null;
       status?: EnquiryStatus;
       enquiry_date?: string;
     },
@@ -210,8 +223,8 @@ export class EnquiryService {
     await db.run(
       `INSERT INTO enquiries (
         id, customer_name, phone, email, city, budget, interested_property,
-        configuration, lead_source, assigned_to, project_id, unit_id, status, enquiry_date, created_by, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        configuration, lead_source, assigned_to, project_id, unit_id, property_id, status, enquiry_date, created_by, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
         data.customer_name.trim(),
@@ -225,6 +238,7 @@ export class EnquiryService {
         data.assigned_to || null,
         data.project_id || null,
         data.unit_id || null,
+        data.property_id || null,
         status,
         enquiryDate,
         user.userId,
@@ -350,6 +364,7 @@ export class EnquiryService {
       assigned_to?: string;
       project_id?: string;
       unit_id?: string;
+      property_id?: string;
       priority?: LeadPriority;
       notes?: string;
     },
@@ -374,15 +389,16 @@ export class EnquiryService {
     const assignedTo = conversionData.assigned_to || enquiry.assigned_to || user.userId;
     const projectId = conversionData.project_id || enquiry.project_id || null;
     const unitId = conversionData.unit_id || enquiry.unit_id || null;
+    const propertyId = conversionData.property_id || enquiry.property_id || null;
 
     // Insert into leads table
     await db.run(
       `INSERT INTO leads (
         id, enquiry_id, customer_name, phone, email, city, budget,
-        preferred_location, flat_type, interested_property, project_id, unit_id, loan_required,
+        preferred_location, flat_type, interested_property, project_id, unit_id, property_id, loan_required,
         purchase_timeline, purpose, assigned_to, pipeline_stage,
         qualification_status, priority, notes, created_by, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         leadId,
         enquiry.id,
@@ -396,6 +412,7 @@ export class EnquiryService {
         enquiry.interested_property,
         projectId,
         unitId,
+        propertyId,
         conversionData.loan_required || 0,
         conversionData.purchase_timeline || '1-3 Months',
         conversionData.purpose || 'Self Use',
@@ -445,10 +462,23 @@ export class EnquiryService {
     );
 
     const lead = await db.get<Lead>(
-      `SELECT l.*, u.name as assigned_name, u.email as assigned_email, cb.name as created_by_name
+      `SELECT l.*,
+              u.name as assigned_name,
+              u.email as assigned_email,
+              cb.name as created_by_name,
+              p.name as project_name,
+              un.unit_number as unit_number,
+              pl.code as property_code,
+              COALESCE(pl.title, l.interested_property) as property_title,
+              pl.subtype as property_subtype,
+              pl.price as property_price,
+              pl.cover_image as property_cover_image
        FROM leads l
        LEFT JOIN users u ON l.assigned_to = u.id
        LEFT JOIN users cb ON l.created_by = cb.id
+       LEFT JOIN property_projects p ON l.project_id = p.id
+       LEFT JOIN property_units un ON l.unit_id = un.id
+       LEFT JOIN property_listings pl ON l.property_id = pl.id OR l.interested_property = pl.id OR l.interested_property = pl.title
        WHERE l.id = ?`,
       [leadId]
     );

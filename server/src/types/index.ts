@@ -128,6 +128,22 @@ export type ActivityType =
   | 'FOLLOW_UP_CANCELLED'
   | 'FOLLOW_UP_REASSIGNED';
 
+export interface PropertyInterestItem {
+  propertyId: string;
+  propertyName: string;
+  propertyCode?: string;
+  propertyType: string;
+  project?: string;
+  location: string;
+  city?: string;
+  price?: number | string;
+  area?: string;
+  availability?: string;
+  coverImage?: string;
+  source?: string;
+  enquiryDate?: string;
+}
+
 export interface Enquiry {
   id: string;
   customer_name: string;
@@ -141,6 +157,7 @@ export interface Enquiry {
   assigned_to?: string | null;
   project_id?: string | null;
   unit_id?: string | null;
+  property_id?: string | null;
   status: EnquiryStatus;
   enquiry_date: string;
   converted_lead_id?: string | null;
@@ -153,6 +170,11 @@ export interface Enquiry {
   created_by_name?: string | null;
   project_name?: string | null;
   unit_number?: string | null;
+  property_code?: string | null;
+  property_title?: string | null;
+  property_subtype?: string | null;
+  property_price?: number | null;
+  property_cover_image?: string | null;
 }
 
 export interface Lead {
@@ -168,6 +190,7 @@ export interface Lead {
   interested_property?: string | null;
   project_id?: string | null;
   unit_id?: string | null;
+  property_id?: string | null;
   loan_required: number; // 0 or 1
   purchase_timeline?: PurchaseTimeline | null;
   purpose?: PurchasePurpose | null;
@@ -186,6 +209,12 @@ export interface Lead {
   created_by_name?: string | null;
   project_name?: string | null;
   unit_number?: string | null;
+  property_code?: string | null;
+  property_title?: string | null;
+  property_subtype?: string | null;
+  property_price?: number | null;
+  property_cover_image?: string | null;
+  property_interests?: PropertyInterestItem[];
 }
 
 export interface LeadActivity {
@@ -388,6 +417,7 @@ export interface SiteVisit {
   lead_id: string;
   project_id: string;
   unit_id?: string | null;
+  property_id?: string | null;
   assigned_user_id: string;
   visit_date: string; // 'YYYY-MM-DD'
   visit_time: string; // 'HH:mm'
@@ -417,6 +447,10 @@ export interface SiteVisit {
   assigned_user_name?: string;
   assigned_user_email?: string;
   created_by_name?: string;
+  property_title?: string;
+  property_code?: string;
+  property_subtype?: string;
+  property_cover_image?: string;
 }
 
 export interface FollowUpItem {
@@ -442,6 +476,11 @@ export interface FollowUpItem {
   created_by_name?: string;
   project_name?: string;
   is_overdue?: boolean;
+  property_id?: string;
+  property_title?: string;
+  property_code?: string;
+  property_subtype?: string;
+  property_cover_image?: string;
 }
 
 export interface SiteVisitSummary {

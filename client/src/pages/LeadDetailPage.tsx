@@ -25,6 +25,7 @@ import {
   QualifyLeadFormData,
   LeadFormData,
   UserSummary,
+  PropertyInterestItem,
 } from '../types/crm.types';
 import { SiteVisit } from '../types/siteVisit.types';
 import { FollowUpItem } from '../types/followUp.types';
@@ -45,6 +46,8 @@ import {
   MessageSquare,
   Users,
   Video,
+  Eye,
+  Compass,
 } from 'lucide-react';
 
 export const LeadDetailPage: React.FC = () => {
@@ -56,6 +59,7 @@ export const LeadDetailPage: React.FC = () => {
   const [activities, setActivities] = useState<LeadActivity[]>([]);
   const [siteVisits, setSiteVisits] = useState<SiteVisit[]>([]);
   const [followUps, setFollowUps] = useState<FollowUpItem[]>([]);
+  const [propertyInterests, setPropertyInterests] = useState<PropertyInterestItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -96,6 +100,7 @@ export const LeadDetailPage: React.FC = () => {
 
       setLead(fetchedLead);
       setActivities(timeline.activities || []);
+      setPropertyInterests(timeline.propertyInterests || []);
       setSiteVisits(visitsRes.visits || []);
       setFollowUps(followUpsRes.followUps || []);
     } catch (err: any) {
@@ -378,16 +383,64 @@ export const LeadDetailPage: React.FC = () => {
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
                   <Building className="w-4 h-4 text-brand-600" />
-                  <h3>Property Interest</h3>
+                  <h3>Primary Property Interest</h3>
                 </div>
                 <Badge stage={lead.pipeline_stage} size="xs" />
               </div>
+
+              {/* Property Image & Metadata preview if linked */}
+              {(lead.property_cover_image || lead.property_code || lead.property_title) && (
+                <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 text-white flex gap-3 items-center">
+                  {lead.property_cover_image ? (
+                    <img
+                      src={lead.property_cover_image}
+                      alt={lead.property_title || 'Property Cover'}
+                      className="w-16 h-16 rounded-lg object-cover border border-white/10 shrink-0"
+                    />
+                  ) : (
+                    <div className="w-16 h-16 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0">
+                      <Building className="w-6 h-6 text-brand-400" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {lead.property_code && (
+                        <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                          {lead.property_code}
+                        </span>
+                      )}
+                      {lead.property_subtype && (
+                        <span className="text-[11px] text-slate-300 font-medium truncate">
+                          {lead.property_subtype}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-xs font-bold text-white truncate mt-1">
+                      {lead.property_title || lead.interested_property}
+                    </div>
+                    {lead.property_price && (
+                      <div className="text-[11px] font-bold text-emerald-400 mt-0.5">
+                        {lead.property_price}
+                      </div>
+                    )}
+                  </div>
+                  {lead.property_id && (
+                    <Link
+                      to={`/discovery/${lead.property_id}`}
+                      className="shrink-0 p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
+                      title="View Property Profile"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </Link>
+                  )}
+                </div>
+              )}
 
               <div className="space-y-3 text-xs">
                 <div className="flex items-start justify-between py-1 border-b border-slate-100">
                   <span className="text-slate-500">Interested Project:</span>
                   <span className="font-bold text-slate-900">
-                    {lead.interested_property || 'General Requirements'}
+                    {lead.property_title || lead.interested_property || 'General Requirements'}
                   </span>
                 </div>
 
@@ -428,7 +481,76 @@ export const LeadDetailPage: React.FC = () => {
                   </span>
                 </div>
               </div>
+
+              {lead.property_id && (
+                <div className="pt-2 border-t border-slate-100 flex items-center gap-2">
+                  <Link
+                    to={`/discovery/${lead.property_id}`}
+                    className="flex-1 py-1.5 px-2.5 rounded-lg bg-brand-50 hover:bg-brand-100 text-brand-700 font-semibold text-center text-xs transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <Compass className="w-3.5 h-3.5" />
+                    <span>Explore in Property Discovery</span>
+                  </Link>
+                </div>
+              )}
             </div>
+
+            {/* Customer 360: All Property Interests & Touchpoints */}
+            {propertyInterests.length > 0 && (
+              <div className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-subtle space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
+                    <Compass className="w-4 h-4 text-brand-600" />
+                    <h3>Customer Property History ({propertyInterests.length})</h3>
+                  </div>
+                  <span className="text-[10px] font-bold uppercase text-slate-400">360 View</span>
+                </div>
+
+                <div className="space-y-3">
+                  {propertyInterests.map((prop) => (
+                    <div
+                      key={`${prop.id}-${prop.source}`}
+                      className="p-3 bg-slate-50 border border-slate-200/80 rounded-xl flex items-center gap-3"
+                    >
+                      {prop.cover_image ? (
+                        <img
+                          src={prop.cover_image}
+                          alt={prop.title}
+                          className="w-12 h-12 rounded-lg object-cover border border-slate-200 shrink-0"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-lg bg-slate-200 flex items-center justify-center shrink-0">
+                          <Building className="w-5 h-5 text-slate-500" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0 text-xs">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-[9px] uppercase font-bold px-1.5 py-0.2 rounded bg-brand-100 text-brand-700">
+                            {prop.source}
+                          </span>
+                          <span className="text-[10px] font-mono text-slate-500">
+                            {prop.code}
+                          </span>
+                        </div>
+                        <div className="font-bold text-slate-900 truncate mt-0.5">
+                          {prop.title}
+                        </div>
+                        <div className="text-[11px] text-emerald-700 font-semibold">
+                          {prop.price_formatted} • <span className="text-slate-500 font-normal">{prop.city}</span>
+                        </div>
+                      </div>
+                      <Link
+                        to={`/discovery/${prop.id}`}
+                        className="p-1.5 text-brand-600 hover:text-brand-800 hover:bg-brand-50 rounded-lg transition-colors shrink-0"
+                        title="View Property"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Buyer Qualification Card */}
             <div className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-subtle space-y-4">

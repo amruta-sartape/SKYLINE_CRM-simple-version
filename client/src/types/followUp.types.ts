@@ -30,6 +30,11 @@ export interface FollowUpItem {
   assigned_user_name?: string;
   created_by_name?: string;
   project_name?: string;
+  property_id?: string;
+  property_code?: string;
+  property_title?: string;
+  property_subtype?: string;
+  property_cover_image?: string;
   is_overdue?: boolean;
 }
 

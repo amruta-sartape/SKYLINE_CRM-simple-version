@@ -18,6 +18,16 @@ interface EnquiryFormModalProps {
   onClose: () => void;
   onSubmit: (data: EnquiryFormData) => Promise<void>;
   initialData?: Enquiry | null;
+  initialPropertyContext?: {
+    id: string;
+    title: string;
+    code?: string;
+    subtype?: string;
+    city?: string;
+    price?: number | string;
+    price_formatted?: string;
+    cover_image?: string;
+  } | null;
   executives: UserSummary[];
 }
 
@@ -26,6 +36,7 @@ export const EnquiryFormModal: React.FC<EnquiryFormModalProps> = ({
   onClose,
   onSubmit,
   initialData,
+  initialPropertyContext,
   executives,
 }) => {
   const isEdit = Boolean(initialData);
@@ -37,6 +48,7 @@ export const EnquiryFormModal: React.FC<EnquiryFormModalProps> = ({
     city: '',
     budget: 10000000,
     interested_property: '',
+    property_id: undefined,
     configuration: '2 BHK',
     lead_source: 'Website',
     assigned_to: '',
@@ -62,11 +74,33 @@ export const EnquiryFormModal: React.FC<EnquiryFormModalProps> = ({
         city: initialData.city || '',
         budget: initialData.budget,
         interested_property: initialData.interested_property,
+        property_id: initialData.property_id || undefined,
         configuration: initialData.configuration,
         lead_source: initialData.lead_source,
         assigned_to: initialData.assigned_to || '',
         status: initialData.status,
         enquiry_date: initialData.enquiry_date ? initialData.enquiry_date.split('T')[0] : '',
+      });
+    } else if (initialPropertyContext) {
+      // Parse numeric budget if possible
+      let budgetVal = 10000000;
+      if (typeof initialPropertyContext.price === 'number') {
+        budgetVal = initialPropertyContext.price;
+      }
+
+      setFormData({
+        customer_name: '',
+        phone: '',
+        email: '',
+        city: initialPropertyContext.city || '',
+        budget: budgetVal,
+        interested_property: initialPropertyContext.title,
+        property_id: initialPropertyContext.id,
+        configuration: '2 BHK',
+        lead_source: 'Website',
+        assigned_to: '',
+        status: 'New Lead',
+        enquiry_date: new Date().toISOString().split('T')[0],
       });
     } else {
       setFormData({
@@ -76,6 +110,7 @@ export const EnquiryFormModal: React.FC<EnquiryFormModalProps> = ({
         city: '',
         budget: 10000000,
         interested_property: '',
+        property_id: undefined,
         configuration: '2 BHK',
         lead_source: 'Website',
         assigned_to: '',
@@ -85,7 +120,7 @@ export const EnquiryFormModal: React.FC<EnquiryFormModalProps> = ({
     }
     setErrors({});
     setServerError(null);
-  }, [initialData, isOpen]);
+  }, [initialData, initialPropertyContext, isOpen]);
 
   const validate = () => {
     const errs: Record<string, string> = {};
@@ -170,6 +205,40 @@ export const EnquiryFormModal: React.FC<EnquiryFormModalProps> = ({
             message={serverError}
             onClose={() => setServerError(null)}
           />
+        )}
+
+        {initialPropertyContext && (
+          <div className="p-3 bg-gradient-to-r from-navy-900/90 to-navy-800 border border-gold-500/30 rounded-xl flex items-center gap-3.5 shadow-md">
+            {initialPropertyContext.cover_image ? (
+              <img
+                src={initialPropertyContext.cover_image}
+                alt={initialPropertyContext.title}
+                className="w-14 h-14 rounded-lg object-cover border border-white/10 flex-shrink-0"
+              />
+            ) : (
+              <div className="w-14 h-14 rounded-lg bg-navy-700/60 border border-white/10 flex items-center justify-center flex-shrink-0">
+                <Building className="w-6 h-6 text-gold-400" />
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-gold-500/20 text-gold-300 border border-gold-500/30">
+                  {initialPropertyContext.code || 'PROPERTY'}
+                </span>
+                {initialPropertyContext.subtype && (
+                  <span className="text-[11px] text-slate-300 font-medium truncate">
+                    {initialPropertyContext.subtype}
+                  </span>
+                )}
+              </div>
+              <h4 className="text-sm font-bold text-white truncate mt-0.5">
+                {initialPropertyContext.title}
+              </h4>
+              <p className="text-xs text-gold-400 font-medium">
+                {initialPropertyContext.price_formatted || (initialPropertyContext.city ? `Located in ${initialPropertyContext.city}` : '')}
+              </p>
+            </div>
+          </div>
         )}
 
         {/* Section 1: Customer Information */}

@@ -354,12 +354,32 @@ export const FollowUpsPage: React.FC = () => {
                     >
                       {/* Customer */}
                       <td className="py-3 px-4">
-                        <div className="font-bold text-slate-900 group-hover:text-brand-700 transition-colors">
-                          {item.customer_name}
-                        </div>
-                        <div className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
-                          <span>{item.customer_phone}</span>
-                          {item.project_name && <span>• {item.project_name}</span>}
+                        <div className="flex items-center gap-2.5">
+                          {item.property_cover_image ? (
+                            <img
+                              src={item.property_cover_image}
+                              alt={item.property_title || item.project_name || 'Property'}
+                              className="w-9 h-9 rounded-lg object-cover border border-slate-200 shrink-0"
+                            />
+                          ) : null}
+                          <div className="min-w-0">
+                            <div className="font-bold text-slate-900 group-hover:text-brand-700 transition-colors">
+                              {item.customer_name}
+                            </div>
+                            <div className="text-[11px] text-slate-500 flex items-center gap-1.5 mt-0.5 flex-wrap">
+                              <span>{item.customer_phone}</span>
+                              {(item.property_title || item.project_name) && (
+                                <span className="text-slate-700 font-medium truncate max-w-[140px]">
+                                  • {item.property_title || item.project_name}
+                                </span>
+                              )}
+                              {item.property_code && (
+                                <span className="font-mono text-[9px] bg-slate-100 text-slate-600 px-1 py-0.2 rounded font-semibold">
+                                  {item.property_code}
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       </td>
 

@@ -137,12 +137,18 @@ export class LeadService {
         u.email as assigned_email,
         cb.name as created_by_name,
         p.name as project_name,
-        un.unit_number as unit_number
+        un.unit_number as unit_number,
+        pl.code as property_code,
+        COALESCE(pl.title, l.interested_property) as property_title,
+        pl.subtype as property_subtype,
+        pl.price as property_price,
+        pl.cover_image as property_cover_image
       FROM leads l
       LEFT JOIN users u ON l.assigned_to = u.id
       LEFT JOIN users cb ON l.created_by = cb.id
       LEFT JOIN property_projects p ON l.project_id = p.id
       LEFT JOIN property_units un ON l.unit_id = un.id
+      LEFT JOIN property_listings pl ON l.property_id = pl.id OR l.interested_property = pl.id OR l.interested_property = pl.title
       ${whereClause}
       ORDER BY ${sortField} ${sortOrder}
       LIMIT ? OFFSET ?
@@ -218,12 +224,18 @@ export class LeadService {
         u.email as assigned_email,
         cb.name as created_by_name,
         p.name as project_name,
-        un.unit_number as unit_number
+        un.unit_number as unit_number,
+        pl.code as property_code,
+        COALESCE(pl.title, l.interested_property) as property_title,
+        pl.subtype as property_subtype,
+        pl.price as property_price,
+        pl.cover_image as property_cover_image
       FROM leads l
       LEFT JOIN users u ON l.assigned_to = u.id
       LEFT JOIN users cb ON l.created_by = cb.id
       LEFT JOIN property_projects p ON l.project_id = p.id
       LEFT JOIN property_units un ON l.unit_id = un.id
+      LEFT JOIN property_listings pl ON l.property_id = pl.id OR l.interested_property = pl.id OR l.interested_property = pl.title
       ${whereClause}
       ORDER BY l.created_at DESC
     `;
@@ -266,12 +278,18 @@ export class LeadService {
         u.email as assigned_email,
         cb.name as created_by_name,
         p.name as project_name,
-        un.unit_number as unit_number
+        un.unit_number as unit_number,
+        pl.code as property_code,
+        COALESCE(pl.title, l.interested_property) as property_title,
+        pl.subtype as property_subtype,
+        pl.price as property_price,
+        pl.cover_image as property_cover_image
       FROM leads l
       LEFT JOIN users u ON l.assigned_to = u.id
       LEFT JOIN users cb ON l.created_by = cb.id
       LEFT JOIN property_projects p ON l.project_id = p.id
       LEFT JOIN property_units un ON l.unit_id = un.id
+      LEFT JOIN property_listings pl ON l.property_id = pl.id OR l.interested_property = pl.id OR l.interested_property = pl.title
       WHERE l.id = ?
     `;
 
@@ -291,14 +309,19 @@ export class LeadService {
   }
 
   /**
-   * Get complete Lead Activity Timeline + Follow-ups + Site Visits (Customer 360 Foundation)
+   * Get complete Lead Activity Timeline + Follow-ups + Site Visits + Customer 360 Property Interests
    */
   public static async getLeadTimeline(
     leadId: string,
     user: JWTPayload
-  ): Promise<{ activities: LeadActivity[]; followUps: any[]; siteVisits: any[] }> {
+  ): Promise<{ activities: LeadActivity[]; followUps: any[]; siteVisits: any[]; propertyInterests: any[] }> {
     // Verify access first
-    await this.getLeadById(leadId, user);
+    const currentLead = await this.getLeadById(leadId, user);
+    if (!currentLead) {
+      const error: any = new Error('Lead not found.');
+      error.statusCode = 404;
+      throw error;
+    }
 
     const activitiesSql = `
       SELECT 
@@ -332,9 +355,15 @@ export class LeadService {
         COALESCE(f.next_follow_up_date, f.next_followup_date) as next_follow_up_date,
         f.created_at,
         u.name as executive_name,
-        u.name as assigned_user_name
+        u.name as assigned_user_name,
+        pl.code as property_code,
+        COALESCE(pl.title, current_lead.interested_property) as property_title,
+        pl.subtype as property_subtype,
+        pl.cover_image as property_cover_image
       FROM follow_ups f
       LEFT JOIN users u ON COALESCE(f.assigned_user_id, f.executive_id) = u.id
+      LEFT JOIN leads current_lead ON f.lead_id = current_lead.id
+      LEFT JOIN property_listings pl ON current_lead.property_id = pl.id OR current_lead.interested_property = pl.id OR current_lead.interested_property = pl.title
       WHERE f.lead_id = ?
       ORDER BY COALESCE(f.scheduled_date, f.followup_date) DESC, f.created_at DESC
     `;
@@ -349,18 +378,108 @@ export class LeadService {
         un.configuration as unit_configuration,
         un.price as unit_price,
         u.name as assigned_user_name,
-        cb.name as created_by_name
+        cb.name as created_by_name,
+        pl.code as property_code,
+        COALESCE(pl.title, p.name) as property_title,
+        pl.subtype as property_subtype,
+        pl.cover_image as property_cover_image
       FROM site_visits sv
       LEFT JOIN property_projects p ON sv.project_id = p.id
       LEFT JOIN property_units un ON sv.unit_id = un.id
       LEFT JOIN users u ON sv.assigned_user_id = u.id
       LEFT JOIN users cb ON sv.created_by = cb.id
+      LEFT JOIN property_listings pl ON sv.property_id = pl.id OR sv.project_id = pl.id
       WHERE sv.lead_id = ?
       ORDER BY sv.visit_date DESC, sv.visit_time DESC
     `;
     const siteVisits = await db.all<any>(siteVisitsSql, [leadId]);
 
-    return { activities, followUps, siteVisits };
+    // Aggregate Property Interests for Customer 360
+    const propertyInterestsMap = new Map<string, any>();
+
+    // 1. Primary Lead Property
+    if (currentLead.property_id || currentLead.interested_property) {
+      const propRef = currentLead.property_id || currentLead.interested_property;
+      const dbProp = await db.get<any>(
+        `SELECT * FROM property_listings WHERE id = ? OR code = ? OR title = ?`,
+        [propRef, propRef, propRef]
+      );
+      if (dbProp) {
+        let areaVal = 'Custom Layout';
+        try {
+          const sp = JSON.parse(dbProp.specs_data || '{}');
+          areaVal = sp.residentialSpecs?.builtUpArea ? `${sp.residentialSpecs.builtUpArea} sq.ft` : sp.landSpecs?.plotArea || sp.commercialSpecs?.commercialArea ? `${sp.commercialSpecs.commercialArea} sq.ft` : areaVal;
+        } catch (_) {}
+
+        const priceFormatted = dbProp.price_label || `₹${(dbProp.price / 100000).toFixed(1)} Lakhs`;
+        propertyInterestsMap.set(dbProp.id, {
+          id: dbProp.id,
+          propertyId: dbProp.id,
+          code: dbProp.code,
+          propertyCode: dbProp.code,
+          title: dbProp.title,
+          propertyName: dbProp.title,
+          main_category: dbProp.main_category,
+          subtype: dbProp.subtype,
+          propertyType: dbProp.subtype,
+          project: dbProp.developer || 'Skyline Realty Group',
+          location: dbProp.location,
+          city: dbProp.city,
+          price: dbProp.price,
+          price_formatted: priceFormatted,
+          specs_formatted: areaVal,
+          area: areaVal,
+          availability: dbProp.availability || 'Available',
+          cover_image: dbProp.cover_image || '/images/projects/skyline-marina-towers.jpg',
+          coverImage: dbProp.cover_image || '/images/projects/skyline-marina-towers.jpg',
+          status: dbProp.status || 'Active',
+          source: 'Primary Requirement',
+        });
+      }
+    }
+
+    // 2. Additional Enquiries from this customer (phone or email match)
+    if (currentLead.phone || currentLead.email) {
+      const enquiries = await db.all<any>(
+        `SELECT e.*, pl.id as pl_id, pl.title as pl_title, pl.code as pl_code, pl.subtype as pl_subtype, pl.location as pl_location, pl.city as pl_city, pl.price as pl_price, pl.price_label as pl_price_label, pl.cover_image as pl_cover_image, pl.availability as pl_availability
+         FROM enquiries e
+         LEFT JOIN property_listings pl ON e.property_id = pl.id OR e.interested_property = pl.id OR e.interested_property = pl.title
+         WHERE e.phone = ? OR (e.email IS NOT NULL AND e.email = ?)`,
+        [currentLead.phone, currentLead.email || '']
+      );
+
+      for (const enq of enquiries) {
+        if (enq.pl_id && !propertyInterestsMap.has(enq.pl_id)) {
+          const enqPriceFormatted = enq.pl_price_label || (enq.pl_price ? `₹${(enq.pl_price / 100000).toFixed(1)} Lakhs` : `₹${(enq.budget / 100000).toFixed(1)} Lakhs`);
+          propertyInterestsMap.set(enq.pl_id, {
+            id: enq.pl_id,
+            propertyId: enq.pl_id,
+            code: enq.pl_code,
+            propertyCode: enq.pl_code,
+            title: enq.pl_title,
+            propertyName: enq.pl_title,
+            subtype: enq.pl_subtype || enq.configuration,
+            propertyType: enq.pl_subtype || enq.configuration,
+            project: enq.project_name || 'Skyline Realty Group',
+            location: enq.pl_location || enq.city || 'Pune',
+            city: enq.pl_city || enq.city || 'Pune',
+            price: enq.pl_price || enq.budget,
+            price_formatted: enqPriceFormatted,
+            specs_formatted: enq.configuration || 'Custom Spec',
+            area: enq.configuration || 'Custom Spec',
+            availability: enq.pl_availability || 'Available',
+            cover_image: enq.pl_cover_image || '/images/projects/skyline-marina-towers.jpg',
+            coverImage: enq.pl_cover_image || '/images/projects/skyline-marina-towers.jpg',
+            source: `Enquiry (${enq.lead_source})`,
+            enquiryDate: enq.enquiry_date,
+          });
+        }
+      }
+    }
+
+    const propertyInterests = Array.from(propertyInterestsMap.values());
+
+    return { activities, followUps, siteVisits, propertyInterests };
   }
 
   /**
@@ -378,6 +497,7 @@ export class LeadService {
       interested_property?: string | null;
       project_id?: string | null;
       unit_id?: string | null;
+      property_id?: string | null;
       loan_required?: number;
       purchase_timeline?: PurchaseTimeline | null;
       purpose?: PurchasePurpose | null;
@@ -399,10 +519,10 @@ export class LeadService {
     await db.run(
       `INSERT INTO leads (
         id, customer_name, phone, email, city, budget,
-        preferred_location, flat_type, interested_property, project_id, unit_id, loan_required,
+        preferred_location, flat_type, interested_property, project_id, unit_id, property_id, loan_required,
         purchase_timeline, purpose, assigned_to, pipeline_stage,
         qualification_status, priority, next_followup_date, notes, created_by, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
         data.customer_name.trim(),
@@ -415,6 +535,7 @@ export class LeadService {
         data.interested_property?.trim() || null,
         data.project_id || null,
         data.unit_id || null,
+        data.property_id || null,
         data.loan_required || 0,
         data.purchase_timeline || null,
         data.purpose || null,
@@ -467,6 +588,7 @@ export class LeadService {
       interested_property?: string | null;
       project_id?: string | null;
       unit_id?: string | null;
+      property_id?: string | null;
       loan_required?: number;
       purchase_timeline?: PurchaseTimeline | null;
       purpose?: PurchasePurpose | null;
@@ -500,6 +622,7 @@ export class LeadService {
       interested_property: data.interested_property !== undefined ? data.interested_property?.trim() || null : undefined,
       project_id: data.project_id !== undefined ? data.project_id || null : undefined,
       unit_id: data.unit_id !== undefined ? data.unit_id || null : undefined,
+      property_id: data.property_id !== undefined ? data.property_id || null : undefined,
       loan_required: data.loan_required,
       purchase_timeline: data.purchase_timeline !== undefined ? data.purchase_timeline || null : undefined,
       purpose: data.purpose !== undefined ? data.purpose || null : undefined,

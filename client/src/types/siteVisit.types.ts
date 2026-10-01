@@ -12,6 +12,7 @@ export interface SiteVisit {
   lead_id: string;
   project_id: string;
   unit_id?: string | null;
+  property_id?: string | null;
   assigned_user_id: string;
   visit_date: string; // 'YYYY-MM-DD'
   visit_time: string; // 'HH:mm'
@@ -34,6 +35,11 @@ export interface SiteVisit {
   project_code?: string;
   project_city?: string;
   project_location?: string;
+  property_code?: string;
+  property_title?: string;
+  property_subtype?: string;
+  property_cover_image?: string;
+  property_price?: string;
   unit_number?: string;
   unit_configuration?: string;
   unit_price?: number;
@@ -47,6 +53,7 @@ export interface SiteVisitFormData {
   lead_id: string;
   project_id: string;
   unit_id?: string | null;
+  property_id?: string | null;
   assigned_user_id: string;
   visit_date: string;
   visit_time: string;

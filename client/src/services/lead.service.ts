@@ -10,6 +10,7 @@ import {
   PipelineStage,
   UserSummary,
   ApiResponse,
+  PropertyInterestItem,
 } from '../types/crm.types';
 
 export const leadService = {
@@ -57,9 +58,11 @@ export const leadService = {
   /**
    * Fetch complete Customer 360 Activity & Follow-up Timeline
    */
-  async getLeadTimeline(id: string): Promise<{ activities: LeadActivity[]; followUps: FollowUp[] }> {
+  async getLeadTimeline(
+    id: string
+  ): Promise<{ activities: LeadActivity[]; followUps: FollowUp[]; propertyInterests?: PropertyInterestItem[] }> {
     const res = await api.get<
-      ApiResponse<{ activities: LeadActivity[]; followUps: FollowUp[] }>
+      ApiResponse<{ activities: LeadActivity[]; followUps: FollowUp[]; propertyInterests?: PropertyInterestItem[] }>
     >(`/leads/${id}/timeline`);
     return res.data.data!;
   },

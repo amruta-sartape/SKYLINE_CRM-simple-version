@@ -18,6 +18,16 @@ interface ScheduleSiteVisitModalProps {
   onClose: () => void;
   onSuccess: () => void;
   preselectedLead?: Lead | null;
+  preselectedProperty?: {
+    id: string;
+    title: string;
+    code?: string;
+    project_id?: string;
+    cover_image?: string;
+    subtype?: string;
+    city?: string;
+    price_formatted?: string;
+  } | null;
 }
 
 export const ScheduleSiteVisitModal: React.FC<ScheduleSiteVisitModalProps> = ({
@@ -25,11 +35,13 @@ export const ScheduleSiteVisitModal: React.FC<ScheduleSiteVisitModalProps> = ({
   onClose,
   onSuccess,
   preselectedLead,
+  preselectedProperty,
 }) => {
   const [formData, setFormData] = useState<SiteVisitFormData>({
     lead_id: preselectedLead?.id || '',
-    project_id: preselectedLead?.interested_property || '',
+    project_id: preselectedProperty?.project_id || preselectedProperty?.id || preselectedLead?.interested_property || '',
     unit_id: '',
+    property_id: preselectedProperty?.id || undefined,
     assigned_user_id: preselectedLead?.assigned_to || '',
     visit_date: new Date().toISOString().split('T')[0],
     visit_time: '11:00',
@@ -82,17 +94,18 @@ export const ScheduleSiteVisitModal: React.FC<ScheduleSiteVisitModalProps> = ({
     };
   }, [isOpen, preselectedLead]);
 
-  // Sync preselected lead changes
+  // Sync preselected lead & property changes
   useEffect(() => {
-    if (preselectedLead) {
+    if (preselectedLead || preselectedProperty) {
       setFormData((prev) => ({
         ...prev,
-        lead_id: preselectedLead.id,
-        project_id: preselectedLead.interested_property || prev.project_id,
-        assigned_user_id: preselectedLead.assigned_to || prev.assigned_user_id,
+        lead_id: preselectedLead ? preselectedLead.id : prev.lead_id,
+        project_id: preselectedProperty?.project_id || preselectedProperty?.id || preselectedLead?.interested_property || prev.project_id,
+        property_id: preselectedProperty?.id || (preselectedLead?.property_id ?? prev.property_id),
+        assigned_user_id: preselectedLead?.assigned_to || prev.assigned_user_id,
       }));
     }
-  }, [preselectedLead]);
+  }, [preselectedLead, preselectedProperty]);
 
   // Load units when project changes
   useEffect(() => {
@@ -219,6 +232,40 @@ export const ScheduleSiteVisitModal: React.FC<ScheduleSiteVisitModalProps> = ({
             message={serverError}
             onClose={() => setServerError(null)}
           />
+        )}
+
+        {preselectedProperty && (
+          <div className="p-3 bg-gradient-to-r from-navy-900/90 to-navy-800 border border-gold-500/30 rounded-xl flex items-center gap-3.5 shadow-md">
+            {preselectedProperty.cover_image ? (
+              <img
+                src={preselectedProperty.cover_image}
+                alt={preselectedProperty.title}
+                className="w-14 h-14 rounded-lg object-cover border border-white/10 flex-shrink-0"
+              />
+            ) : (
+              <div className="w-14 h-14 rounded-lg bg-navy-700/60 border border-white/10 flex items-center justify-center flex-shrink-0">
+                <Building className="w-6 h-6 text-gold-400" />
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-gold-500/20 text-gold-300 border border-gold-500/30">
+                  {preselectedProperty.code || 'PROPERTY'}
+                </span>
+                {preselectedProperty.subtype && (
+                  <span className="text-[11px] text-slate-300 font-medium truncate">
+                    {preselectedProperty.subtype}
+                  </span>
+                )}
+              </div>
+              <h4 className="text-sm font-bold text-white truncate mt-0.5">
+                {preselectedProperty.title}
+              </h4>
+              <p className="text-xs text-gold-400 font-medium">
+                {preselectedProperty.price_formatted || (preselectedProperty.city ? `Located in ${preselectedProperty.city}` : '')}
+              </p>
+            </div>
+          </div>
         )}
 
         {/* Lead Selection */}

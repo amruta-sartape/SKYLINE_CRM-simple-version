@@ -327,19 +327,37 @@ export const SiteVisitsPage: React.FC = () => {
 
                       {/* Property & Unit */}
                       <td className="py-3 px-4">
-                        <div className="font-semibold text-slate-800 flex items-center gap-1">
-                          <Building className="w-3 h-3 text-brand-600" />
-                          <span>{visit.project_name}</span>
-                        </div>
-                        <div className="text-[10px] text-slate-500 mt-0.5">
-                          {visit.unit_number ? (
-                            <span className="font-medium text-slate-700">
-                              Unit {visit.unit_number} ({visit.unit_configuration})
-                            </span>
+                        <div className="flex items-center gap-2.5">
+                          {visit.property_cover_image ? (
+                            <img
+                              src={visit.property_cover_image}
+                              alt={visit.property_title || visit.project_name || 'Property'}
+                              className="w-10 h-10 rounded-lg object-cover border border-slate-200 shrink-0"
+                            />
                           ) : (
-                            <span className="italic">Sample Flat Walkthrough</span>
+                            <div className="w-10 h-10 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0">
+                              <Building className="w-4 h-4 text-slate-400" />
+                            </div>
                           )}
-                          {visit.project_location && <span> • {visit.project_location}</span>}
+                          <div className="min-w-0">
+                            <div className="font-semibold text-slate-900 truncate">
+                              {visit.property_title || visit.project_name}
+                            </div>
+                            <div className="text-[10px] text-slate-500 mt-0.5 flex items-center gap-1.5 flex-wrap">
+                              {visit.property_code && (
+                                <span className="font-mono text-slate-600 bg-slate-100 px-1 py-0.2 rounded font-semibold">
+                                  {visit.property_code}
+                                </span>
+                              )}
+                              {visit.unit_number ? (
+                                <span className="font-medium text-slate-700">
+                                  Unit {visit.unit_number} ({visit.unit_configuration})
+                                </span>
+                              ) : (
+                                <span className="italic text-slate-400">Sample Flat</span>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       </td>
 

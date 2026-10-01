@@ -332,6 +332,7 @@ export const createSiteVisitSchema = z.object({
   lead_id: z.string({ required_error: 'Lead is required' }).min(1, 'Lead is required'),
   project_id: z.string({ required_error: 'Project is required' }).min(1, 'Project is required'),
   unit_id: z.string().optional().nullable().or(z.literal('')),
+  property_id: z.string().optional().nullable().or(z.literal('')),
   assigned_user_id: z.string({ required_error: 'Assigned executive is required' }).min(1, 'Assigned executive is required'),
   visit_date: z.string({ required_error: 'Visit date is required' }).min(1, 'Visit date is required'),
   visit_time: z.string({ required_error: 'Visit time is required' }).min(1, 'Visit time is required'),

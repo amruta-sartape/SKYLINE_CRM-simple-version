@@ -81,6 +81,9 @@ class DatabaseService {
       if (!enquiryColNames.includes('unit_id')) {
         await this.run('ALTER TABLE enquiries ADD COLUMN unit_id TEXT');
       }
+      if (!enquiryColNames.includes('property_id')) {
+        await this.run('ALTER TABLE enquiries ADD COLUMN property_id TEXT');
+      }
 
       const leadCols = await this.all<any>('PRAGMA table_info(leads)');
       const leadColNames = leadCols.map((c) => c.name);
@@ -89,6 +92,15 @@ class DatabaseService {
       }
       if (!leadColNames.includes('unit_id')) {
         await this.run('ALTER TABLE leads ADD COLUMN unit_id TEXT');
+      }
+      if (!leadColNames.includes('property_id')) {
+        await this.run('ALTER TABLE leads ADD COLUMN property_id TEXT');
+      }
+
+      const siteVisitCols = await this.all<any>('PRAGMA table_info(site_visits)');
+      const siteVisitColNames = siteVisitCols.map((c) => c.name);
+      if (!siteVisitColNames.includes('property_id')) {
+        await this.run('ALTER TABLE site_visits ADD COLUMN property_id TEXT');
       }
 
       const followUpCols = await this.all<any>('PRAGMA table_info(follow_ups)');

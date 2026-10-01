@@ -87,6 +87,7 @@ CREATE TABLE IF NOT EXISTS enquiries (
   assigned_to TEXT,
   project_id TEXT,
   unit_id TEXT,
+  property_id TEXT,
   status TEXT NOT NULL DEFAULT 'New Lead', -- 'New Lead', 'In Progress', 'Converted', 'Dropped'
   enquiry_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   converted_lead_id TEXT,
@@ -113,6 +114,7 @@ CREATE TABLE IF NOT EXISTS leads (
   interested_property TEXT,
   project_id TEXT,
   unit_id TEXT,
+  property_id TEXT,
   loan_required INTEGER NOT NULL DEFAULT 0, -- 0: No, 1: Yes
   purchase_timeline TEXT, -- 'Immediate', '1-3 Months', '3-6 Months', '6+ Months'
   purpose TEXT, -- 'Self Use', 'Investment'
@@ -270,6 +272,7 @@ CREATE TABLE IF NOT EXISTS site_visits (
   lead_id TEXT NOT NULL,
   project_id TEXT NOT NULL,
   unit_id TEXT,
+  property_id TEXT,
   assigned_user_id TEXT NOT NULL,
   visit_date DATE NOT NULL,
   visit_time TEXT NOT NULL,

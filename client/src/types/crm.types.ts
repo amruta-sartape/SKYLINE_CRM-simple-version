@@ -68,6 +68,21 @@ export interface UserSummary {
   role?: string;
 }
 
+export interface PropertyInterestItem {
+  id: string;
+  code: string;
+  title: string;
+  main_category: string;
+  subtype: string;
+  city: string;
+  location: string;
+  price_formatted: string;
+  specs_formatted: string;
+  cover_image: string;
+  status?: string;
+  source: 'Primary Requirement' | 'Enquiry' | 'Site Visit';
+}
+
 export interface Enquiry {
   id: string;
   customer_name: string;
@@ -79,6 +94,12 @@ export interface Enquiry {
   configuration: PropertyConfiguration;
   lead_source: LeadSource;
   assigned_to?: string | null;
+  property_id?: string | null;
+  property_code?: string | null;
+  property_title?: string | null;
+  property_subtype?: string | null;
+  property_price?: string | null;
+  property_cover_image?: string | null;
   status: EnquiryStatus;
   enquiry_date: string;
   converted_lead_id?: string | null;
@@ -101,6 +122,13 @@ export interface Lead {
   preferred_location?: string | null;
   flat_type: PropertyConfiguration;
   interested_property?: string | null;
+  property_id?: string | null;
+  property_code?: string | null;
+  property_title?: string | null;
+  property_subtype?: string | null;
+  property_price?: string | null;
+  property_cover_image?: string | null;
+  property_interests?: PropertyInterestItem[];
   loan_required: number; // 0 or 1
   purchase_timeline?: PurchaseTimeline | null;
   purpose?: PurchasePurpose | null;
@@ -159,6 +187,7 @@ export interface EnquiryFormData {
   city?: string;
   budget: number;
   interested_property: string;
+  property_id?: string;
   configuration: PropertyConfiguration;
   lead_source: LeadSource;
   assigned_to?: string;
@@ -175,6 +204,7 @@ export interface LeadFormData {
   preferred_location?: string;
   flat_type: PropertyConfiguration;
   interested_property?: string;
+  property_id?: string;
   loan_required: number;
   purchase_timeline?: PurchaseTimeline;
   purpose?: PurchasePurpose;
