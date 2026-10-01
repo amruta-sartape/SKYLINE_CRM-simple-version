@@ -1,70 +1,43 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { projectService } from '../../services/project.service';
 import { unitService } from '../../services/unit.service';
 import { PropertyProject, PropertyUnit } from '../../types/property.types';
-import { getProjectImageSet } from '../../utils/propertyImageMap';
+import { DiscoveryProperty } from '../../types/discovery.types';
+import { buildDiscoveryCatalog } from '../../utils/discoveryData';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
-import { ProjectDetailModal } from '../property/ProjectDetailModal';
 import {
   Building2,
   MapPin,
   Home,
-  Layers,
   ArrowRight,
-  Eye,
+  Maximize2,
+  Car,
   CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
-  Images,
+  Sparkles,
   Compass,
 } from 'lucide-react';
 
 export const FeaturedPropertiesShowcase: React.FC = () => {
   const navigate = useNavigate();
-  const [projects, setProjects] = useState<PropertyProject[]>([]);
-  const [units, setUnits] = useState<PropertyUnit[]>([]);
+  const [dbProjects, setDbProjects] = useState<PropertyProject[]>([]);
+  const [dbUnits, setDbUnits] = useState<PropertyUnit[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedProject, setSelectedProject] = useState<PropertyProject | null>(null);
-
-  // Active image index for each card to allow thumbnail cycling directly on the card
-  const [cardImageIndices, setCardImageIndices] = useState<Record<string, number>>({});
 
   useEffect(() => {
     let isMounted = true;
     async function loadShowcaseData() {
       try {
         setIsLoading(true);
-        // Fetch real database projects & units
         const [projectsRes, unitsRes] = await Promise.all([
-          projectService.list({ limit: 10 }),
-          unitService.list({ limit: 50 }),
+          projectService.list({ limit: 10 }).catch(() => ({ projects: [] })),
+          unitService.list({ limit: 50 }).catch(() => ({ units: [] })),
         ]);
 
         if (isMounted) {
-          const distinctProjects: PropertyProject[] = [];
-          const seenNames = new Set<string>();
-
-          for (const p of projectsRes.projects) {
-            if (!seenNames.has(p.name)) {
-              seenNames.add(p.name);
-              distinctProjects.push(p);
-            }
-            if (distinctProjects.length >= 4) break;
-          }
-
-          if (distinctProjects.length < 4) {
-            for (const p of projectsRes.projects) {
-              if (!distinctProjects.some((dp) => dp.id === p.id)) {
-                distinctProjects.push(p);
-              }
-              if (distinctProjects.length >= 4) break;
-            }
-          }
-
-          setProjects(distinctProjects.slice(0, 4));
-          setUnits(unitsRes.units);
+          setDbProjects(projectsRes.projects || []);
+          setDbUnits(unitsRes.units || []);
         }
       } catch (err) {
         console.error('Failed to load showcase properties:', err);
@@ -79,296 +52,327 @@ export const FeaturedPropertiesShowcase: React.FC = () => {
     };
   }, []);
 
-  const handleNextImage = (e: React.MouseEvent, projectId: string, max: number) => {
-    e.stopPropagation();
-    setCardImageIndices((prev) => ({
-      ...prev,
-      [projectId]: ((prev[projectId] || 0) + 1) % max,
-    }));
-  };
+  // Build full discovery catalog
+  const fullCatalog = useMemo(() => {
+    return buildDiscoveryCatalog(dbProjects, dbUnits);
+  }, [dbProjects, dbUnits]);
 
-  const handlePrevImage = (e: React.MouseEvent, projectId: string, max: number) => {
-    e.stopPropagation();
-    setCardImageIndices((prev) => ({
-      ...prev,
-      [projectId]: ((prev[projectId] || 0) - 1 + max) % max,
-    }));
-  };
+  // Select 3–4 distinct featured properties with diverse classifications
+  const featuredProperties = useMemo(() => {
+    if (fullCatalog.length === 0) return [];
 
-  // Compute property card configuration specs from real unit data
-  const getProjectSpecs = (projectId: string, fallbackIdx = 0) => {
-    const projectUnits = units.filter((u) => u.project_id === projectId);
+    const selected: DiscoveryProperty[] = [];
+    const usedIds = new Set<string>();
 
-    const formatPrice = (val: number) => {
-      if (val >= 10000000) return `₹${(val / 10000000).toFixed(2)} Cr`;
-      if (val >= 100000) return `₹${(val / 100000).toFixed(1)} L`;
-      return `₹${val.toLocaleString()}`;
-    };
-
-    if (projectUnits.length === 0) {
-      const fallbackPricing = [
-        { configs: '2, 3 & 4 BHK Residences', area: '950 – 2,850 sq.ft', price: '₹1.85 Cr – ₹4.50 Cr', count: 8 },
-        { configs: '3 & 4 BHK Designer Suites', area: '1,450 – 3,200 sq.ft', price: '₹1.60 Cr – ₹3.80 Cr', count: 12 },
-        { configs: '2 & 3 BHK Condos', area: '1,100 – 2,400 sq.ft', price: '₹1.20 Cr – ₹2.90 Cr', count: 6 },
-        { configs: '4 & 5 BHK Sky Villas', area: '2,800 – 5,400 sq.ft', price: '₹3.50 Cr – ₹7.20 Cr', count: 4 },
-      ];
-      const fb = fallbackPricing[fallbackIdx % fallbackPricing.length];
-      return {
-        configs: fb.configs,
-        areaRange: fb.area,
-        priceRange: fb.price,
-        availableCount: fb.count,
-      };
+    // 1. Apartment or Flat
+    const apt = fullCatalog.find(
+      (p) => (p.subtype === 'Apartment' || p.subtype === 'Flat') && !usedIds.has(p.id)
+    );
+    if (apt) {
+      selected.push(apt);
+      usedIds.add(apt.id);
     }
 
-    const uniqueConfigs = Array.from(new Set(projectUnits.map((u) => u.configuration).filter(Boolean)));
-    const minCarpet = Math.min(...projectUnits.map((u) => u.carpet_area || 850));
-    const maxBuiltUp = Math.max(...projectUnits.map((u) => u.built_up_area || u.carpet_area || 2400));
-    const minPrice = Math.min(...projectUnits.map((u) => u.price || 12000000));
-    const maxPrice = Math.max(...projectUnits.map((u) => u.price || 35000000));
-    const availableCount = projectUnits.filter((u) => u.availability_status === 'Available').length;
+    // 2. Villa or Bungalow
+    const villa = fullCatalog.find(
+      (p) => (p.subtype === 'Villa' || p.subtype === 'Bungalow') && !usedIds.has(p.id)
+    );
+    if (villa) {
+      selected.push(villa);
+      usedIds.add(villa.id);
+    }
 
-    return {
-      configs: uniqueConfigs.length > 0 ? uniqueConfigs.join(' • ') : '2 & 3 BHK Residences',
-      areaRange: `${minCarpet} – ${maxBuiltUp} sq.ft`,
-      priceRange: minPrice === maxPrice ? formatPrice(minPrice) : `${formatPrice(minPrice)} – ${formatPrice(maxPrice)}`,
-      availableCount: availableCount > 0 ? availableCount : projectUnits.length,
-    };
-  };
+    // 3. Row House or Penthouse
+    const rowHouse = fullCatalog.find(
+      (p) => (p.subtype === 'Row House' || p.subtype === 'Penthouse') && !usedIds.has(p.id)
+    );
+    if (rowHouse) {
+      selected.push(rowHouse);
+      usedIds.add(rowHouse.id);
+    }
 
-  const handleExploreProject = (projectId: string) => {
-    navigate(`/inventory?project_id=${projectId}`);
+    // 4. Commercial Office or Residential Plot or Master Township
+    const commOrLand = fullCatalog.find(
+      (p) =>
+        (p.mainCategory === 'Commercial' ||
+          p.mainCategory === 'Land' ||
+          p.mainCategory === 'Projects') &&
+        !usedIds.has(p.id)
+    );
+    if (commOrLand) {
+      selected.push(commOrLand);
+      usedIds.add(commOrLand.id);
+    }
+
+    // Fallback if less than 4 selected
+    if (selected.length < 4) {
+      for (const p of fullCatalog) {
+        if (!usedIds.has(p.id)) {
+          selected.push(p);
+          usedIds.add(p.id);
+        }
+        if (selected.length >= 4) break;
+      }
+    }
+
+    return selected.slice(0, 4);
+  }, [fullCatalog]);
+
+  const getShowcaseSpecs = (p: DiscoveryProperty) => {
+    let area = '1,350 sq.ft';
+    let config: string = p.subtype;
+    let parking = '2 Covered Bays';
+
+    if (p.residentialSpecs) {
+      area = p.residentialSpecs.carpetArea
+        ? `${p.residentialSpecs.carpetArea.toLocaleString('en-IN')} sq.ft Carpet`
+        : p.residentialSpecs.builtUpArea
+        ? `${p.residentialSpecs.builtUpArea.toLocaleString('en-IN')} sq.ft Built-Up`
+        : '1,350 sq.ft';
+      config = p.residentialSpecs.bhk || p.subtype;
+      parking = p.residentialSpecs.parking || '2 Covered Carports';
+    } else if (p.landSpecs) {
+      area = p.landSpecs.plotArea || '5,000 sq.ft Plot';
+      config = p.landSpecs.zoning || 'NA Clear Title Land';
+      parking = p.landSpecs.roadWidth || 'Direct Arterial Access';
+    } else if (p.commercialSpecs) {
+      area = p.commercialSpecs.commercialArea
+        ? `${p.commercialSpecs.commercialArea.toLocaleString('en-IN')} sq.ft`
+        : '3,200 sq.ft Carpet';
+      config = p.commercialSpecs.furnishing || 'Grade-A Fitted Space';
+      parking = p.commercialSpecs.parking || 'Reserved Basement Bays';
+    } else if (p.projectSpecs) {
+      area = p.projectSpecs.landParcel || 'Integrated Master Development';
+      config = p.projectSpecs.configurations || '2, 3 & 4 BHK Enclaves';
+      parking = `${p.projectSpecs.totalWings || 4} Towers & Clubhouses`;
+    }
+
+    return { area, config, parking };
   };
 
   return (
-    <section className="space-y-4 text-left">
+    <section className="space-y-6 text-left">
       {/* Section Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-100 pb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-200/80 pb-3">
         <div>
-          <h2 className="text-lg font-bold text-stone-900 tracking-tight flex items-center gap-2">
+          <h2 className="text-xl font-bold text-stone-900 tracking-tight flex items-center gap-2">
             <span>Featured Properties</span>
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-stone-100 text-stone-700">
-              Active Portfolio
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-900 border border-amber-200">
+              Curated Portfolio
             </span>
           </h2>
-          <p className="text-xs text-stone-500 mt-0.5">
-            Key residential and commercial developments with ready inventory.
+          <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
+            Explore premier residential developments, luxury villas, and commercial real estate.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
             onClick={() => navigate('/discovery')}
             leftIcon={<Compass className="w-3.5 h-3.5 text-stone-600" />}
-            className="text-xs font-medium text-stone-700 hover:text-stone-900 border-stone-200 bg-white"
+            className="text-xs font-semibold text-stone-700 hover:text-stone-900 border-stone-200 bg-white"
           >
-            All Properties
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate('/inventory')}
-            className="text-xs font-medium text-stone-700 hover:text-stone-900 border-stone-200 bg-white"
-          >
-            Unit Matrix
+            Browse All Properties
           </Button>
         </div>
       </div>
 
       {/* Loading Skeleton */}
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 animate-pulse">
-          {[1, 2, 3, 4].map((n) => (
-            <div key={n} className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-xs h-96">
-              <div className="h-48 bg-stone-100" />
-              <div className="p-5 space-y-3">
-                <div className="h-4 bg-stone-100 rounded w-3/4" />
-                <div className="h-3 bg-stone-100 rounded w-1/2" />
-                <div className="h-10 bg-stone-100 rounded w-full mt-4" />
+        <div className="space-y-8 animate-pulse">
+          {[1, 2, 3].map((n) => (
+            <div
+              key={n}
+              className="bg-white rounded-3xl border border-stone-200/90 p-6 sm:p-8 space-y-5 shadow-xs"
+            >
+              <div className="w-full aspect-[16/8] min-h-[260px] bg-stone-100 rounded-2xl" />
+              <div className="space-y-3">
+                <div className="h-6 bg-stone-100 rounded w-1/3" />
+                <div className="h-4 bg-stone-100 rounded w-1/4" />
+                <div className="h-5 bg-stone-100 rounded w-1/5" />
+                <div className="grid grid-cols-4 gap-3 pt-2">
+                  <div className="h-14 bg-stone-50 rounded-xl" />
+                  <div className="h-14 bg-stone-50 rounded-xl" />
+                  <div className="h-14 bg-stone-50 rounded-xl" />
+                  <div className="h-14 bg-stone-50 rounded-xl" />
+                </div>
               </div>
             </div>
           ))}
         </div>
-      ) : projects.length === 0 ? (
+      ) : featuredProperties.length === 0 ? (
         /* Empty State */
-        <div className="p-10 text-center bg-white rounded-2xl border border-stone-200 shadow-xs space-y-3">
-          <Building2 className="w-10 h-10 text-stone-400 mx-auto" />
-          <h3 className="text-sm font-bold text-stone-800">No Projects Found</h3>
-          <p className="text-xs text-stone-500 max-w-md mx-auto">
-            Add new property developments in the Projects Master to showcase them on this portfolio board.
+        <div className="p-12 text-center bg-white rounded-3xl border border-stone-200/90 shadow-xs space-y-4 max-w-xl mx-auto">
+          <div className="w-14 h-14 rounded-2xl bg-amber-50 border border-amber-200/60 flex items-center justify-center mx-auto text-amber-800">
+            <Building2 className="w-7 h-7" />
+          </div>
+          <h3 className="text-base font-bold text-stone-900">No Featured Properties Found</h3>
+          <p className="text-xs text-stone-500 max-w-md mx-auto leading-relaxed">
+            There are currently no active properties in the discovery catalog. Add new real estate listings to display them in this showcase.
           </p>
-          <Button variant="primary" size="sm" onClick={() => navigate('/properties')} className="bg-stone-900 text-white">
-            Open Projects Master
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => navigate('/discovery')}
+            className="bg-stone-900 hover:bg-stone-800 text-white font-semibold border-0 shadow-xs text-xs"
+          >
+            Open Property Discovery
           </Button>
         </div>
       ) : (
-        /* 4-Card Unique Project Gallery Grid */
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
-          {projects.map((project, idx) => {
-            const imageSet = getProjectImageSet(project, idx);
-            const activeIdx = cardImageIndices[project.id] || 0;
-            const currentImg = imageSet.gallery[activeIdx] || imageSet.gallery[0];
-            const specs = getProjectSpecs(project.id, idx);
+        /* LARGE VERTICAL PROPERTY SHOWCASE (One property per large visual section) */
+        <div className="space-y-8 sm:space-y-10">
+          {featuredProperties.map((property) => {
+            const specs = getShowcaseSpecs(property);
 
             return (
               <div
-                key={project.id}
-                className="group bg-white rounded-2xl border border-stone-200/90 hover:border-stone-400/80 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between overflow-hidden relative"
+                key={property.id}
+                className="bg-white rounded-3xl border border-stone-200/90 shadow-xs hover:border-stone-300 transition-all p-5 sm:p-7 md:p-8 space-y-6 text-left"
               >
-                {/* 1. Large Project Image with Gallery Carousel Controls */}
+                {/* 1. Large Property Image */}
                 <div
-                  className="relative h-48 sm:h-50 w-full overflow-hidden bg-stone-100 shrink-0 cursor-pointer"
-                  onClick={() => setSelectedProject(project)}
+                  className="relative w-full aspect-[16/8] min-h-[260px] sm:min-h-[340px] md:min-h-[420px] rounded-2xl overflow-hidden bg-stone-100 border border-stone-200/80 shadow-xs group cursor-pointer"
+                  onClick={() => navigate(`/discovery/${property.id}`)}
                 >
                   <img
-                    src={currentImg.url}
-                    alt={currentImg.altText}
-                    className="w-full h-full object-cover object-center group-hover:scale-103 transition-transform duration-500 ease-out"
+                    src={property.images.cover}
+                    alt={property.title}
+                    className="w-full h-full object-cover object-center group-hover:scale-102 transition-transform duration-700 ease-out"
                     loading="lazy"
                   />
-                  
-                  {/* Subtle Gradient Shade */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-stone-950/40 via-transparent to-transparent opacity-60" />
 
-                  {/* Top Left: Category Badge */}
-                  <div className="absolute top-3 left-3 flex items-center gap-1.5 z-10">
-                    <span className="px-2.5 py-0.5 rounded-full bg-white/90 backdrop-blur-md text-[10px] font-bold text-stone-800 border border-stone-200/60 shadow-xs">
-                      {currentImg.category}
+                  {/* Top Left: Subtype Tag */}
+                  <div className="absolute top-3.5 left-3.5 flex items-center gap-2 z-10">
+                    <span className="px-3 py-1 rounded-full bg-white/95 backdrop-blur-md text-xs font-semibold text-stone-800 border border-stone-200/80 shadow-xs flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-amber-700" />
+                      {property.subtype}
                     </span>
+                    <Badge projectStatus={property.status} size="sm" />
                   </div>
 
-                  {/* Top Right: Gallery Counter Indicator */}
-                  <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
-                    <span className="px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-[10px] font-mono font-medium text-white flex items-center gap-1">
-                      <Images className="w-3 h-3 text-stone-200" />
-                      {activeIdx + 1}/{imageSet.gallery.length}
+                  {/* Top Right: Property Code */}
+                  <div className="absolute top-3.5 right-3.5 z-10">
+                    <span className="px-2.5 py-1 rounded-md bg-stone-900/80 backdrop-blur-md text-xs font-mono font-semibold text-stone-200 border border-white/15">
+                      {property.code}
                     </span>
-                  </div>
-
-                  {/* Left & Right Interactive Carousel Arrows */}
-                  <div className="absolute inset-y-0 left-0 right-0 flex items-center justify-between px-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-                    <button
-                      type="button"
-                      onClick={(e) => handlePrevImage(e, project.id, imageSet.gallery.length)}
-                      className="p-1.5 rounded-full bg-black/60 text-white hover:bg-black transition-colors cursor-pointer"
-                      title="Previous Image"
-                      aria-label="Previous image"
-                    >
-                      <ChevronLeft className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={(e) => handleNextImage(e, project.id, imageSet.gallery.length)}
-                      className="p-1.5 rounded-full bg-black/60 text-white hover:bg-black transition-colors cursor-pointer"
-                      title="Next Image"
-                      aria-label="Next image"
-                    >
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-
-                  {/* Bottom Image Info: Starting Price & Available Units */}
-                  <div className="absolute bottom-2.5 left-3.5 right-3.5 flex items-end justify-between text-white z-10">
-                    <div>
-                      <span className="text-[10px] text-stone-200 block font-medium uppercase tracking-wider">
-                        Price Range
-                      </span>
-                      <span className="text-sm font-bold text-white drop-shadow-sm font-sans tracking-tight">
-                        {specs.priceRange}
-                      </span>
-                    </div>
-                    <div className="text-right">
-                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-300">
-                        <CheckCircle2 className="w-3 h-3" />
-                        {specs.availableCount} Available
-                      </span>
-                    </div>
                   </div>
                 </div>
 
-                {/* 2. Card Body: Real Project Information */}
-                <div className="p-4 flex-1 flex flex-col justify-between space-y-3.5">
+                {/* 2. Property Information Below Image */}
+                <div className="space-y-4">
+                  {/* Property Name & Type • Location */}
                   <div className="space-y-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <h3
-                        onClick={() => setSelectedProject(project)}
-                        className="text-sm font-bold text-stone-900 group-hover:text-stone-700 transition-colors line-clamp-1 cursor-pointer"
-                      >
-                        {project.name}
-                      </h3>
-                      <Badge projectStatus={project.status} size="xs" />
-                    </div>
-                    <div className="flex items-center gap-1 text-xs text-stone-500">
-                      <MapPin className="w-3 h-3 text-stone-400 shrink-0" />
-                      <span className="truncate">{project.location}, {project.city}</span>
-                    </div>
-                  </div>
-
-                  {/* Configurations & Specs */}
-                  <div className="p-2.5 bg-stone-50 rounded-xl border border-stone-200/60 text-xs space-y-1">
-                    <div className="flex items-center justify-between text-[11px]">
-                      <span className="text-stone-500 font-medium">Layouts:</span>
-                      <span className="font-semibold text-stone-800 truncate max-w-[140px]">{specs.configs}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-[11px]">
-                      <span className="text-stone-500 font-medium">Carpet Area:</span>
-                      <span className="font-medium text-stone-700">{specs.areaRange}</span>
-                    </div>
-                  </div>
-
-                  {/* Wings & Buildings Summary */}
-                  <div className="flex items-center justify-between text-[11px] text-stone-500 pt-1 border-t border-stone-100">
-                    <span className="flex items-center gap-1">
-                      <Layers className="w-3 h-3 text-stone-400" />
-                      <span>{project.total_wings || 1} Towers</span>
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Home className="w-3 h-3 text-stone-400" />
-                      <span>{project.total_units || 0} Total Units</span>
-                    </span>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="pt-2 flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setSelectedProject(project)}
-                      leftIcon={<Eye className="w-3 h-3" />}
-                      className="w-1/2 text-xs font-medium text-stone-700 hover:text-stone-900 border-stone-200 bg-white"
+                    <h3
+                      onClick={() => navigate(`/discovery/${property.id}`)}
+                      className="text-xl sm:text-2xl font-bold text-stone-900 hover:text-amber-800 transition-colors tracking-tight cursor-pointer"
                     >
-                      Details
-                    </Button>
+                      {property.title}
+                    </h3>
+                    <div className="flex flex-wrap items-center gap-1.5 text-xs sm:text-sm text-stone-500 font-medium">
+                      <span>{property.subtype}</span>
+                      <span className="text-stone-300">•</span>
+                      <MapPin className="w-3.5 h-3.5 text-stone-400 shrink-0" />
+                      <span>
+                        {property.location}, {property.city}
+                      </span>
+                      {property.developer && (
+                        <>
+                          <span className="text-stone-300">•</span>
+                          <span className="text-stone-400">{property.developer}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Price */}
+                  <div className="pt-1">
+                    <span className="text-xs text-stone-400 font-medium uppercase tracking-wider block">
+                      Investment Valuation
+                    </span>
+                    <span className="text-xl sm:text-2xl font-bold text-stone-900 font-sans tracking-tight">
+                      {property.priceLabel}
+                    </span>
+                  </div>
+
+                  {/* Specs Parameter Grid (Area • Configuration • Parking • Availability) */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+                    {/* Area */}
+                    <div className="p-3 bg-stone-50 rounded-xl border border-stone-200/80 text-xs space-y-0.5">
+                      <span className="text-[10px] text-stone-500 font-semibold uppercase tracking-wider flex items-center gap-1">
+                        <Maximize2 className="w-3 h-3 text-stone-400" />
+                        Area / Size
+                      </span>
+                      <span className="font-bold text-stone-900 text-xs sm:text-sm block truncate">
+                        {specs.area}
+                      </span>
+                    </div>
+
+                    {/* Configuration */}
+                    <div className="p-3 bg-stone-50 rounded-xl border border-stone-200/80 text-xs space-y-0.5">
+                      <span className="text-[10px] text-stone-500 font-semibold uppercase tracking-wider flex items-center gap-1">
+                        <Home className="w-3 h-3 text-stone-400" />
+                        Configuration
+                      </span>
+                      <span className="font-bold text-stone-900 text-xs sm:text-sm block truncate">
+                        {specs.config}
+                      </span>
+                    </div>
+
+                    {/* Parking / Feature */}
+                    <div className="p-3 bg-stone-50 rounded-xl border border-stone-200/80 text-xs space-y-0.5">
+                      <span className="text-[10px] text-stone-500 font-semibold uppercase tracking-wider flex items-center gap-1">
+                        <Car className="w-3 h-3 text-stone-400" />
+                        Parking & Access
+                      </span>
+                      <span className="font-bold text-stone-900 text-xs sm:text-sm block truncate">
+                        {specs.parking}
+                      </span>
+                    </div>
+
+                    {/* Availability */}
+                    <div className="p-3 bg-stone-50 rounded-xl border border-stone-200/80 text-xs space-y-0.5">
+                      <span className="text-[10px] text-stone-500 font-semibold uppercase tracking-wider flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                        Availability
+                      </span>
+                      <span className="font-bold text-emerald-800 text-xs sm:text-sm block truncate">
+                        {property.availability}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Short property highlight */}
+                  {property.description && (
+                    <p className="text-xs sm:text-sm text-stone-600 leading-relaxed max-w-4xl pt-1">
+                      {property.description}
+                    </p>
+                  )}
+
+                  {/* Action Button */}
+                  <div className="pt-3 border-t border-stone-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <Button
                       variant="primary"
-                      size="sm"
-                      onClick={() => handleExploreProject(project.id)}
-                      rightIcon={<ArrowRight className="w-3 h-3" />}
-                      className="w-1/2 text-xs font-semibold bg-stone-900 hover:bg-stone-800 text-white shadow-xs border-0"
+                      size="md"
+                      onClick={() => navigate(`/discovery/${property.id}`)}
+                      rightIcon={<ArrowRight className="w-4 h-4" />}
+                      className="text-xs sm:text-sm font-semibold bg-stone-900 hover:bg-stone-800 text-white px-5 py-2.5 rounded-xl border-0 shadow-xs"
                     >
-                      Units
+                      View Property Details
                     </Button>
+
+                    <span className="text-[11px] text-stone-400 font-medium">
+                      Verified real-estate listing with complete specifications & photo gallery
+                    </span>
                   </div>
                 </div>
               </div>
             );
           })}
         </div>
-      )}
-
-      {/* Project Detail Modal */}
-      {selectedProject && (
-        <ProjectDetailModal
-          isOpen={Boolean(selectedProject)}
-          onClose={() => setSelectedProject(null)}
-          project={selectedProject}
-          onExploreInventory={(projectId) => {
-            setSelectedProject(null);
-            navigate(`/inventory?project_id=${projectId}`);
-          }}
-        />
       )}
     </section>
   );
