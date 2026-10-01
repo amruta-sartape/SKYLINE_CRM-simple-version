@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { projectService } from '../services/project.service';
 import { unitService } from '../services/unit.service';
 import { PropertyProject, PropertyUnit } from '../types/property.types';
@@ -25,6 +25,7 @@ import { PropertyEmptyState } from '../components/discovery/PropertyEmptyState';
 
 export const PropertyDiscoveryPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   // Parse initial query params from URL
   const initialCategory = (searchParams.get('category') as PropertyMainCategory) || 'All';
@@ -405,8 +406,8 @@ export const PropertyDiscoveryPage: React.FC = () => {
               <PropertyDiscoveryCard
                 key={property.id}
                 property={property}
-                onViewDetails={(p) => setSelectedProperty(p)}
-                onInquire={(p) => setSelectedProperty(p)}
+                onViewDetails={(p) => navigate(`/discovery/${p.id}`)}
+                onInquire={(p) => navigate(`/discovery/${p.id}`)}
               />
             ))}
           </div>

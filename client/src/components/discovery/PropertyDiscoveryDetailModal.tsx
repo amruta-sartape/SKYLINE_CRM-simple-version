@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DiscoveryProperty } from '../../types/discovery.types';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
+import { PropertyGallery } from './PropertyGallery';
 import {
   MapPin,
   CalendarCheck,
-  ArrowRight,
-  Sparkles,
   ShieldCheck,
   CheckCircle2,
+  ExternalLink,
 } from 'lucide-react';
 
 interface PropertyDiscoveryDetailModalProps {
@@ -25,30 +25,17 @@ export const PropertyDiscoveryDetailModal: React.FC<PropertyDiscoveryDetailModal
   property,
 }) => {
   const navigate = useNavigate();
-  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   if (!property) return null;
-
-  const gallery = property.images.gallery || [];
-  const currentImage = gallery[activeImageIndex] || {
-    url: property.images.cover,
-    label: property.title,
-    category: 'Exterior',
-    altText: property.title,
-  };
 
   const handleScheduleVisit = () => {
     onClose();
     navigate('/site-visits');
   };
 
-  const handleOpenInventory = () => {
+  const handleOpenFullProfile = () => {
     onClose();
-    if (property.linkedProjectId) {
-      navigate(`/inventory?project_id=${property.linkedProjectId}`);
-    } else {
-      navigate('/inventory');
-    }
+    navigate(`/discovery/${property.id}`);
   };
 
   return (
@@ -83,78 +70,26 @@ export const PropertyDiscoveryDetailModal: React.FC<PropertyDiscoveryDetailModal
             <Button
               variant="primary"
               size="sm"
-              onClick={handleOpenInventory}
-              rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
+              onClick={handleOpenFullProfile}
+              rightIcon={<ExternalLink className="w-3.5 h-3.5" />}
               className="w-1/3 sm:w-auto text-xs font-bold"
             >
-              Inventory
+              Full Profile
             </Button>
           </div>
         </div>
       }
     >
       <div className="space-y-4 text-left text-xs">
-        {/* 1. Photo Gallery Carousel Viewer */}
-        <div className="space-y-2.5">
-          <div className="relative h-60 sm:h-72 w-full rounded-2xl overflow-hidden bg-slate-950 shadow-md">
-            <img
-              src={currentImage.url}
-              alt={currentImage.altText}
-              className="w-full h-full object-cover object-center transition-all duration-300"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-black/30" />
+        {/* 1. Property Photo Gallery with Lightbox */}
+        <PropertyGallery
+          coverImage={property.images.cover}
+          gallery={property.images.gallery}
+          propertyTitle={property.title}
+          propertyCode={property.code}
+          propertySubtype={property.subtype}
+        />
 
-            {/* Top Badges */}
-            <div className="absolute top-3 left-3 flex items-center gap-2 z-10">
-              <span className="px-2.5 py-0.5 rounded-full bg-slate-900/85 backdrop-blur-md text-[11px] font-bold text-white border border-white/20">
-                {currentImage.category}
-              </span>
-              <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 backdrop-blur-md text-[11px] font-semibold text-amber-300 border border-amber-400/30 flex items-center gap-1">
-                <Sparkles className="w-3 h-3 text-amber-400" />
-                {property.subtype}
-              </span>
-            </div>
-
-            {/* Bottom Details */}
-            <div className="absolute bottom-3 left-4 right-4 flex items-end justify-between text-white z-10">
-              <div>
-                <p className="text-sm font-bold drop-shadow-sm text-white">{currentImage.label}</p>
-                <p className="text-[11px] text-slate-300 mt-0.5">{property.location}, {property.city}</p>
-              </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-black/70 text-slate-300">
-                {activeImageIndex + 1} / {gallery.length || 1}
-              </span>
-            </div>
-          </div>
-
-          {/* Thumbnail Selector Strip */}
-          {gallery.length > 1 && (
-            <div className="grid grid-cols-4 gap-2">
-              {gallery.map((img, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => setActiveImageIndex(idx)}
-                  className={`relative h-16 rounded-xl overflow-hidden border-2 transition-all group ${
-                    activeImageIndex === idx
-                      ? 'border-brand-500 ring-2 ring-brand-500/20 scale-[1.02]'
-                      : 'border-slate-200 hover:border-slate-400 opacity-75 hover:opacity-100'
-                  }`}
-                >
-                  <img
-                    src={img.url}
-                    alt={img.altText}
-                    className="w-full h-full object-cover object-center"
-                  />
-                  <div className="absolute inset-0 bg-slate-950/30 group-hover:bg-transparent transition-colors" />
-                  <span className="absolute bottom-1 left-1.5 right-1.5 text-[9px] font-bold text-white truncate drop-shadow-xs">
-                    {img.category}
-                  </span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
 
         {/* 2. Overview & Developer Bar */}
         <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-2">

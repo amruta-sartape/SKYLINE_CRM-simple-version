@@ -17,6 +17,7 @@ import { LeadPipelinePage } from './pages/LeadPipelinePage';
 import { LeadDetailPage } from './pages/LeadDetailPage';
 import { ProjectsPage } from './pages/ProjectsPage';
 import { PropertyDiscoveryPage } from './pages/PropertyDiscoveryPage';
+import { PropertyDetailPage } from './pages/PropertyDetailPage';
 import { InventoryPage } from './pages/InventoryPage';
 import { UnitDetailPage } from './pages/UnitDetailPage';
 import { SiteVisitsPage } from './pages/SiteVisitsPage';
@@ -126,10 +127,26 @@ export const AppRoutes: React.FC = () => {
         }
       />
       <Route
+        path="/discovery/:propertyId"
+        element={
+          <ProtectedRoute>
+            <PropertyDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/explore"
         element={
           <ProtectedRoute>
             <PropertyDiscoveryPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/explore/:propertyId"
+        element={
+          <ProtectedRoute>
+            <PropertyDetailPage />
           </ProtectedRoute>
         }
       />
