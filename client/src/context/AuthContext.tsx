@@ -66,14 +66,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           sessionStorage.setItem(USER_KEY, JSON.stringify(profile));
         }
       } catch (err: any) {
-        console.warn('[Auth] Session initialization failed:', err.message);
-        // Clear invalid tokens
-        localStorage.removeItem(TOKEN_KEY);
-        sessionStorage.removeItem(TOKEN_KEY);
-        localStorage.removeItem(USER_KEY);
-        sessionStorage.removeItem(USER_KEY);
-        setToken(null);
-        setUser(null);
+        // Only clear token if unauthorized (401/403), keep session intact for network hiccups
+        if (err.status === 401 || err.status === 403) {
+          console.warn('[Auth] Session expired or invalid:', err.message);
+          localStorage.removeItem(TOKEN_KEY);
+          sessionStorage.removeItem(TOKEN_KEY);
+          localStorage.removeItem(USER_KEY);
+          sessionStorage.removeItem(USER_KEY);
+          setToken(null);
+          setUser(null);
+        } else {
+          console.warn('[Auth] Backend temporarily unreachable, maintaining local session:', err.message);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -89,10 +93,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const response = await authService.login(credentials);
       const { user: authedUser, token: authToken } = response;
 
-      setUser(authedUser);
-      setToken(authToken);
-
-      // Persist based on Remember Me option
+      // 1. Persist to storage immediately before updating React state
       if (credentials.rememberMe) {
         localStorage.setItem(TOKEN_KEY, authToken);
         localStorage.setItem(USER_KEY, JSON.stringify(authedUser));
@@ -104,6 +105,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem(USER_KEY);
       }
+
+      // 2. Update reactive React state
+      setUser(authedUser);
+      setToken(authToken);
     } catch (err: any) {
       setError(err.message || 'Login failed. Please check your credentials.');
       throw err;

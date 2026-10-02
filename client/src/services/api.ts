@@ -28,8 +28,14 @@ api.interceptors.response.use(
       const data = error.response.data;
       const status = error.response.status;
 
-      // Handle 401 Unauthorized globally (session expired)
-      if (status === 401 && !error.config?.url?.includes('/auth/login')) {
+      // Handle 401 Unauthorized globally for authenticated routes (session expired)
+      const isPublicAuthRoute =
+        error.config?.url?.includes('/auth/login') ||
+        error.config?.url?.includes('/auth/register') ||
+        error.config?.url?.includes('/auth/forgot-password') ||
+        error.config?.url?.includes('/auth/reset-password');
+
+      if (status === 401 && !isPublicAuthRoute) {
         localStorage.removeItem('skyline_auth_token');
         sessionStorage.removeItem('skyline_auth_token');
         localStorage.removeItem('skyline_auth_user');

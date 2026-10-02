@@ -25,7 +25,22 @@ app.set('trust proxy', 1);
 // Middleware
 app.use(
   cors({
-    origin: [config.clientUrl, 'http://localhost:5173', 'http://127.0.0.1:5173'],
+    origin: (origin, callback) => {
+      // Allow requests with no origin (such as mobile apps, server-to-server, or curl)
+      if (!origin) return callback(null, true);
+
+      // Allow any localhost / 127.0.0.1 port for flexible local development
+      if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+        return callback(null, true);
+      }
+
+      if (config.clientUrl && (origin === config.clientUrl || origin.startsWith(config.clientUrl))) {
+        return callback(null, true);
+      }
+
+      // Default allow for development
+      return callback(null, true);
+    },
     credentials: true,
   })
 );

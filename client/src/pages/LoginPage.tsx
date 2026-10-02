@@ -28,7 +28,9 @@ export const LoginPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Target path after login (if redirected by ProtectedRoute)
-  const from = (location.state as any)?.from?.pathname || '/';
+  const rawFrom = (location.state as any)?.from;
+  const targetPath = typeof rawFrom === 'string' ? rawFrom : rawFrom?.pathname || '/';
+  const from = targetPath === '/login' ? '/' : targetPath;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;

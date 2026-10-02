@@ -26,7 +26,7 @@ import { FollowUpsPage } from './pages/FollowUpsPage';
 import { FollowUpDetailPage } from './pages/FollowUpDetailPage';
 import { AdminPropertiesPage } from './pages/AdminPropertiesPage';
 
-// Public Route Guard (Redirects already authenticated users to Enquiries or Dashboard)
+// Public Route Guard (Redirects already authenticated users to Dashboard)
 const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
 
@@ -35,7 +35,7 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/enquiries" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;
