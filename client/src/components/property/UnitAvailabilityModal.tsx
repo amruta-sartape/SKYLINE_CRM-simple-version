@@ -149,21 +149,21 @@ export const UnitAvailabilityModal: React.FC<UnitAvailabilityModalProps> = ({
         )}
 
         {/* Current State Indicator */}
-        <div className="p-3 bg-slate-50 rounded-lg border border-slate-200/90 flex items-center justify-between">
+        <div className="p-3 bg-slate-50 dark:bg-[#141A24] rounded-lg border border-slate-200/90 dark:border-[#242F42] flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-slate-500 font-medium">Current Status:</span>
+            <span className="text-slate-500 dark:text-slate-400 font-medium">Current Status:</span>
             <Badge availability={unit.availability_status} size="sm" />
           </div>
-          <ArrowRight className="w-4 h-4 text-slate-400" />
+          <ArrowRight className="w-4 h-4 text-slate-400 dark:text-slate-500" />
           <div className="flex items-center gap-2">
-            <span className="text-slate-500 font-medium">New Status:</span>
+            <span className="text-slate-500 dark:text-slate-400 font-medium">New Status:</span>
             <Badge availability={targetStatus} size="sm" />
           </div>
         </div>
 
         {/* Target Options Radio Cards */}
         <div className="space-y-2">
-          <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block">
+          <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block">
             Select Target Status
           </label>
           <div className="space-y-2">
@@ -172,10 +172,10 @@ export const UnitAvailabilityModal: React.FC<UnitAvailabilityModalProps> = ({
                 key={opt.status}
                 className={`flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer ${
                   opt.disabled
-                    ? 'opacity-40 bg-slate-100 border-slate-200 cursor-not-allowed'
+                    ? 'opacity-40 bg-slate-100 dark:bg-[#141A24] border-slate-200 dark:border-[#242F42] cursor-not-allowed'
                     : targetStatus === opt.status
-                    ? 'bg-brand-50/70 border-brand-400 shadow-2xs'
-                    : 'bg-white border-slate-200 hover:bg-slate-50'
+                    ? 'bg-brand-50/70 dark:bg-amber-950/40 border-brand-400 dark:border-amber-500/50 shadow-2xs'
+                    : 'bg-white dark:bg-[#101622] border-slate-200 dark:border-[#242F42] hover:bg-slate-50 dark:hover:bg-[#1A2230]'
                 }`}
               >
                 <input
@@ -190,9 +190,9 @@ export const UnitAvailabilityModal: React.FC<UnitAvailabilityModalProps> = ({
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     {opt.icon}
-                    <span className="font-bold text-slate-900 text-xs">{opt.label}</span>
+                    <span className="font-bold text-slate-900 dark:text-slate-100 text-xs">{opt.label}</span>
                   </div>
-                  <p className="text-[11px] text-slate-500 mt-0.5 leading-normal">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-normal">
                     {opt.description}
                   </p>
                 </div>
@@ -209,11 +209,11 @@ export const UnitAvailabilityModal: React.FC<UnitAvailabilityModalProps> = ({
             value={remarks}
             onChange={(e) => setRemarks(e.target.value)}
             disabled={isSubmitting}
-            className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-brand-500 bg-white"
+            className="w-full px-3 py-2 text-xs border border-slate-300 dark:border-[#242F42] rounded-lg focus:outline-hidden focus:ring-2 focus:ring-brand-500 bg-white dark:bg-[#101622] text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
           />
         </FormField>
 
-        <div className="flex items-center gap-1 text-[11px] text-slate-400">
+        <div className="flex items-center gap-1 text-[11px] text-slate-400 dark:text-slate-500">
           <ShieldCheck className="w-3.5 h-3.5 text-slate-400 shrink-0" />
           <span>Every status change is permanently logged into the property audit ledger.</span>
         </div>

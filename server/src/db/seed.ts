@@ -2,6 +2,19 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { db } from './database.js';
 import {
+  UserModel,
+  RoleModel,
+  AmenityModel,
+  ProjectModel,
+  UnitModel,
+  PropertyListingModel,
+  EnquiryModel,
+  LeadModel,
+  LeadActivityModel,
+  SiteVisitModel,
+  FollowUpModel,
+} from '../models/index.js';
+import {
   UserRole,
   UserStatus,
   LeadSource,
@@ -12,218 +25,704 @@ import {
 } from '../types/index.js';
 
 export async function seedDatabase(): Promise<void> {
-  console.log('[Seed] Starting database seed...');
-  await db.initSchema();
+  console.log('[Seed] Starting MongoDB database seed...');
+  await db.connect();
 
   // 1. Seed Roles
   const rolesData = [
     {
-      id: 'role_admin',
+      _id: 'role_admin',
       name: UserRole.ADMIN,
       description: 'Full system administrator with unrestricted access to all modules and configurations',
     },
     {
-      id: 'role_employee',
+      _id: 'role_employee',
       name: UserRole.EMPLOYEE,
       description: 'Operations and staff member managing leads, site visits, customer follow-ups, and support',
     },
     {
-      id: 'role_agent',
+      _id: 'role_agent',
       name: UserRole.AGENT,
       description: 'Real estate sales agent managing inquiries, property deals, client visits, and commissions',
+    },
+    {
+      _id: 'role_customer',
+      name: UserRole.CUSTOMER,
+      description: 'Registered real estate client exploring properties, saving wishlists, and submitting enquiries',
     },
   ];
 
   for (const role of rolesData) {
-    const existing = await db.get('SELECT id FROM roles WHERE name = ?', [role.name]);
-    if (!existing) {
-      await db.run(
-        'INSERT INTO roles (id, name, description) VALUES (?, ?, ?)',
-        [role.id, role.name, role.description]
-      );
-      console.log(`[Seed] Created role: ${role.name}`);
-    }
+    await RoleModel.findByIdAndUpdate(role._id, role, { upsert: true, new: true });
   }
+  console.log('[Seed] Roles verified');
 
   // 2. Seed Default Accounts
   const seedUsers = [
     {
-      id: 'usr_admin_001',
+      _id: 'usr_admin_001',
       name: 'Alexander Wright',
       email: 'admin@skylinecrm.com',
       phone: '+1 (555) 234-5678',
       password: 'SkylineAdmin2026!',
-      role: UserRole.ADMIN,
-      roleId: 'role_admin',
+      roles: [UserRole.ADMIN],
     },
     {
-      id: 'usr_employee_001',
+      _id: 'usr_employee_001',
       name: 'Eleanor Vance',
       email: 'employee@skylinecrm.com',
       phone: '+1 (555) 345-6789',
       password: 'SkylineEmployee2026!',
-      role: UserRole.EMPLOYEE,
-      roleId: 'role_employee',
+      roles: [UserRole.EMPLOYEE],
     },
     {
-      id: 'usr_agent_001',
+      _id: 'usr_agent_001',
       name: 'Marcus Sterling',
       email: 'agent@skylinecrm.com',
       phone: '+1 (555) 456-7890',
       password: 'SkylineAgent2026!',
-      role: UserRole.AGENT,
-      roleId: 'role_agent',
+      roles: [UserRole.AGENT],
     },
     {
-      id: 'usr_agent_002',
+      _id: 'usr_agent_002',
       name: 'Sophia Hayes',
       email: 'sophia.agent@skylinecrm.com',
       phone: '+1 (555) 567-8901',
       password: 'SkylineAgent2026!',
-      role: UserRole.AGENT,
-      roleId: 'role_agent',
+      roles: [UserRole.AGENT],
     },
     {
-      id: 'usr_agent_003',
+      _id: 'usr_agent_003',
       name: 'David Chen',
       email: 'david.sales@skylinecrm.com',
       phone: '+1 (555) 678-9012',
       password: 'SkylineAgent2026!',
-      role: UserRole.AGENT,
-      roleId: 'role_agent',
+      roles: [UserRole.AGENT],
+    },
+    {
+      _id: 'usr_customer_001',
+      name: 'Aarav Mehta',
+      email: 'customer@skylinecrm.com',
+      phone: '+1 (555) 123-4567',
+      password: 'SkylineCustomer2026!',
+      roles: [UserRole.CUSTOMER],
     },
   ];
 
   for (const u of seedUsers) {
-    const existingUser = await db.get('SELECT id FROM users WHERE email = ?', [u.email]);
-    if (!existingUser) {
-      const passwordHash = await bcrypt.hash(u.password, 10);
-      await db.run(
-        `INSERT INTO users (id, name, email, phone, password_hash, status)
-         VALUES (?, ?, ?, ?, ?, ?)`,
-        [u.id, u.name, u.email, u.phone, passwordHash, UserStatus.ACTIVE]
-      );
-
-      await db.run(
-        `INSERT OR IGNORE INTO user_roles (id, user_id, role_id)
-         VALUES (?, ?, ?)`,
-        [`ur_${crypto.randomUUID()}`, u.id, u.roleId]
-      );
-
-      console.log(`[Seed] Created user: ${u.email} [${u.role}]`);
+    const existing = await UserModel.findById(u._id);
+    const now = new Date().toISOString();
+    if (!existing) {
+      const password_hash = await bcrypt.hash(u.password, 10);
+      await UserModel.create({
+        _id: u._id,
+        name: u.name,
+        email: u.email.toLowerCase(),
+        phone: u.phone,
+        password_hash,
+        status: UserStatus.ACTIVE,
+        roles: u.roles,
+        is_email_verified: true,
+        email_verified_at: now,
+      });
+      console.log(`[Seed] Created user: ${u.email} [${u.roles.join(', ')}]`);
+    } else {
+      await UserModel.findByIdAndUpdate(u._id, {
+        is_email_verified: true,
+        status: UserStatus.ACTIVE,
+      });
     }
   }
 
-  // 3. Seed Phase 2 Enquiries
+  // 3. Seed Amenities
+  const amenitiesData = [
+    { _id: 'amn_clubhouse', name: 'Luxury Clubhouse', category: 'Leisure', icon: 'Building' },
+    { _id: 'amn_pool', name: 'Infinity Swimming Pool', category: 'Leisure', icon: 'Waves' },
+    { _id: 'amn_gym', name: 'State-of-the-Art Fitness Gym', category: 'Sports & Wellness', icon: 'Dumbbell' },
+    { _id: 'amn_security', name: '24/7 Security & CCTV', category: 'Security', icon: 'Shield' },
+    { _id: 'amn_backup', name: '100% Power Backup', category: 'Convenience', icon: 'Zap' },
+    { _id: 'amn_parking', name: 'Covered Parking & EV Charging', category: 'Convenience', icon: 'Car' },
+    { _id: 'amn_garden', name: 'Landscaped Zen Garden', category: 'Green Living', icon: 'Trees' },
+    { _id: 'amn_play_area', name: "Children's Play Zone", category: 'Leisure', icon: 'Sparkles' },
+    { _id: 'amn_lift', name: 'High-Speed Elevators', category: 'Convenience', icon: 'Building' },
+    { _id: 'amn_jogging', name: 'Rooftop Jogging Track', category: 'Sports & Wellness', icon: 'Activity' },
+    { _id: 'amn_ev', name: 'EV Charging Station', category: 'Green Living', icon: 'Zap' },
+  ];
+
+  for (const a of amenitiesData) {
+    await AmenityModel.findByIdAndUpdate(a._id, a, { upsert: true, new: true });
+  }
+  console.log('[Seed] Amenities verified');
+
+  // 4. Seed Projects & Wings
+  const projectsData = [
+    {
+      _id: 'proj_skyline_heights',
+      name: 'Skyline Heights',
+      code: 'SKH',
+      location: 'Kharadi IT Corridor',
+      city: 'Pune',
+      state: 'Maharashtra',
+      description: 'Ultra-luxury high-rise residential towers with panoramic river and IT park views.',
+      developer: 'Skyline Realty Group',
+      status: 'Active' as const,
+      total_wings: 3,
+      total_units: 10,
+      is_active: 1,
+      created_by: 'usr_admin_001',
+      wings: [
+        { _id: 'wng_skh_a', name: 'Wing A', total_floors: 12, units_per_floor: 4 },
+        { _id: 'wng_skh_b', name: 'Wing B', total_floors: 12, units_per_floor: 4 },
+        { _id: 'wng_skh_c', name: 'Wing C', total_floors: 10, units_per_floor: 2 },
+      ],
+    },
+    {
+      _id: 'proj_skyline_bayview',
+      name: 'Skyline Bayview',
+      code: 'SKB',
+      location: 'Marine Drive, South Mumbai',
+      city: 'Mumbai',
+      state: 'Maharashtra',
+      description: 'Signature sea-facing super-luxury residences overlooking the Arabian Sea.',
+      developer: 'Skyline Realty Group',
+      status: 'Active' as const,
+      total_wings: 2,
+      total_units: 2,
+      is_active: 1,
+      created_by: 'usr_admin_001',
+      wings: [
+        { _id: 'wng_skb_t1', name: 'Tower 1', total_floors: 20, units_per_floor: 2 },
+        { _id: 'wng_skb_t2', name: 'Tower 2', total_floors: 20, units_per_floor: 2 },
+      ],
+    },
+    {
+      _id: 'proj_skyline_grandeur',
+      name: 'Skyline Grandeur',
+      code: 'SKG',
+      location: 'Whitefield Tech Corridor',
+      city: 'Bangalore',
+      state: 'Karnataka',
+      description: 'Smart eco-conscious gated community apartments nestled among lush greenery.',
+      developer: 'Skyline Realty Group',
+      status: 'Active' as const,
+      total_wings: 2,
+      total_units: 2,
+      is_active: 1,
+      created_by: 'usr_admin_001',
+      wings: [
+        { _id: 'wng_skg_alpha', name: 'Wing Alpha', total_floors: 10, units_per_floor: 4 },
+        { _id: 'wng_skg_beta', name: 'Wing Beta', total_floors: 10, units_per_floor: 4 },
+      ],
+    },
+    {
+      _id: 'proj_skyline_oasis',
+      name: 'Skyline Oasis',
+      code: 'SKO',
+      location: 'Banjara Hills',
+      city: 'Hyderabad',
+      state: 'Telangana',
+      description: 'Exclusive low-density enclave of boutique luxury sky villas and duplexes.',
+      developer: 'Skyline Realty Group',
+      status: 'Upcoming' as const,
+      total_wings: 1,
+      total_units: 0,
+      is_active: 1,
+      created_by: 'usr_admin_001',
+      wings: [
+        { _id: 'wng_sko_1', name: 'Wing 1', total_floors: 6, units_per_floor: 2 },
+      ],
+    },
+  ];
+
+  for (const p of projectsData) {
+    await ProjectModel.findByIdAndUpdate(p._id, p, { upsert: true, new: true });
+  }
+  console.log('[Seed] Projects verified');
+
+  // 5. Seed Units
+  const unitsData = [
+    {
+      _id: 'unt_skh_a_101',
+      project_id: 'proj_skyline_heights',
+      wing_id: 'wng_skh_a',
+      unit_number: 'A-101',
+      floor: 1,
+      configuration: '2 BHK',
+      carpet_area: 850,
+      built_up_area: 1100,
+      price: 8500000,
+      parking_type: 'Included' as const,
+      parking_slot: 'P-A101',
+      availability_status: 'Available' as const,
+      facing: 'East (Garden View)',
+      description: 'Well-ventilated 2 BHK apartment with morning sunlight and landscaped garden view.',
+      amenity_ids: ['amn_clubhouse', 'amn_security', 'amn_backup', 'amn_parking', 'amn_lift'],
+      created_by: 'usr_admin_001',
+    },
+    {
+      _id: 'unt_skh_a_102',
+      project_id: 'proj_skyline_heights',
+      wing_id: 'wng_skh_a',
+      unit_number: 'A-102',
+      floor: 1,
+      configuration: '2 BHK',
+      carpet_area: 875,
+      built_up_area: 1140,
+      price: 8750000,
+      parking_type: 'Included' as const,
+      parking_slot: 'P-A102',
+      availability_status: 'Reserved' as const,
+      facing: 'North-East',
+      description: 'Spacious 2 BHK unit with modular fittings and premium balcony view.',
+      amenity_ids: ['amn_clubhouse', 'amn_pool', 'amn_security', 'amn_backup', 'amn_parking'],
+      created_by: 'usr_admin_001',
+    },
+    {
+      _id: 'unt_skh_a_201',
+      project_id: 'proj_skyline_heights',
+      wing_id: 'wng_skh_a',
+      unit_number: 'A-201',
+      floor: 2,
+      configuration: '3 BHK',
+      carpet_area: 1350,
+      built_up_area: 1750,
+      price: 13800000,
+      parking_type: 'Included' as const,
+      parking_slot: 'P-A201',
+      availability_status: 'Available' as const,
+      facing: 'East',
+      description: 'Luxury 3 BHK residence with expansive living room and master suite deck.',
+      amenity_ids: ['amn_clubhouse', 'amn_pool', 'amn_gym', 'amn_security', 'amn_backup', 'amn_parking'],
+      created_by: 'usr_admin_001',
+    },
+    {
+      _id: 'unt_skh_a_202',
+      project_id: 'proj_skyline_heights',
+      wing_id: 'wng_skh_a',
+      unit_number: 'A-202',
+      floor: 2,
+      configuration: '3 BHK',
+      carpet_area: 1400,
+      built_up_area: 1820,
+      price: 14200000,
+      parking_type: 'Included' as const,
+      parking_slot: 'P-A202',
+      availability_status: 'Sold' as const,
+      facing: 'North (River View)',
+      description: 'Corner 3 BHK apartment with unobstructed panoramic river view.',
+      amenity_ids: ['amn_clubhouse', 'amn_pool', 'amn_gym', 'amn_security', 'amn_backup'],
+      created_by: 'usr_admin_001',
+    },
+    {
+      _id: 'unt_skh_a_301',
+      project_id: 'proj_skyline_heights',
+      wing_id: 'wng_skh_a',
+      unit_number: 'A-301',
+      floor: 3,
+      configuration: '1 BHK',
+      carpet_area: 550,
+      built_up_area: 720,
+      price: 5800000,
+      parking_type: 'Not Included' as const,
+      parking_slot: null,
+      availability_status: 'Available' as const,
+      facing: 'West',
+      description: 'Compact and efficient 1 BHK unit tailored for young IT professionals.',
+      amenity_ids: ['amn_clubhouse', 'amn_security', 'amn_backup', 'amn_lift'],
+      created_by: 'usr_admin_001',
+    },
+    {
+      _id: 'unt_skh_a_302',
+      project_id: 'proj_skyline_heights',
+      wing_id: 'wng_skh_a',
+      unit_number: 'A-302',
+      floor: 3,
+      configuration: '2 BHK',
+      carpet_area: 900,
+      built_up_area: 1180,
+      price: 9200000,
+      parking_type: 'Included' as const,
+      parking_slot: 'P-A302',
+      availability_status: 'Available' as const,
+      facing: 'East',
+      description: 'Bright 2 BHK with Italian marble flooring and automated lighting.',
+      amenity_ids: ['amn_clubhouse', 'amn_gym', 'amn_security', 'amn_backup', 'amn_parking'],
+      created_by: 'usr_admin_001',
+    },
+    {
+      _id: 'unt_skh_b_101',
+      project_id: 'proj_skyline_heights',
+      wing_id: 'wng_skh_b',
+      unit_number: 'B-101',
+      floor: 1,
+      configuration: '2 BHK',
+      carpet_area: 860,
+      built_up_area: 1120,
+      price: 8600000,
+      parking_type: 'Included' as const,
+      parking_slot: 'P-B101',
+      availability_status: 'Available' as const,
+      facing: 'North',
+      description: 'Cozy 2 BHK unit with modern open-kitchen concept.',
+      amenity_ids: ['amn_clubhouse', 'amn_security', 'amn_backup', 'amn_parking'],
+      created_by: 'usr_admin_001',
+    },
+    {
+      _id: 'unt_skh_b_102',
+      project_id: 'proj_skyline_heights',
+      wing_id: 'wng_skh_b',
+      unit_number: 'B-102',
+      floor: 1,
+      configuration: '3 BHK',
+      carpet_area: 1380,
+      built_up_area: 1800,
+      price: 14000000,
+      parking_type: 'Included' as const,
+      parking_slot: 'P-B102',
+      availability_status: 'Reserved' as const,
+      facing: 'East',
+      description: 'Family 3 BHK with utility room and private terrace deck.',
+      amenity_ids: ['amn_clubhouse', 'amn_pool', 'amn_gym', 'amn_security', 'amn_parking'],
+      created_by: 'usr_admin_001',
+    },
+    {
+      _id: 'unt_skh_b_201',
+      project_id: 'proj_skyline_heights',
+      wing_id: 'wng_skh_b',
+      unit_number: 'B-201',
+      floor: 2,
+      configuration: '4 BHK',
+      carpet_area: 2100,
+      built_up_area: 2750,
+      price: 22500000,
+      parking_type: 'Included' as const,
+      parking_slot: 'P-B201-Dual',
+      availability_status: 'Available' as const,
+      facing: 'North-East',
+      description: 'Grand 4 BHK luxury flat with dual parking, servant quarter, and private foyer.',
+      amenity_ids: ['amn_clubhouse', 'amn_pool', 'amn_gym', 'amn_security', 'amn_backup', 'amn_parking', 'amn_ev'],
+      created_by: 'usr_admin_001',
+    },
+    {
+      _id: 'unt_skh_c_1001',
+      project_id: 'proj_skyline_heights',
+      wing_id: 'wng_skh_c',
+      unit_number: 'C-1001',
+      floor: 10,
+      configuration: 'Penthouse',
+      carpet_area: 3200,
+      built_up_area: 4200,
+      price: 38500000,
+      parking_type: 'Included' as const,
+      parking_slot: 'P-C1001-Tri',
+      availability_status: 'Available' as const,
+      facing: '360 Panoramic View',
+      description: 'Top-floor duplex Penthouse with private plunge pool and landscaped roof garden.',
+      amenity_ids: ['amn_clubhouse', 'amn_pool', 'amn_gym', 'amn_security', 'amn_backup', 'amn_parking', 'amn_jogging'],
+      created_by: 'usr_admin_001',
+    },
+    {
+      _id: 'unt_skb_t1_501',
+      project_id: 'proj_skyline_bayview',
+      wing_id: 'wng_skb_t1',
+      unit_number: 'T1-501',
+      floor: 5,
+      configuration: '3 BHK',
+      carpet_area: 1650,
+      built_up_area: 2200,
+      price: 45000000,
+      parking_type: 'Included' as const,
+      parking_slot: 'SB-501',
+      availability_status: 'Available' as const,
+      facing: 'Arabian Sea View',
+      description: 'Opulent sea-facing residence with floor-to-ceiling soundproof acoustic glass.',
+      amenity_ids: ['amn_clubhouse', 'amn_pool', 'amn_gym', 'amn_security', 'amn_backup', 'amn_parking'],
+      created_by: 'usr_admin_001',
+    },
+    {
+      _id: 'unt_skb_t1_502',
+      project_id: 'proj_skyline_bayview',
+      wing_id: 'wng_skb_t1',
+      unit_number: 'T1-502',
+      floor: 5,
+      configuration: '4 BHK',
+      carpet_area: 2400,
+      built_up_area: 3100,
+      price: 68000000,
+      parking_type: 'Included' as const,
+      parking_slot: 'SB-502-Dual',
+      availability_status: 'Reserved' as const,
+      facing: 'Arabian Sea & Queens Necklace View',
+      description: 'Ultra-exclusive Marine Drive 4 BHK with private elevator vestibule.',
+      amenity_ids: ['amn_clubhouse', 'amn_pool', 'amn_gym', 'amn_security', 'amn_backup', 'amn_parking', 'amn_ev'],
+      created_by: 'usr_admin_001',
+    },
+    {
+      _id: 'unt_skg_a_101',
+      project_id: 'proj_skyline_grandeur',
+      wing_id: 'wng_skg_alpha',
+      unit_number: 'Alpha-101',
+      floor: 1,
+      configuration: '2 BHK',
+      carpet_area: 1050,
+      built_up_area: 1350,
+      price: 9800000,
+      parking_type: 'Included' as const,
+      parking_slot: 'SG-A101',
+      availability_status: 'Available' as const,
+      facing: 'East (Central Park)',
+      description: 'Smart home enabled 2 BHK apartment with voice-automated climate control.',
+      amenity_ids: ['amn_clubhouse', 'amn_pool', 'amn_gym', 'amn_security', 'amn_backup', 'amn_parking', 'amn_ev'],
+      created_by: 'usr_admin_001',
+    },
+    {
+      _id: 'unt_skg_a_102',
+      project_id: 'proj_skyline_grandeur',
+      wing_id: 'wng_skg_alpha',
+      unit_number: 'Alpha-102',
+      floor: 1,
+      configuration: '3 BHK',
+      carpet_area: 1550,
+      built_up_area: 1980,
+      price: 14500000,
+      parking_type: 'Included' as const,
+      parking_slot: 'SG-A102',
+      availability_status: 'Sold' as const,
+      facing: 'North-East',
+      description: 'Premium tech corridor 3 BHK with dedicated study and high-speed fiber provision.',
+      amenity_ids: ['amn_clubhouse', 'amn_pool', 'amn_gym', 'amn_security', 'amn_backup', 'amn_parking'],
+      created_by: 'usr_admin_001',
+    },
+  ];
+
+  for (const u of unitsData) {
+    await UnitModel.findByIdAndUpdate(u._id, u, { upsert: true, new: true });
+  }
+  console.log('[Seed] Units verified');
+
+  // 6. Seed Property Listings
+  const listingsData = [
+    {
+      _id: 'prop_skh_001',
+      title: 'Skyline Heights Grand Residences',
+      code: 'SKP-RES-1001',
+      main_category: 'Residential',
+      subtype: 'Apartment',
+      price: 8500000,
+      price_label: '₹85.0 L',
+      price_per_sqft: 7727,
+      location: 'Kharadi IT Corridor',
+      city: 'Pune',
+      state: 'Maharashtra',
+      developer: 'Skyline Realty Group',
+      availability: 'Ready to Move',
+      status: 'Active',
+      description: 'Ultra-luxury high-rise residential apartment featuring smart-home automation and panoramic views.',
+      highlights: ['Riverfront View', 'Smart Home Controls', 'Clubhouse & Infinity Pool', 'EV Charging Available'],
+      address_details: { street: 'Main IT Park Road', locality: 'Kharadi', landmark: 'Near EON Free Zone' },
+      specs_data: { bedrooms: 2, bathrooms: 2, carpetArea: 850, builtUpArea: 1100, floor: 1, totalFloors: 12, parking: '1 Dedicated' },
+      amenity_ids: ['amn_clubhouse', 'amn_pool', 'amn_gym', 'amn_security', 'amn_parking'],
+      cover_image: '/assets/images/projects/project-heights/exterior.jpg',
+      is_active: 1,
+      created_by: 'usr_admin_001',
+      images: [
+        { _id: 'img_skh_01', url: '/assets/images/projects/project-heights/exterior.jpg', label: 'Tower Elevation', category: 'Exterior', is_cover: 1, display_order: 1 },
+        { _id: 'img_skh_02', url: '/assets/images/projects/project-heights/interior.jpg', label: 'Living Room Deck', category: 'Living Room', is_cover: 0, display_order: 2 },
+        { _id: 'img_skh_03', url: '/assets/images/projects/project-heights/amenities.jpg', label: 'Clubhouse & Gym', category: 'Amenities', is_cover: 0, display_order: 3 },
+      ],
+    },
+    {
+      _id: 'prop_skb_002',
+      title: 'Skyline Bayview Signature Suites',
+      code: 'SKP-RES-2002',
+      main_category: 'Residential',
+      subtype: 'Penthouse',
+      price: 45000000,
+      price_label: '₹4.50 Cr',
+      price_per_sqft: 20454,
+      location: 'Marine Drive, South Mumbai',
+      city: 'Mumbai',
+      state: 'Maharashtra',
+      developer: 'Skyline Realty Group',
+      availability: 'Ready to Move',
+      status: 'Active',
+      description: 'Opulent sea-facing penthouse suite with floor-to-ceiling soundproof acoustic glass and private deck.',
+      highlights: ['Unobstructed Arabian Sea View', 'Private Elevator Foyer', 'Acoustic Glass', 'Concierge Service'],
+      address_details: { street: 'Netaji Subhash Chandra Bose Road', locality: 'Marine Drive', landmark: 'Overlooking Queens Necklace' },
+      specs_data: { bedrooms: 4, bathrooms: 4, carpetArea: 2200, builtUpArea: 3100, floor: 20, totalFloors: 20, parking: '2 Covered Slots' },
+      amenity_ids: ['amn_clubhouse', 'amn_pool', 'amn_gym', 'amn_security', 'amn_backup', 'amn_parking'],
+      cover_image: '/assets/images/projects/project-bayview/exterior.jpg',
+      is_active: 1,
+      created_by: 'usr_admin_001',
+      images: [
+        { _id: 'img_skb_01', url: '/assets/images/projects/project-bayview/exterior.jpg', label: 'Sea Facade', category: 'Exterior', is_cover: 1, display_order: 1 },
+        { _id: 'img_skb_02', url: '/assets/images/projects/project-bayview/interior.jpg', label: 'Royal Suite Deck', category: 'Living Room', is_cover: 0, display_order: 2 },
+      ],
+    },
+    {
+      _id: 'prop_plot_003',
+      title: 'Skyline Green Meadows Villa Plot',
+      code: 'SKP-LND-3003',
+      main_category: 'Land',
+      subtype: 'Residential Plot',
+      price: 18500000,
+      price_label: '₹1.85 Cr',
+      price_per_sqft: 4625,
+      location: 'Whitefield Extension',
+      city: 'Bangalore',
+      state: 'Karnataka',
+      developer: 'Skyline Realty Group',
+      availability: 'Immediate Possession',
+      status: 'Active',
+      description: 'Clear title, gated layout residential villa plot with broad internal concrete roads and ready utility connections.',
+      highlights: ['Gated Township Plot', 'Clear Title R-Zone', 'Underground Utilities', 'Clubhouse Access'],
+      address_details: { street: 'Tech Park Link Road', locality: 'Whitefield Extension', landmark: 'Near Metro Station' },
+      specs_data: { plotArea: '4,000 sq.ft', dimensions: '50 ft x 80 ft', roadWidth: '40 ft Sector Road', facing: 'East' },
+      amenity_ids: ['amn_security', 'amn_garden', 'amn_backup'],
+      cover_image: '/assets/images/property-villa.jpg',
+      is_active: 1,
+      created_by: 'usr_admin_001',
+      images: [
+        { _id: 'img_lnd_01', url: '/assets/images/property-villa.jpg', label: 'Master Layout Plan', category: 'Exterior', is_cover: 1, display_order: 1 },
+      ],
+    },
+    {
+      _id: 'prop_comm_004',
+      title: 'Skyline CyberPoint Grade-A Office',
+      code: 'SKP-COM-4004',
+      main_category: 'Commercial',
+      subtype: 'Office',
+      price: 32000000,
+      price_label: '₹3.20 Cr',
+      price_per_sqft: 9142,
+      location: 'Banjara Hills Financial District',
+      city: 'Hyderabad',
+      state: 'Telangana',
+      developer: 'Skyline Realty Group',
+      availability: 'Ready to Move',
+      status: 'Active',
+      description: 'Grade-A LEED certified commercial office floor plate with 100% DG power backup and high-speed elevators.',
+      highlights: ['LEED Gold Certified', 'Double Height Reception', '100% DG Backup', 'Dedicated Fiber Backbone'],
+      address_details: { street: 'Road No. 12', locality: 'Banjara Hills', landmark: 'Opposite City Center' },
+      specs_data: { commercialArea: 3500, ceilingHeight: '14 ft', furnishing: 'Warm Shell', parking: '4 Reserved Basement Slots' },
+      amenity_ids: ['amn_security', 'amn_backup', 'amn_lift', 'amn_parking'],
+      cover_image: '/assets/images/commercial-tower.jpg',
+      is_active: 1,
+      created_by: 'usr_admin_001',
+      images: [
+        { _id: 'img_com_01', url: '/assets/images/commercial-tower.jpg', label: 'Corporate Tower Facade', category: 'Exterior', is_cover: 1, display_order: 1 },
+      ],
+    },
+  ];
+
+  for (const l of listingsData) {
+    await PropertyListingModel.findByIdAndUpdate(l._id, l, { upsert: true, new: true });
+  }
+  console.log('[Seed] Property Listings verified');
+
+  // 7. Seed Enquiries
   const sampleEnquiries = [
     {
-      id: 'enq_001',
+      _id: 'enq_001',
       customer_name: 'Rajesh Sharma',
       phone: '+1 (555) 912-3456',
       email: 'rajesh.sharma@example.com',
       city: 'Mumbai',
       budget: 18500000,
-      interested_property: 'Skyline Imperial Towers',
+      interested_property: 'Skyline Heights Grand Residences',
       configuration: '3 BHK' as PropertyConfiguration,
       lead_source: 'Website' as LeadSource,
       assigned_to: 'usr_agent_001',
-      status: 'New Lead',
-      enquiry_date: '2026-03-28 10:30:00',
+      project_id: 'proj_skyline_heights',
+      unit_id: 'unt_skh_a_101',
+      property_id: 'prop_skh_001',
+      status: 'New Lead' as const,
+      enquiry_date: '2026-03-28T10:30:00.000Z',
       created_by: 'usr_admin_001',
     },
     {
-      id: 'enq_002',
+      _id: 'enq_002',
       customer_name: 'Pooja Iyer',
       phone: '+1 (555) 923-4567',
       email: 'pooja.iyer@example.com',
       city: 'Bangalore',
       budget: 12000000,
-      interested_property: 'Skyline Green Valley',
+      interested_property: 'Skyline Grandeur',
       configuration: '2 BHK' as PropertyConfiguration,
       lead_source: 'Google Ads' as LeadSource,
       assigned_to: 'usr_employee_001',
-      status: 'New Lead',
-      enquiry_date: '2026-03-29 14:15:00',
+      project_id: 'proj_skyline_grandeur',
+      unit_id: 'unt_skg_a_101',
+      property_id: null,
+      status: 'New Lead' as const,
+      enquiry_date: '2026-03-29T14:15:00.000Z',
       created_by: 'usr_employee_001',
     },
     {
-      id: 'enq_003',
+      _id: 'enq_003',
       customer_name: 'Karthik Menon',
       phone: '+1 (555) 934-5678',
       email: 'karthik.menon@example.com',
       city: 'Pune',
       budget: 32000000,
-      interested_property: 'Skyline Pinnacle Penthouse',
+      interested_property: 'Skyline Heights Grand Residences',
       configuration: '4 BHK' as PropertyConfiguration,
       lead_source: 'Facebook / Instagram' as LeadSource,
       assigned_to: 'usr_agent_001',
-      status: 'In Progress',
-      enquiry_date: '2026-03-27 11:00:00',
+      project_id: 'proj_skyline_heights',
+      unit_id: 'unt_skh_b_201',
+      property_id: 'prop_skh_001',
+      status: 'In Progress' as const,
+      enquiry_date: '2026-03-27T11:00:00.000Z',
       created_by: 'usr_admin_001',
     },
     {
-      id: 'enq_004',
+      _id: 'enq_004',
       customer_name: 'Aditya Birla & Co (Walk-in)',
       phone: '+1 (555) 945-6789',
       email: 'aditya.corp@example.com',
       city: 'Delhi NCR',
       budget: 25000000,
-      interested_property: 'Skyline Business Bay Residencies',
+      interested_property: 'Skyline Bayview Signature Suites',
       configuration: '3 BHK' as PropertyConfiguration,
       lead_source: 'Walk-in' as LeadSource,
       assigned_to: 'usr_agent_002',
-      status: 'New Lead',
-      enquiry_date: '2026-03-30 09:45:00',
+      project_id: 'proj_skyline_bayview',
+      unit_id: 'unt_skb_t1_501',
+      property_id: 'prop_skb_002',
+      status: 'New Lead' as const,
+      enquiry_date: '2026-03-30T09:45:00.000Z',
       created_by: 'usr_agent_002',
     },
     {
-      id: 'enq_005',
+      _id: 'enq_005',
       customer_name: 'Siddharth Mehta',
       phone: '+1 (555) 956-7890',
       email: 'siddharth.m@example.com',
       city: 'Hyderabad',
       budget: 8500000,
-      interested_property: 'Skyline Studio Heights',
+      interested_property: 'Skyline CyberPoint Grade-A Office',
       configuration: '1 BHK' as PropertyConfiguration,
       lead_source: 'Property Portal' as LeadSource,
-      assigned_to: null, // Unassigned enquiry for assignment testing
-      status: 'New Lead',
-      enquiry_date: '2026-03-30 11:20:00',
+      assigned_to: null,
+      project_id: null,
+      unit_id: null,
+      property_id: 'prop_comm_004',
+      status: 'New Lead' as const,
+      enquiry_date: '2026-03-30T11:20:00.000Z',
       created_by: 'usr_admin_001',
     },
   ];
 
   for (const enq of sampleEnquiries) {
-    const existing = await db.get('SELECT id FROM enquiries WHERE id = ?', [enq.id]);
-    if (!existing) {
-      await db.run(
-        `INSERT INTO enquiries (id, customer_name, phone, email, city, budget, interested_property,
-          configuration, lead_source, assigned_to, status, enquiry_date, created_by)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          enq.id,
-          enq.customer_name,
-          enq.phone,
-          enq.email,
-          enq.city,
-          enq.budget,
-          enq.interested_property,
-          enq.configuration,
-          enq.lead_source,
-          enq.assigned_to,
-          enq.status,
-          enq.enquiry_date,
-          enq.created_by,
-        ]
-      );
-      console.log(`[Seed] Created enquiry: ${enq.customer_name} [${enq.interested_property}]`);
-    }
+    await EnquiryModel.findByIdAndUpdate(enq._id, enq, { upsert: true, new: true });
   }
+  console.log('[Seed] Enquiries verified');
 
-  // 4. Seed Phase 2 Leads across Pipeline Stages
+  // 8. Seed Leads & Activities
   const sampleLeads = [
     {
-      id: 'lead_001',
+      _id: 'lead_001',
       enquiry_id: null,
       customer_name: 'Vikram Malhotra',
       phone: '+1 (555) 801-1122',
@@ -232,7 +731,10 @@ export async function seedDatabase(): Promise<void> {
       budget: 17500000,
       preferred_location: 'Bandra West / Khar',
       flat_type: '3 BHK' as PropertyConfiguration,
-      interested_property: 'Skyline Coastal Heights',
+      interested_property: 'Skyline Heights Grand Residences',
+      project_id: 'proj_skyline_heights',
+      unit_id: 'unt_skh_a_102',
+      property_id: 'prop_skh_001',
       loan_required: 1,
       purchase_timeline: '1-3 Months',
       purpose: 'Self Use',
@@ -240,13 +742,12 @@ export async function seedDatabase(): Promise<void> {
       pipeline_stage: 'Site Visit' as PipelineStage,
       qualification_status: 'Qualified' as QualificationStatus,
       priority: 'High' as LeadPriority,
-      next_followup_date: '2026-04-02 11:00:00',
+      next_followup_date: '2026-04-02T11:00:00.000Z',
       notes: 'Customer looking for sea-view balcony with 2 dedicated car parking slots. Loan pre-approved with HDFC Bank.',
       created_by: 'usr_admin_001',
-      created_at: '2026-03-20 10:00:00',
     },
     {
-      id: 'lead_002',
+      _id: 'lead_002',
       enquiry_id: null,
       customer_name: 'Dr. Ananya Deshmukh',
       phone: '+1 (555) 802-2233',
@@ -255,7 +756,10 @@ export async function seedDatabase(): Promise<void> {
       budget: 28000000,
       preferred_location: 'Kalyani Nagar / Koregaon Park',
       flat_type: '4 BHK' as PropertyConfiguration,
-      interested_property: 'Skyline Grandeur Luxury Suites',
+      interested_property: 'Skyline Bayview Signature Suites',
+      project_id: 'proj_skyline_bayview',
+      unit_id: 'unt_skb_t1_502',
+      property_id: 'prop_skb_002',
       loan_required: 0,
       purchase_timeline: 'Immediate',
       purpose: 'Self Use',
@@ -263,13 +767,12 @@ export async function seedDatabase(): Promise<void> {
       pipeline_stage: 'Negotiation' as PipelineStage,
       qualification_status: 'Qualified' as QualificationStatus,
       priority: 'Urgent' as LeadPriority,
-      next_followup_date: '2026-04-01 16:30:00',
+      next_followup_date: '2026-04-01T16:30:00.000Z',
       notes: 'Final price negotiation in progress for 14th floor corner unit. Management discount request submitted.',
       created_by: 'usr_agent_001',
-      created_at: '2026-03-18 14:20:00',
     },
     {
-      id: 'lead_003',
+      _id: 'lead_003',
       enquiry_id: null,
       customer_name: 'Arjun & Sneha Kapoor',
       phone: '+1 (555) 803-3344',
@@ -278,7 +781,10 @@ export async function seedDatabase(): Promise<void> {
       budget: 14000000,
       preferred_location: 'Whitefield / Outer Ring Road',
       flat_type: '2 BHK' as PropertyConfiguration,
-      interested_property: 'Skyline TechPark Residences',
+      interested_property: 'Skyline Grandeur',
+      project_id: 'proj_skyline_grandeur',
+      unit_id: 'unt_skg_a_101',
+      property_id: null,
       loan_required: 1,
       purchase_timeline: '1-3 Months',
       purpose: 'Investment',
@@ -286,13 +792,12 @@ export async function seedDatabase(): Promise<void> {
       pipeline_stage: 'Follow-up' as PipelineStage,
       qualification_status: 'Qualified' as QualificationStatus,
       priority: 'Medium' as LeadPriority,
-      next_followup_date: '2026-04-03 15:00:00',
+      next_followup_date: '2026-04-03T15:00:00.000Z',
       notes: 'Looking for strong rental yield (5%+). Requested ROI breakdown comparison document.',
       created_by: 'usr_employee_001',
-      created_at: '2026-03-24 09:15:00',
     },
     {
-      id: 'lead_004',
+      _id: 'lead_004',
       enquiry_id: null,
       customer_name: 'Meera Nambiar',
       phone: '+1 (555) 804-4455',
@@ -301,7 +806,10 @@ export async function seedDatabase(): Promise<void> {
       budget: 9500000,
       preferred_location: 'OMR Road',
       flat_type: '2 BHK' as PropertyConfiguration,
-      interested_property: 'Skyline Urban Oasis',
+      interested_property: 'Skyline Oasis',
+      project_id: 'proj_skyline_oasis',
+      unit_id: null,
+      property_id: null,
       loan_required: 1,
       purchase_timeline: '3-6 Months',
       purpose: 'Self Use',
@@ -309,13 +817,12 @@ export async function seedDatabase(): Promise<void> {
       pipeline_stage: 'Contacted' as PipelineStage,
       qualification_status: 'Future Prospect' as QualificationStatus,
       priority: 'Medium' as LeadPriority,
-      next_followup_date: '2026-04-05 10:00:00',
+      next_followup_date: '2026-04-05T10:00:00.000Z',
       notes: 'Initial pitch made over WhatsApp. Client reviewing digital e-brochure.',
       created_by: 'usr_agent_002',
-      created_at: '2026-03-26 11:45:00',
     },
     {
-      id: 'lead_005',
+      _id: 'lead_005',
       enquiry_id: null,
       customer_name: 'Gaurav Bansal',
       phone: '+1 (555) 805-5566',
@@ -324,7 +831,10 @@ export async function seedDatabase(): Promise<void> {
       budget: 35000000,
       preferred_location: 'Golf Course Road / Gurgaon',
       flat_type: '4 BHK' as PropertyConfiguration,
-      interested_property: 'Skyline Monarch Residences',
+      interested_property: 'Skyline Heights Grand Residences',
+      project_id: 'proj_skyline_heights',
+      unit_id: 'unt_skh_c_1001',
+      property_id: 'prop_skh_001',
       loan_required: 0,
       purchase_timeline: 'Immediate',
       purpose: 'Self Use',
@@ -335,10 +845,9 @@ export async function seedDatabase(): Promise<void> {
       next_followup_date: null,
       notes: 'Agreement draft initiated! Client signed initial booking confirmation token.',
       created_by: 'usr_admin_001',
-      created_at: '2026-03-10 16:00:00',
     },
     {
-      id: 'lead_006',
+      _id: 'lead_006',
       enquiry_id: null,
       customer_name: 'Sunil Chawla',
       phone: '+1 (555) 806-6677',
@@ -347,7 +856,10 @@ export async function seedDatabase(): Promise<void> {
       budget: 6500000,
       preferred_location: 'SG Highway',
       flat_type: '1 BHK' as PropertyConfiguration,
-      interested_property: 'Skyline Compact Living',
+      interested_property: 'Skyline Heights Grand Residences',
+      project_id: 'proj_skyline_heights',
+      unit_id: 'unt_skh_a_301',
+      property_id: 'prop_skh_001',
       loan_required: 0,
       purchase_timeline: '6+ Months',
       purpose: 'Investment',
@@ -358,10 +870,9 @@ export async function seedDatabase(): Promise<void> {
       next_followup_date: null,
       notes: 'Client decided to defer real estate investment to next fiscal year. Budget re-allocated.',
       created_by: 'usr_employee_001',
-      created_at: '2026-03-12 13:00:00',
     },
     {
-      id: 'lead_007',
+      _id: 'lead_007',
       enquiry_id: null,
       customer_name: 'Devendra Patel',
       phone: '+1 (555) 807-7788',
@@ -370,7 +881,10 @@ export async function seedDatabase(): Promise<void> {
       budget: 21000000,
       preferred_location: 'Andheri East',
       flat_type: '3 BHK' as PropertyConfiguration,
-      interested_property: 'Skyline Prime Towers',
+      interested_property: 'Skyline Heights Grand Residences',
+      project_id: 'proj_skyline_heights',
+      unit_id: 'unt_skh_b_201',
+      property_id: 'prop_skh_001',
       loan_required: 1,
       purchase_timeline: 'Immediate',
       purpose: 'Self Use',
@@ -378,682 +892,154 @@ export async function seedDatabase(): Promise<void> {
       pipeline_stage: 'New' as PipelineStage,
       qualification_status: 'Future Prospect' as QualificationStatus,
       priority: 'High' as LeadPriority,
-      next_followup_date: '2026-04-01 10:30:00',
+      next_followup_date: '2026-04-01T10:30:00.000Z',
       notes: 'New hot lead converted from luxury property portal advertisement.',
       created_by: 'usr_admin_001',
-      created_at: '2026-03-30 08:30:00',
     },
   ];
 
   for (const lead of sampleLeads) {
-    const existing = await db.get('SELECT id FROM leads WHERE id = ?', [lead.id]);
+    const existing = await LeadModel.findById(lead._id);
     if (!existing) {
-      await db.run(
-        `INSERT INTO leads (id, enquiry_id, customer_name, phone, email, city, budget,
-          preferred_location, flat_type, interested_property, loan_required, purchase_timeline,
-          purpose, assigned_to, pipeline_stage, qualification_status, priority,
-          next_followup_date, notes, created_by, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          lead.id,
-          lead.enquiry_id,
-          lead.customer_name,
-          lead.phone,
-          lead.email,
-          lead.city,
-          lead.budget,
-          lead.preferred_location,
-          lead.flat_type,
-          lead.interested_property,
-          lead.loan_required,
-          lead.purchase_timeline,
-          lead.purpose,
-          lead.assigned_to,
-          lead.pipeline_stage,
-          lead.qualification_status,
-          lead.priority,
-          lead.next_followup_date,
-          lead.notes,
-          lead.created_by,
-          lead.created_at,
-        ]
-      );
+      await LeadModel.create(lead as any);
 
-      // Seed Initial Activities for Customer 360 Timeline
-      await db.run(
-        `INSERT INTO lead_activities (id, lead_id, activity_type, title, description, performed_by, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [
-          `act_${crypto.randomUUID()}`,
-          lead.id,
-          'LEAD_CREATED',
-          'Lead Created in System',
-          `Lead profile established for ${lead.customer_name} with budget of ₹${(lead.budget / 100000).toFixed(1)} Lakhs.`,
-          lead.created_by,
-          lead.created_at,
-        ]
-      );
+      await LeadActivityModel.create({
+        _id: `act_${crypto.randomUUID()}`,
+        lead_id: lead._id,
+        activity_type: 'LEAD_CREATED',
+        title: 'Lead Created in System',
+        description: `Lead profile established for ${lead.customer_name} with budget of ₹${(lead.budget / 100000).toFixed(1)} Lakhs.`,
+        performed_by: lead.created_by,
+      });
 
       if (lead.assigned_to) {
-        await db.run(
-          `INSERT INTO lead_activities (id, lead_id, activity_type, title, description, performed_by, created_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?)`,
-          [
-            `act_${crypto.randomUUID()}`,
-            lead.id,
-            'EXECUTIVE_ASSIGNED',
-            'Sales Executive Assigned',
-            `Lead assigned to executive for consultation and follow-ups.`,
-            lead.created_by,
-            lead.created_at,
-          ]
-        );
+        await LeadActivityModel.create({
+          _id: `act_${crypto.randomUUID()}`,
+          lead_id: lead._id,
+          activity_type: 'EXECUTIVE_ASSIGNED',
+          title: 'Sales Executive Assigned',
+          description: `Lead assigned to executive for consultation and follow-ups.`,
+          performed_by: lead.created_by,
+        });
       }
 
       if (lead.pipeline_stage !== 'New') {
-        await db.run(
-          `INSERT INTO lead_activities (id, lead_id, activity_type, title, description, performed_by, created_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?)`,
-          [
-            `act_${crypto.randomUUID()}`,
-            lead.id,
-            'STAGE_CHANGED',
-            `Stage Advanced to ${lead.pipeline_stage}`,
-            `Lead progression moved to ${lead.pipeline_stage} stage based on client interaction.`,
-            lead.assigned_to || lead.created_by,
-            lead.created_at,
-          ]
-        );
+        await LeadActivityModel.create({
+          _id: `act_${crypto.randomUUID()}`,
+          lead_id: lead._id,
+          activity_type: 'STAGE_CHANGED',
+          title: `Stage Advanced to ${lead.pipeline_stage}`,
+          description: `Lead progression moved to ${lead.pipeline_stage} stage based on client interaction.`,
+          performed_by: lead.assigned_to || lead.created_by,
+        });
       }
-
-      // Seed Sample Follow-up
-      await db.run(
-        `INSERT INTO follow_ups (id, lead_id, type, followup_date, followup_time, remarks, next_followup_date, executive_id, status, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          `fol_${crypto.randomUUID()}`,
-          lead.id,
-          'Phone Call',
-          '2026-03-29',
-          '15:30',
-          'Discussed floor plan preferences and project amenities. Scheduled next conversation.',
-          lead.next_followup_date,
-          lead.assigned_to,
-          'Completed',
-          lead.created_at,
-        ]
-      );
-
-      console.log(`[Seed] Created lead: ${lead.customer_name} [Stage: ${lead.pipeline_stage}]`);
     }
   }
+  console.log('[Seed] Leads verified');
 
-  // ============================================================================
-  // 5. Seed Phase 3 Amenities
-  // ============================================================================
-  const amenitiesData = [
-    { id: 'amn_clubhouse', name: 'Luxury Clubhouse', category: 'Leisure', icon: 'Building' },
-    { id: 'amn_pool', name: 'Infinity Swimming Pool', category: 'Leisure', icon: 'Waves' },
-    { id: 'amn_gym', name: 'State-of-the-Art Fitness Gym', category: 'Sports & Wellness', icon: 'Dumbbell' },
-    { id: 'amn_security', name: '24/7 Security & CCTV', category: 'Security', icon: 'Shield' },
-    { id: 'amn_backup', name: '100% Power Backup', category: 'Convenience', icon: 'Zap' },
-    { id: 'amn_parking', name: 'Covered Parking & EV Charging', category: 'Convenience', icon: 'Car' },
-    { id: 'amn_garden', name: 'Landscaped Zen Garden', category: 'Green Living', icon: 'Trees' },
-    { id: 'amn_play_area', name: "Children's Play Zone", category: 'Leisure', icon: 'Sparkles' },
-    { id: 'amn_lift', name: 'High-Speed Elevators', category: 'Convenience', icon: 'Building' },
-    { id: 'amn_jogging', name: 'Rooftop Jogging Track', category: 'Sports & Wellness', icon: 'Activity' },
-    { id: 'amn_ev', name: 'EV Charging Station', category: 'Green Living', icon: 'Zap' },
-  ];
-
-  for (const a of amenitiesData) {
-    const existing = await db.get('SELECT id FROM amenities WHERE id = ?', [a.id]);
-    if (!existing) {
-      await db.run(
-        `INSERT INTO amenities (id, name, category, icon, is_active) VALUES (?, ?, ?, ?, 1)`,
-        [a.id, a.name, a.category, a.icon]
-      );
-      console.log(`[Seed] Created amenity: ${a.name}`);
-    }
-  }
-
-  // ============================================================================
-  // 6. Seed Phase 3 Projects & Wings
-  // ============================================================================
-  const projectsData = [
-    {
-      id: 'proj_skyline_heights',
-      name: 'Skyline Heights',
-      code: 'SKH',
-      location: 'Kharadi IT Corridor',
-      city: 'Pune',
-      state: 'Maharashtra',
-      description: 'Ultra-luxury high-rise residential towers with panoramic river and IT park views.',
-      developer: 'Skyline Realty Group',
-      status: 'Active',
-      total_wings: 3,
-      wings: [
-        { id: 'wng_skh_a', name: 'Wing A', total_floors: 12, units_per_floor: 4 },
-        { id: 'wng_skh_b', name: 'Wing B', total_floors: 12, units_per_floor: 4 },
-        { id: 'wng_skh_c', name: 'Wing C', total_floors: 10, units_per_floor: 2 },
-      ],
-    },
-    {
-      id: 'proj_skyline_bayview',
-      name: 'Skyline Bayview',
-      code: 'SKB',
-      location: 'Marine Drive, South Mumbai',
-      city: 'Mumbai',
-      state: 'Maharashtra',
-      description: 'Signature sea-facing super-luxury residences overlooking the Arabian Sea.',
-      developer: 'Skyline Realty Group',
-      status: 'Active',
-      total_wings: 2,
-      wings: [
-        { id: 'wng_skb_t1', name: 'Tower 1', total_floors: 20, units_per_floor: 2 },
-        { id: 'wng_skb_t2', name: 'Tower 2', total_floors: 20, units_per_floor: 2 },
-      ],
-    },
-    {
-      id: 'proj_skyline_grandeur',
-      name: 'Skyline Grandeur',
-      code: 'SKG',
-      location: 'Whitefield Tech Corridor',
-      city: 'Bangalore',
-      state: 'Karnataka',
-      description: 'Smart eco-conscious gated community apartments nestled among lush greenery.',
-      developer: 'Skyline Realty Group',
-      status: 'Active',
-      total_wings: 2,
-      wings: [
-        { id: 'wng_skg_alpha', name: 'Wing Alpha', total_floors: 10, units_per_floor: 4 },
-        { id: 'wng_skg_beta', name: 'Wing Beta', total_floors: 10, units_per_floor: 4 },
-      ],
-    },
-    {
-      id: 'proj_skyline_oasis',
-      name: 'Skyline Oasis',
-      code: 'SKO',
-      location: 'Banjara Hills',
-      city: 'Hyderabad',
-      state: 'Telangana',
-      description: 'Exclusive low-density enclave of boutique luxury sky villas and duplexes.',
-      developer: 'Skyline Realty Group',
-      status: 'Upcoming',
-      total_wings: 1,
-      wings: [
-        { id: 'wng_sko_1', name: 'Wing 1', total_floors: 6, units_per_floor: 2 },
-      ],
-    },
-  ];
-
-  for (const p of projectsData) {
-    const existing = await db.get('SELECT id FROM property_projects WHERE id = ?', [p.id]);
-    if (!existing) {
-      await db.run(
-        `INSERT INTO property_projects (id, name, code, location, city, state, description, developer, status, total_wings, total_units, is_active, created_by, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 1, 'usr_admin_001', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
-        [p.id, p.name, p.code, p.location, p.city, p.state, p.description, p.developer, p.status, p.total_wings]
-      );
-
-      for (const w of p.wings) {
-        await db.run(
-          `INSERT INTO property_wings (id, project_id, name, total_floors, units_per_floor, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
-          [w.id, p.id, w.name, w.total_floors, w.units_per_floor]
-        );
-      }
-
-      await db.run(
-        `INSERT INTO property_activities (id, resource_type, resource_id, activity_type, title, description, performed_by, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
-        [
-          `pact_${crypto.randomUUID()}`,
-          'PROJECT',
-          p.id,
-          'PROJECT_CREATED',
-          `Project ${p.name} Initialized`,
-          `Master project catalog entry created with ${p.wings.length} wings.`,
-          'usr_admin_001',
-        ]
-      );
-
-      console.log(`[Seed] Created project: ${p.name} with ${p.wings.length} wings`);
-    }
-  }
-
-  // ============================================================================
-  // 7. Seed Property Units / Inventory
-  // ============================================================================
-  const unitsData = [
-    // --- Skyline Heights: Wing A ---
-    {
-      id: 'unt_skh_a_101',
-      project_id: 'proj_skyline_heights',
-      wing_id: 'wng_skh_a',
-      unit_number: 'A-101',
-      floor: 1,
-      configuration: '2 BHK',
-      carpet_area: 850,
-      built_up_area: 1100,
-      price: 8500000,
-      parking_type: 'Included',
-      parking_slot: 'P-A101',
-      availability_status: 'Available',
-      facing: 'East (Garden View)',
-      description: 'Well-ventilated 2 BHK apartment with morning sunlight and landscaped garden view.',
-      amenity_ids: ['amn_clubhouse', 'amn_security', 'amn_backup', 'amn_parking', 'amn_lift'],
-    },
-    {
-      id: 'unt_skh_a_102',
-      project_id: 'proj_skyline_heights',
-      wing_id: 'wng_skh_a',
-      unit_number: 'A-102',
-      floor: 1,
-      configuration: '2 BHK',
-      carpet_area: 875,
-      built_up_area: 1140,
-      price: 8750000,
-      parking_type: 'Included',
-      parking_slot: 'P-A102',
-      availability_status: 'Reserved',
-      facing: 'North-East',
-      description: 'Spacious 2 BHK unit with modular fittings and premium balcony view.',
-      amenity_ids: ['amn_clubhouse', 'amn_pool', 'amn_security', 'amn_backup', 'amn_parking'],
-    },
-    {
-      id: 'unt_skh_a_201',
-      project_id: 'proj_skyline_heights',
-      wing_id: 'wng_skh_a',
-      unit_number: 'A-201',
-      floor: 2,
-      configuration: '3 BHK',
-      carpet_area: 1350,
-      built_up_area: 1750,
-      price: 13800000,
-      parking_type: 'Included',
-      parking_slot: 'P-A201',
-      availability_status: 'Available',
-      facing: 'East',
-      description: 'Luxury 3 BHK residence with expansive living room and master suite deck.',
-      amenity_ids: ['amn_clubhouse', 'amn_pool', 'amn_gym', 'amn_security', 'amn_backup', 'amn_parking'],
-    },
-    {
-      id: 'unt_skh_a_202',
-      project_id: 'proj_skyline_heights',
-      wing_id: 'wng_skh_a',
-      unit_number: 'A-202',
-      floor: 2,
-      configuration: '3 BHK',
-      carpet_area: 1400,
-      built_up_area: 1820,
-      price: 14200000,
-      parking_type: 'Included',
-      parking_slot: 'P-A202',
-      availability_status: 'Sold',
-      facing: 'North (River View)',
-      description: 'Corner 3 BHK apartment with unobstructed panoramic river view.',
-      amenity_ids: ['amn_clubhouse', 'amn_pool', 'amn_gym', 'amn_security', 'amn_backup'],
-    },
-    {
-      id: 'unt_skh_a_301',
-      project_id: 'proj_skyline_heights',
-      wing_id: 'wng_skh_a',
-      unit_number: 'A-301',
-      floor: 3,
-      configuration: '1 BHK',
-      carpet_area: 550,
-      built_up_area: 720,
-      price: 5800000,
-      parking_type: 'Not Included',
-      parking_slot: null,
-      availability_status: 'Available',
-      facing: 'West',
-      description: 'Compact and efficient 1 BHK unit tailored for young IT professionals.',
-      amenity_ids: ['amn_clubhouse', 'amn_security', 'amn_backup', 'amn_lift'],
-    },
-    {
-      id: 'unt_skh_a_302',
-      project_id: 'proj_skyline_heights',
-      wing_id: 'wng_skh_a',
-      unit_number: 'A-302',
-      floor: 3,
-      configuration: '2 BHK',
-      carpet_area: 900,
-      built_up_area: 1180,
-      price: 9200000,
-      parking_type: 'Included',
-      parking_slot: 'P-A302',
-      availability_status: 'Available',
-      facing: 'East',
-      description: 'Bright 2 BHK with Italian marble flooring and automated lighting.',
-      amenity_ids: ['amn_clubhouse', 'amn_gym', 'amn_security', 'amn_backup', 'amn_parking'],
-    },
-
-    // --- Skyline Heights: Wing B ---
-    {
-      id: 'unt_skh_b_101',
-      project_id: 'proj_skyline_heights',
-      wing_id: 'wng_skh_b',
-      unit_number: 'B-101',
-      floor: 1,
-      configuration: '2 BHK',
-      carpet_area: 860,
-      built_up_area: 1120,
-      price: 8600000,
-      parking_type: 'Included',
-      parking_slot: 'P-B101',
-      availability_status: 'Available',
-      facing: 'North',
-      description: 'Cozy 2 BHK unit with modern open-kitchen concept.',
-      amenity_ids: ['amn_clubhouse', 'amn_security', 'amn_backup', 'amn_parking'],
-    },
-    {
-      id: 'unt_skh_b_102',
-      project_id: 'proj_skyline_heights',
-      wing_id: 'wng_skh_b',
-      unit_number: 'B-102',
-      floor: 1,
-      configuration: '3 BHK',
-      carpet_area: 1380,
-      built_up_area: 1800,
-      price: 14000000,
-      parking_type: 'Included',
-      parking_slot: 'P-B102',
-      availability_status: 'Reserved',
-      facing: 'East',
-      description: 'Family 3 BHK with utility room and private terrace deck.',
-      amenity_ids: ['amn_clubhouse', 'amn_pool', 'amn_gym', 'amn_security', 'amn_parking'],
-    },
-    {
-      id: 'unt_skh_b_201',
-      project_id: 'proj_skyline_heights',
-      wing_id: 'wng_skh_b',
-      unit_number: 'B-201',
-      floor: 2,
-      configuration: '4 BHK',
-      carpet_area: 2100,
-      built_up_area: 2750,
-      price: 22500000,
-      parking_type: 'Included',
-      parking_slot: 'P-B201-Dual',
-      availability_status: 'Available',
-      facing: 'North-East',
-      description: 'Grand 4 BHK luxury flat with dual parking, servant quarter, and private foyer.',
-      amenity_ids: ['amn_clubhouse', 'amn_pool', 'amn_gym', 'amn_security', 'amn_backup', 'amn_parking', 'amn_ev'],
-    },
-
-    // --- Skyline Heights: Wing C (Penthouses) ---
-    {
-      id: 'unt_skh_c_1001',
-      project_id: 'proj_skyline_heights',
-      wing_id: 'wng_skh_c',
-      unit_number: 'C-1001',
-      floor: 10,
-      configuration: 'Penthouse',
-      carpet_area: 3200,
-      built_up_area: 4200,
-      price: 38500000,
-      parking_type: 'Included',
-      parking_slot: 'P-C1001-Tri',
-      availability_status: 'Available',
-      facing: '360 Panoramic View',
-      description: 'Top-floor duplex Penthouse with private plunge pool and landscaped roof garden.',
-      amenity_ids: ['amn_clubhouse', 'amn_pool', 'amn_gym', 'amn_security', 'amn_backup', 'amn_parking', 'amn_jogging'],
-    },
-
-    // --- Skyline Bayview: Tower 1 (Mumbai) ---
-    {
-      id: 'unt_skb_t1_501',
-      project_id: 'proj_skyline_bayview',
-      wing_id: 'wng_skb_t1',
-      unit_number: 'T1-501',
-      floor: 5,
-      configuration: '3 BHK',
-      carpet_area: 1650,
-      built_up_area: 2200,
-      price: 45000000,
-      parking_type: 'Included',
-      parking_slot: 'SB-501',
-      availability_status: 'Available',
-      facing: 'Arabian Sea View',
-      description: 'Opulent sea-facing residence with floor-to-ceiling soundproof acoustic glass.',
-      amenity_ids: ['amn_clubhouse', 'amn_pool', 'amn_gym', 'amn_security', 'amn_backup', 'amn_parking'],
-    },
-    {
-      id: 'unt_skb_t1_502',
-      project_id: 'proj_skyline_bayview',
-      wing_id: 'wng_skb_t1',
-      unit_number: 'T1-502',
-      floor: 5,
-      configuration: '4 BHK',
-      carpet_area: 2400,
-      built_up_area: 3100,
-      price: 68000000,
-      parking_type: 'Included',
-      parking_slot: 'SB-502-Dual',
-      availability_status: 'Reserved',
-      facing: 'Arabian Sea & Queens Necklace View',
-      description: 'Ultra-exclusive Marine Drive 4 BHK with private elevator vestibule.',
-      amenity_ids: ['amn_clubhouse', 'amn_pool', 'amn_gym', 'amn_security', 'amn_backup', 'amn_parking', 'amn_ev'],
-    },
-
-    // --- Skyline Grandeur: Wing Alpha (Bangalore) ---
-    {
-      id: 'unt_skg_a_101',
-      project_id: 'proj_skyline_grandeur',
-      wing_id: 'wng_skg_alpha',
-      unit_number: 'Alpha-101',
-      floor: 1,
-      configuration: '2 BHK',
-      carpet_area: 1050,
-      built_up_area: 1350,
-      price: 9800000,
-      parking_type: 'Included',
-      parking_slot: 'SG-A101',
-      availability_status: 'Available',
-      facing: 'East (Central Park)',
-      description: 'Smart home enabled 2 BHK apartment with voice-automated climate control.',
-      amenity_ids: ['amn_clubhouse', 'amn_pool', 'amn_gym', 'amn_security', 'amn_backup', 'amn_parking', 'amn_ev'],
-    },
-    {
-      id: 'unt_skg_a_102',
-      project_id: 'proj_skyline_grandeur',
-      wing_id: 'wng_skg_alpha',
-      unit_number: 'Alpha-102',
-      floor: 1,
-      configuration: '3 BHK',
-      carpet_area: 1550,
-      built_up_area: 1980,
-      price: 14500000,
-      parking_type: 'Included',
-      parking_slot: 'SG-A102',
-      availability_status: 'Sold',
-      facing: 'North-East',
-      description: 'Premium tech corridor 3 BHK with dedicated study and high-speed fiber provision.',
-      amenity_ids: ['amn_clubhouse', 'amn_pool', 'amn_gym', 'amn_security', 'amn_backup', 'amn_parking'],
-    },
-  ];
-
-  for (const u of unitsData) {
-    const existing = await db.get('SELECT id FROM property_units WHERE id = ?', [u.id]);
-    if (!existing) {
-      await db.run(
-        `INSERT INTO property_units (id, project_id, wing_id, unit_number, floor, configuration, carpet_area, built_up_area, price, parking_type, parking_slot, availability_status, facing, description, created_by, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'usr_admin_001', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
-        [
-          u.id,
-          u.project_id,
-          u.wing_id,
-          u.unit_number,
-          u.floor,
-          u.configuration,
-          u.carpet_area,
-          u.built_up_area,
-          u.price,
-          u.parking_type,
-          u.parking_slot,
-          u.availability_status,
-          u.facing,
-          u.description,
-        ]
-      );
-
-      // Link Amenities
-      for (const amnId of u.amenity_ids) {
-        await db.run(
-          `INSERT OR IGNORE INTO property_unit_amenities (id, unit_id, amenity_id, created_at)
-           VALUES (?, ?, ?, CURRENT_TIMESTAMP)`,
-          [`pua_${crypto.randomUUID()}`, u.id, amnId]
-        );
-      }
-
-      // Log Unit Creation Activity
-      await db.run(
-        `INSERT INTO property_activities (id, resource_type, resource_id, activity_type, title, description, performed_by, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
-        [
-          `pact_${crypto.randomUUID()}`,
-          'UNIT',
-          u.id,
-          'UNIT_CREATED',
-          `Unit ${u.unit_number} Registered`,
-          `Recorded ${u.configuration} inventory specification with status ${u.availability_status}.`,
-          'usr_admin_001',
-        ]
-      );
-
-      console.log(`[Seed] Created unit: ${u.unit_number} [${u.configuration} - ${u.availability_status}]`);
-    }
-  }
-
-  // Update Project total_units counters based on actual units in database
-  const projectCounts = await db.all<{ project_id: string; cnt: number }>(
-    `SELECT project_id, COUNT(*) as cnt FROM property_units GROUP BY project_id`
-  );
-  for (const pc of projectCounts) {
-    await db.run(
-      `UPDATE property_projects SET total_units = ? WHERE id = ?`,
-      [pc.cnt, pc.project_id]
-    );
-  }
-
-  // Link seed leads & enquiries to seeded projects & units for backward compatibility demo
-  await db.run(
-    `UPDATE enquiries SET project_id = 'proj_skyline_heights', unit_id = 'unt_skh_a_101' WHERE interested_property LIKE '%Skyline Heights%'`
-  );
-  await db.run(
-    `UPDATE enquiries SET project_id = 'proj_skyline_bayview', unit_id = 'unt_skb_t1_501' WHERE interested_property LIKE '%Skyline Bayview%'`
-  );
-  await db.run(
-    `UPDATE leads SET project_id = 'proj_skyline_heights', unit_id = 'unt_skh_a_102' WHERE interested_property LIKE '%Skyline Heights%'`
-  );
-  await db.run(
-    `UPDATE leads SET project_id = 'proj_skyline_bayview', unit_id = 'unt_skb_t1_502' WHERE interested_property LIKE '%Skyline Bayview%'`
-  );
-
-  // ============================================================================
-  // 8. Seed Phase 4 Site Visits
-  // ============================================================================
+  // 9. Seed Site Visits
   const today = new Date();
   const todayStr = today.toISOString().split('T')[0];
-  
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
   const tomorrowStr = tomorrow.toISOString().split('T')[0];
-
   const inThreeDays = new Date(today);
   inThreeDays.setDate(inThreeDays.getDate() + 3);
   const inThreeDaysStr = inThreeDays.toISOString().split('T')[0];
-
   const yesterday = new Date(today);
   yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayStr = yesterday.toISOString().split('T')[0];
-
   const twoDaysAgo = new Date(today);
   twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
   const twoDaysAgoStr = twoDaysAgo.toISOString().split('T')[0];
 
   const sampleVisits = [
     {
-      id: 'sv_seed_001',
+      _id: 'sv_seed_001',
       lead_id: 'lead_001',
       project_id: 'proj_skyline_heights',
       unit_id: 'unt_skh_a_101',
+      property_id: 'prop_skh_001',
       assigned_user_id: 'usr_agent_001',
       visit_date: todayStr,
       visit_time: '11:00',
-      visit_status: 'Scheduled',
-      visit_type: 'Direct Visit',
+      visit_status: 'Scheduled' as const,
+      visit_type: 'Direct Visit' as const,
       remarks: 'Client requested comprehensive walkthrough of the 2 BHK showroom and clubhouse.',
       outcome: null,
       created_by: 'usr_admin_001',
     },
     {
-      id: 'sv_seed_002',
+      _id: 'sv_seed_002',
       lead_id: 'lead_002',
       project_id: 'proj_skyline_bayview',
       unit_id: 'unt_skb_t1_501',
+      property_id: 'prop_skb_002',
       assigned_user_id: 'usr_agent_001',
       visit_date: yesterdayStr,
       visit_time: '15:30',
-      visit_status: 'Completed',
-      visit_type: 'Executive Accompanied',
+      visit_status: 'Completed' as const,
+      visit_type: 'Executive Accompanied' as const,
       remarks: 'Dr. Deshmukh visited with family. Very positive response regarding sea-facing balcony.',
       outcome: 'Interested',
       created_by: 'usr_agent_001',
     },
     {
-      id: 'sv_seed_003',
+      _id: 'sv_seed_003',
       lead_id: 'lead_003',
       project_id: 'proj_skyline_grandeur',
       unit_id: 'unt_skg_a_101',
+      property_id: null,
       assigned_user_id: 'usr_employee_001',
       visit_date: tomorrowStr,
       visit_time: '14:00',
-      visit_status: 'Rescheduled',
-      visit_type: 'Pickup & Drop',
+      visit_status: 'Rescheduled' as const,
+      visit_type: 'Pickup & Drop' as const,
       remarks: 'Rescheduled from original morning slot due to flight arrival delay.',
       outcome: null,
       created_by: 'usr_employee_001',
     },
     {
-      id: 'sv_seed_004',
+      _id: 'sv_seed_004',
       lead_id: 'lead_004',
       project_id: 'proj_skyline_oasis',
       unit_id: null,
+      property_id: null,
       assigned_user_id: 'usr_agent_002',
       visit_date: twoDaysAgoStr,
       visit_time: '10:00',
-      visit_status: 'No Show',
-      visit_type: 'Direct Visit',
+      visit_status: 'No Show' as const,
+      visit_type: 'Direct Visit' as const,
       remarks: 'Customer could not be reached on phone at the gate. Follow-up initiated.',
       outcome: null,
       created_by: 'usr_agent_002',
     },
     {
-      id: 'sv_seed_005',
+      _id: 'sv_seed_005',
       lead_id: 'lead_005',
       project_id: 'proj_skyline_heights',
       unit_id: 'unt_skh_a_201',
+      property_id: 'prop_skh_001',
       assigned_user_id: 'usr_agent_001',
       visit_date: yesterdayStr,
       visit_time: '16:00',
-      visit_status: 'Cancelled',
-      visit_type: 'Direct Visit',
+      visit_status: 'Cancelled' as const,
+      visit_type: 'Direct Visit' as const,
       remarks: 'Cancelled by customer due to sudden business travel.',
       outcome: null,
       created_by: 'usr_admin_001',
     },
     {
-      id: 'sv_seed_006',
+      _id: 'sv_seed_006',
       lead_id: 'lead_001',
       project_id: 'proj_skyline_bayview',
       unit_id: 'unt_skb_t1_502',
+      property_id: 'prop_skb_002',
       assigned_user_id: 'usr_agent_001',
       visit_date: inThreeDaysStr,
       visit_time: '11:30',
-      visit_status: 'Scheduled',
-      visit_type: 'Executive Accompanied',
+      visit_status: 'Scheduled' as const,
+      visit_type: 'Executive Accompanied' as const,
       remarks: 'Second follow-up site visit to inspect 3 BHK corner layout with structural architect.',
       outcome: null,
       created_by: 'usr_agent_001',
@@ -1061,114 +1047,92 @@ export async function seedDatabase(): Promise<void> {
   ];
 
   for (const sv of sampleVisits) {
-    const existing = await db.get('SELECT id FROM site_visits WHERE id = ?', [sv.id]);
-    if (!existing) {
-      await db.run(
-        `INSERT INTO site_visits (id, lead_id, project_id, unit_id, assigned_user_id, visit_date, visit_time, visit_status, visit_type, remarks, outcome, created_by, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
-        [
-          sv.id,
-          sv.lead_id,
-          sv.project_id,
-          sv.unit_id,
-          sv.assigned_user_id,
-          sv.visit_date,
-          sv.visit_time,
-          sv.visit_status,
-          sv.visit_type,
-          sv.remarks,
-          sv.outcome,
-          sv.created_by,
-        ]
-      );
-      console.log(`[Seed] Created site visit: ${sv.id} [${sv.visit_status} - ${sv.visit_date}]`);
-    }
+    await SiteVisitModel.findByIdAndUpdate(sv._id, sv, { upsert: true, new: true });
   }
+  console.log('[Seed] Site Visits verified');
 
-  // ============================================================================
-  // 9. Seed Phase 4 Follow-Ups (Today, Upcoming, Overdue, Completed)
-  // ============================================================================
+  // 10. Seed Follow-ups
   const sampleFollowUps = [
     {
-      id: 'fol_seed_001',
+      _id: 'fol_seed_001',
       lead_id: 'lead_001',
       site_visit_id: 'sv_seed_001',
       assigned_user_id: 'usr_agent_001',
-      follow_up_type: 'Phone Call',
+      follow_up_type: 'Phone Call' as const,
       scheduled_date: todayStr,
       scheduled_time: '17:00',
       remarks: 'Post-visit debrief call to answer questions on payment milestones and amenities.',
-      status: 'Scheduled',
+      status: 'Scheduled' as const,
       outcome: null,
       next_follow_up_date: null,
       created_by: 'usr_agent_001',
     },
     {
-      id: 'fol_seed_002',
+      _id: 'fol_seed_002',
       lead_id: 'lead_002',
       site_visit_id: 'sv_seed_002',
       assigned_user_id: 'usr_agent_001',
-      follow_up_type: 'Meeting',
+      follow_up_type: 'Meeting' as const,
       scheduled_date: todayStr,
       scheduled_time: '18:30',
       remarks: 'In-person discussion on stamp duty calculations and token booking terms.',
-      status: 'Scheduled',
+      status: 'Scheduled' as const,
       outcome: null,
       next_follow_up_date: null,
       created_by: 'usr_agent_001',
     },
     {
-      id: 'fol_seed_003',
+      _id: 'fol_seed_003',
       lead_id: 'lead_003',
       site_visit_id: null,
       assigned_user_id: 'usr_employee_001',
-      follow_up_type: 'WhatsApp',
+      follow_up_type: 'WhatsApp' as const,
       scheduled_date: yesterdayStr,
       scheduled_time: '10:00',
       remarks: 'Overdue follow-up: Send updated ROI comparison sheet and rental index for Whitefield.',
-      status: 'Scheduled', // Overdue because date is in the past and status is Scheduled
+      status: 'Scheduled' as const,
       outcome: null,
       next_follow_up_date: null,
       created_by: 'usr_employee_001',
     },
     {
-      id: 'fol_seed_004',
+      _id: 'fol_seed_004',
       lead_id: 'lead_004',
       site_visit_id: null,
       assigned_user_id: 'usr_agent_002',
-      follow_up_type: 'Phone Call',
+      follow_up_type: 'Phone Call' as const,
       scheduled_date: twoDaysAgoStr,
       scheduled_time: '12:00',
       remarks: 'Overdue follow-up: Check why client missed scheduled site visit.',
-      status: 'Scheduled', // Overdue
+      status: 'Scheduled' as const,
       outcome: null,
       next_follow_up_date: null,
       created_by: 'usr_agent_002',
     },
     {
-      id: 'fol_seed_005',
+      _id: 'fol_seed_005',
       lead_id: 'lead_002',
       site_visit_id: null,
       assigned_user_id: 'usr_agent_001',
-      follow_up_type: 'Email',
+      follow_up_type: 'Email' as const,
       scheduled_date: yesterdayStr,
       scheduled_time: '11:00',
       remarks: 'Shared brochure and sample agreement draft via official email.',
-      status: 'Completed',
+      status: 'Completed' as const,
       outcome: 'Brochure Delivered',
       next_follow_up_date: todayStr,
       created_by: 'usr_agent_001',
     },
     {
-      id: 'fol_seed_006',
+      _id: 'fol_seed_006',
       lead_id: 'lead_001',
       site_visit_id: null,
       assigned_user_id: 'usr_agent_001',
-      follow_up_type: 'Video Call',
+      follow_up_type: 'Video Call' as const,
       scheduled_date: inThreeDaysStr,
       scheduled_time: '16:00',
       remarks: 'Virtual 3D model demonstration with co-applicant spouse.',
-      status: 'Scheduled',
+      status: 'Scheduled' as const,
       outcome: null,
       next_follow_up_date: null,
       created_by: 'usr_agent_001',
@@ -1176,39 +1140,11 @@ export async function seedDatabase(): Promise<void> {
   ];
 
   for (const fol of sampleFollowUps) {
-    const existing = await db.get('SELECT id FROM follow_ups WHERE id = ?', [fol.id]);
-    if (!existing) {
-      await db.run(
-        `INSERT INTO follow_ups (
-          id, lead_id, site_visit_id, assigned_user_id, executive_id,
-          follow_up_type, type, scheduled_date, followup_date, scheduled_time, followup_time,
-          remarks, status, outcome, next_follow_up_date, next_followup_date, created_by, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
-        [
-          fol.id,
-          fol.lead_id,
-          fol.site_visit_id,
-          fol.assigned_user_id,
-          fol.assigned_user_id,
-          fol.follow_up_type,
-          fol.follow_up_type,
-          fol.scheduled_date,
-          fol.scheduled_date,
-          fol.scheduled_time,
-          fol.scheduled_time,
-          fol.remarks,
-          fol.status,
-          fol.outcome,
-          fol.next_follow_up_date,
-          fol.next_follow_up_date,
-          fol.created_by,
-        ]
-      );
-      console.log(`[Seed] Created follow-up: ${fol.id} [${fol.follow_up_type} - ${fol.status}]`);
-    }
+    await FollowUpModel.findByIdAndUpdate(fol._id, fol, { upsert: true, new: true });
   }
+  console.log('[Seed] Follow-ups verified');
 
-  console.log('[Seed] Database seed completed successfully!');
+  console.log('[Seed] MongoDB database seed completed successfully!');
 }
 
 // Direct execution

@@ -82,7 +82,7 @@ export class LeadController {
 
   public static async createLead(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const lead = await LeadService.createLead(req.body, req.user!);
+      const lead = await LeadService.createLead(req.body, req.user!.userId);
       res.status(201).json({
         success: true,
         message: 'Lead successfully created.',

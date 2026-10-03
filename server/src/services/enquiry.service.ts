@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { db } from '../db/database.js';
+import { EnquiryModel, UserModel, ProjectModel, UnitModel, PropertyListingModel, LeadModel, LeadActivityModel } from '../models/index.js';
 import {
   Enquiry,
   UserRole,
@@ -36,455 +36,459 @@ export class EnquiryService {
   ): Promise<{ enquiries: Enquiry[]; total: number; page: number; limit: number }> {
     const page = Math.max(1, filters.page || 1);
     const limit = Math.max(1, Math.min(100, filters.limit || 20));
-    const offset = (page - 1) * limit;
+    const skip = (page - 1) * limit;
 
-    const conditions: string[] = [];
-    const params: any[] = [];
+    const query: any = {};
 
-    // RBAC check:
-    // ADMIN can view all enquiries
-    // EMPLOYEE can view all enquiries (or unassigned/assigned)
-    // AGENT can only view enquiries assigned to them
     const isAdmin = user.roles.includes(UserRole.ADMIN);
     const isEmployee = user.roles.includes(UserRole.EMPLOYEE);
+    const isCustomer = user.roles.includes(UserRole.CUSTOMER);
 
-    if (!isAdmin && !isEmployee) {
-      // Agent role
-      conditions.push('e.assigned_to = ?');
-      params.push(user.userId);
+    if (isCustomer) {
+      query.$or = [{ created_by: user.userId }, { email: user.email.toLowerCase() }];
+    } else if (!isAdmin && !isEmployee) {
+      query.assigned_to = user.userId;
     }
 
-    // Search filter across name, phone, email, property, city
     if (filters.search && filters.search.trim()) {
-      const term = `%${filters.search.trim()}%`;
-      conditions.push(
-        '(e.customer_name LIKE ? OR e.phone LIKE ? OR e.email LIKE ? OR e.interested_property LIKE ? OR e.city LIKE ?)'
-      );
-      params.push(term, term, term, term, term);
+      const regex = new RegExp(filters.search.trim(), 'i');
+      const searchConditions = [
+        { customer_name: regex },
+        { phone: regex },
+        { email: regex },
+        { interested_property: regex },
+        { city: regex },
+      ];
+      if (query.$or) {
+        query.$and = [{ $or: query.$or }, { $or: searchConditions }];
+        delete query.$or;
+      } else {
+        query.$or = searchConditions;
+      }
     }
 
-    if (filters.source) {
-      conditions.push('e.lead_source = ?');
-      params.push(filters.source);
+    if (filters.source) query.lead_source = filters.source;
+    if (filters.configuration) query.configuration = filters.configuration;
+    if (filters.status) query.status = filters.status;
+    if (filters.assigned_to) query.assigned_to = filters.assigned_to;
+    if (filters.city) query.city = new RegExp(`^${filters.city.trim()}$`, 'i');
+
+    if (filters.startDate || filters.endDate) {
+      query.enquiry_date = {};
+      if (filters.startDate) query.enquiry_date.$gte = filters.startDate;
+      if (filters.endDate) query.enquiry_date.$lte = filters.endDate;
     }
 
-    if (filters.configuration) {
-      conditions.push('e.configuration = ?');
-      params.push(filters.configuration);
-    }
+    const sortOrder = filters.sortOrder === 'ASC' ? 1 : -1;
+    const sortField = filters.sortBy || 'enquiry_date';
+    const sortObj: any = { [sortField]: sortOrder };
 
-    if (filters.status) {
-      conditions.push('e.status = ?');
-      params.push(filters.status);
-    }
+    const total = await EnquiryModel.countDocuments(query);
+    const rows = await EnquiryModel.find(query).sort(sortObj).skip(skip).limit(limit);
 
-    if (filters.assigned_to) {
-      conditions.push('e.assigned_to = ?');
-      params.push(filters.assigned_to);
-    }
+    const enquiries: Enquiry[] = await Promise.all(
+      rows.map(async (e) => {
+        let assigned_name: string | null = null;
+        let assigned_email: string | null = null;
+        if (e.assigned_to) {
+          const assignedUser = await UserModel.findById(e.assigned_to);
+          assigned_name = assignedUser?.name || null;
+          assigned_email = assignedUser?.email || null;
+        }
 
-    if (filters.city) {
-      conditions.push('e.city = ?');
-      params.push(filters.city);
-    }
+        let created_by_name: string | null = null;
+        if (e.created_by) {
+          const creator = await UserModel.findById(e.created_by);
+          created_by_name = creator?.name || null;
+        }
 
-    if (filters.startDate) {
-      conditions.push('e.enquiry_date >= ?');
-      params.push(filters.startDate);
-    }
+        let project_name: string | null = null;
+        if (e.project_id) {
+          const project = await ProjectModel.findById(e.project_id);
+          project_name = project?.name || null;
+        }
 
-    if (filters.endDate) {
-      conditions.push('e.enquiry_date <= ?');
-      params.push(filters.endDate);
-    }
+        let unit_number: string | null = null;
+        if (e.unit_id) {
+          const unit = await UnitModel.findById(e.unit_id);
+          unit_number = unit?.unit_number || null;
+        }
 
-    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+        let property_code: string | null = null;
+        let property_title: string | null = e.interested_property;
+        let property_subtype: string | null = null;
+        let property_price: number | null = null;
+        let property_cover_image: string | null = null;
 
-    // Count total
-    const countSql = `SELECT COUNT(*) as total FROM enquiries e ${whereClause}`;
-    const countResult = await db.get<{ total: number }>(countSql, params);
-    const total = countResult?.total || 0;
+        if (e.property_id) {
+          const listing = await PropertyListingModel.findById(e.property_id);
+          if (listing) {
+            property_code = listing.code;
+            property_title = listing.title;
+            property_subtype = listing.subtype;
+            property_price = listing.price;
+            property_cover_image = listing.cover_image || null;
+          }
+        }
 
-    // Sorting
-    const allowedSortFields: Record<string, string> = {
-      customer_name: 'e.customer_name',
-      enquiry_date: 'e.enquiry_date',
-      budget: 'e.budget',
-      status: 'e.status',
-      created_at: 'e.created_at',
-    };
-    const sortField = allowedSortFields[filters.sortBy || 'enquiry_date'] || 'e.enquiry_date';
-    const sortOrder = filters.sortOrder === 'ASC' ? 'ASC' : 'DESC';
+        return {
+          id: e._id,
+          customer_name: e.customer_name,
+          phone: e.phone,
+          email: e.email,
+          city: e.city,
+          budget: e.budget,
+          interested_property: e.interested_property,
+          configuration: e.configuration as any,
+          lead_source: e.lead_source as any,
+          assigned_to: e.assigned_to,
+          project_id: e.project_id,
+          unit_id: e.unit_id,
+          property_id: e.property_id,
+          status: e.status as any,
+          enquiry_date: typeof e.enquiry_date === 'string' ? e.enquiry_date : (e.enquiry_date as any)?.toISOString(),
+          converted_lead_id: e.converted_lead_id,
+          created_by: e.created_by,
+          created_at: typeof e.created_at === 'string' ? e.created_at : e.created_at.toISOString(),
+          updated_at: typeof e.updated_at === 'string' ? e.updated_at : e.updated_at.toISOString(),
+          assigned_name,
+          assigned_email,
+          created_by_name,
+          project_name,
+          unit_number,
+          property_code,
+          property_title,
+          property_subtype,
+          property_price,
+          property_cover_image,
+        };
+      })
+    );
 
-    // Select enquiries with assigned user and property joins
-    const selectSql = `
-      SELECT 
-        e.*,
-        u.name as assigned_name,
-        u.email as assigned_email,
-        cb.name as created_by_name,
-        p.name as project_name,
-        un.unit_number as unit_number,
-        pl.code as property_code,
-        COALESCE(pl.title, e.interested_property) as property_title,
-        pl.subtype as property_subtype,
-        pl.price as property_price,
-        pl.cover_image as property_cover_image
-      FROM enquiries e
-      LEFT JOIN users u ON e.assigned_to = u.id
-      LEFT JOIN users cb ON e.created_by = cb.id
-      LEFT JOIN property_projects p ON e.project_id = p.id
-      LEFT JOIN property_units un ON e.unit_id = un.id
-      LEFT JOIN property_listings pl ON e.property_id = pl.id OR e.interested_property = pl.id OR e.interested_property = pl.title
-      ${whereClause}
-      ORDER BY ${sortField} ${sortOrder}
-      LIMIT ? OFFSET ?
-    `;
-
-    const queryParams = [...params, limit, offset];
-    const enquiries = await db.all<Enquiry>(selectSql, queryParams);
-
-    return {
-      enquiries,
-      total,
-      page,
-      limit,
-    };
+    return { enquiries, total, page, limit };
   }
 
   /**
-   * Fetch single enquiry by ID with RBAC check
+   * Fetch single enquiry by ID
    */
   public static async getEnquiryById(id: string, user: JWTPayload): Promise<Enquiry | null> {
-    const sql = `
-      SELECT 
-        e.*,
-        u.name as assigned_name,
-        u.email as assigned_email,
-        cb.name as created_by_name,
-        p.name as project_name,
-        un.unit_number as unit_number,
-        pl.code as property_code,
-        COALESCE(pl.title, e.interested_property) as property_title,
-        pl.subtype as property_subtype,
-        pl.price as property_price,
-        pl.cover_image as property_cover_image
-      FROM enquiries e
-      LEFT JOIN users u ON e.assigned_to = u.id
-      LEFT JOIN users cb ON e.created_by = cb.id
-      LEFT JOIN property_projects p ON e.project_id = p.id
-      LEFT JOIN property_units un ON e.unit_id = un.id
-      LEFT JOIN property_listings pl ON e.property_id = pl.id OR e.interested_property = pl.id OR e.interested_property = pl.title
-      WHERE e.id = ?
-    `;
+    const e = await EnquiryModel.findById(id);
+    if (!e) return null;
 
-    const enquiry = await db.get<Enquiry>(sql, [id]);
-    if (!enquiry) return null;
-
-    // RBAC verify: If agent, must be assigned to them
     const isAdmin = user.roles.includes(UserRole.ADMIN);
     const isEmployee = user.roles.includes(UserRole.EMPLOYEE);
-    if (!isAdmin && !isEmployee && enquiry.assigned_to !== user.userId) {
-      const error: any = new Error('Access denied. You do not have permission to view this enquiry.');
-      error.statusCode = 403;
-      throw error;
+    const isCustomer = user.roles.includes(UserRole.CUSTOMER);
+
+    if (isCustomer && e.created_by !== user.userId && e.email !== user.email.toLowerCase()) {
+      return null;
+    }
+    if (!isAdmin && !isEmployee && !isCustomer && e.assigned_to !== user.userId) {
+      return null;
     }
 
-    return enquiry;
+    let assigned_name: string | null = null;
+    let assigned_email: string | null = null;
+    if (e.assigned_to) {
+      const assignedUser = await UserModel.findById(e.assigned_to);
+      assigned_name = assignedUser?.name || null;
+      assigned_email = assignedUser?.email || null;
+    }
+
+    let created_by_name: string | null = null;
+    if (e.created_by) {
+      const creator = await UserModel.findById(e.created_by);
+      created_by_name = creator?.name || null;
+    }
+
+    let project_name: string | null = null;
+    if (e.project_id) {
+      const project = await ProjectModel.findById(e.project_id);
+      project_name = project?.name || null;
+    }
+
+    let unit_number: string | null = null;
+    if (e.unit_id) {
+      const unit = await UnitModel.findById(e.unit_id);
+      unit_number = unit?.unit_number || null;
+    }
+
+    let property_code: string | null = null;
+    let property_title: string | null = e.interested_property;
+    let property_subtype: string | null = null;
+    let property_price: number | null = null;
+    let property_cover_image: string | null = null;
+
+    if (e.property_id) {
+      const listing = await PropertyListingModel.findById(e.property_id);
+      if (listing) {
+        property_code = listing.code;
+        property_title = listing.title;
+        property_subtype = listing.subtype;
+        property_price = listing.price;
+        property_cover_image = listing.cover_image || null;
+      }
+    }
+
+    return {
+      id: e._id,
+      customer_name: e.customer_name,
+      phone: e.phone,
+      email: e.email,
+      city: e.city,
+      budget: e.budget,
+      interested_property: e.interested_property,
+      configuration: e.configuration as any,
+      lead_source: e.lead_source as any,
+      assigned_to: e.assigned_to,
+      project_id: e.project_id,
+      unit_id: e.unit_id,
+      property_id: e.property_id,
+      status: e.status as any,
+      enquiry_date: typeof e.enquiry_date === 'string' ? e.enquiry_date : (e.enquiry_date as any)?.toISOString(),
+      converted_lead_id: e.converted_lead_id,
+      created_by: e.created_by,
+      created_at: typeof e.created_at === 'string' ? e.created_at : e.created_at.toISOString(),
+      updated_at: typeof e.updated_at === 'string' ? e.updated_at : e.updated_at.toISOString(),
+      assigned_name,
+      assigned_email,
+      created_by_name,
+      project_name,
+      unit_number,
+      property_code,
+      property_title,
+      property_subtype,
+      property_price,
+      property_cover_image,
+    };
   }
 
   /**
-   * Create new Client Enquiry
+   * Create new enquiry
    */
   public static async createEnquiry(
     data: {
       customer_name: string;
       phone: string;
-      email?: string | null;
-      city?: string | null;
+      email?: string;
+      city?: string;
       budget: number;
       interested_property: string;
       configuration: PropertyConfiguration;
       lead_source: LeadSource;
-      assigned_to?: string | null;
-      project_id?: string | null;
-      unit_id?: string | null;
-      property_id?: string | null;
-      status?: EnquiryStatus;
-      enquiry_date?: string;
-    },
-    user: JWTPayload
-  ): Promise<Enquiry> {
-    const id = `enq_${crypto.randomUUID()}`;
-    const now = new Date().toISOString();
-    const enquiryDate = data.enquiry_date || now;
-    const status = data.status || 'New Lead';
-
-    await db.run(
-      `INSERT INTO enquiries (
-        id, customer_name, phone, email, city, budget, interested_property,
-        configuration, lead_source, assigned_to, project_id, unit_id, property_id, status, enquiry_date, created_by, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        id,
-        data.customer_name.trim(),
-        data.phone.trim(),
-        data.email?.trim() || null,
-        data.city?.trim() || null,
-        data.budget,
-        data.interested_property.trim(),
-        data.configuration,
-        data.lead_source,
-        data.assigned_to || null,
-        data.project_id || null,
-        data.unit_id || null,
-        data.property_id || null,
-        status,
-        enquiryDate,
-        user.userId,
-        now,
-        now,
-      ]
-    );
-
-    // Audit log
-    await db.run(
-      `INSERT INTO audit_logs (id, user_id, action, resource, details)
-       VALUES (?, ?, ?, ?, ?)`,
-      [
-        `log_${crypto.randomUUID()}`,
-        user.userId,
-        'ENQUIRY_CREATED',
-        'enquiries',
-        JSON.stringify({ enquiryId: id, customerName: data.customer_name }),
-      ]
-    );
-
-    const created = await this.getEnquiryById(id, user);
-    return created!;
-  }
-
-  /**
-   * Update existing enquiry
-   */
-  public static async updateEnquiry(
-    id: string,
-    data: Partial<Enquiry>,
-    user: JWTPayload
-  ): Promise<Enquiry> {
-    const existing = await this.getEnquiryById(id, user);
-    if (!existing) {
-      const error: any = new Error('Enquiry not found.');
-      error.statusCode = 404;
-      throw error;
-    }
-
-    const updates: string[] = [];
-    const params: any[] = [];
-
-    if (data.customer_name !== undefined) {
-      updates.push('customer_name = ?');
-      params.push(data.customer_name.trim());
-    }
-    if (data.phone !== undefined) {
-      updates.push('phone = ?');
-      params.push(data.phone.trim());
-    }
-    if (data.email !== undefined) {
-      updates.push('email = ?');
-      params.push(data.email?.trim() || null);
-    }
-    if (data.city !== undefined) {
-      updates.push('city = ?');
-      params.push(data.city?.trim() || null);
-    }
-    if (data.budget !== undefined) {
-      updates.push('budget = ?');
-      params.push(data.budget);
-    }
-    if (data.interested_property !== undefined) {
-      updates.push('interested_property = ?');
-      params.push(data.interested_property.trim());
-    }
-    if (data.configuration !== undefined) {
-      updates.push('configuration = ?');
-      params.push(data.configuration);
-    }
-    if (data.lead_source !== undefined) {
-      updates.push('lead_source = ?');
-      params.push(data.lead_source);
-    }
-    if (data.assigned_to !== undefined) {
-      updates.push('assigned_to = ?');
-      params.push(data.assigned_to || null);
-    }
-    if (data.project_id !== undefined) {
-      updates.push('project_id = ?');
-      params.push(data.project_id || null);
-    }
-    if (data.unit_id !== undefined) {
-      updates.push('unit_id = ?');
-      params.push(data.unit_id || null);
-    }
-    if (data.status !== undefined) {
-      updates.push('status = ?');
-      params.push(data.status);
-    }
-    if (data.enquiry_date !== undefined) {
-      updates.push('enquiry_date = ?');
-      params.push(data.enquiry_date);
-    }
-
-    if (updates.length === 0) {
-      return existing;
-    }
-
-    const now = new Date().toISOString();
-    updates.push('updated_at = ?');
-    params.push(now);
-
-    params.push(id);
-
-    await db.run(`UPDATE enquiries SET ${updates.join(', ')} WHERE id = ?`, params);
-
-    const updated = await this.getEnquiryById(id, user);
-    return updated!;
-  }
-
-  /**
-   * Convert Enquiry into a CRM Lead
-   */
-  public static async convertToLead(
-    enquiryId: string,
-    conversionData: {
-      preferred_location?: string;
-      loan_required?: number;
-      purchase_timeline?: any;
-      purpose?: any;
       assigned_to?: string;
       project_id?: string;
       unit_id?: string;
       property_id?: string;
-      priority?: LeadPriority;
-      notes?: string;
+      status?: EnquiryStatus;
+      enquiry_date?: string;
     },
+    userId?: string
+  ): Promise<Enquiry> {
+    const enquiryId = `enq_${crypto.randomUUID()}`;
+    const now = new Date().toISOString();
+
+    await EnquiryModel.create({
+      _id: enquiryId,
+      customer_name: data.customer_name.trim(),
+      phone: data.phone.trim(),
+      email: data.email ? data.email.trim().toLowerCase() : null,
+      city: data.city ? data.city.trim() : null,
+      budget: data.budget,
+      interested_property: data.interested_property.trim(),
+      configuration: data.configuration,
+      lead_source: data.lead_source,
+      assigned_to: data.assigned_to || null,
+      project_id: data.project_id || null,
+      unit_id: data.unit_id || null,
+      property_id: data.property_id || null,
+      status: data.status || 'New Lead',
+      enquiry_date: data.enquiry_date || now,
+      created_by: userId || null,
+    });
+
+    return (await this.getEnquiryById(enquiryId, { userId: userId || '', email: '', roles: [UserRole.ADMIN] }))!;
+  }
+
+  /**
+   * Update enquiry
+   */
+  public static async updateEnquiry(
+    id: string,
+    data: Partial<{
+      customer_name: string;
+      phone: string;
+      email: string;
+      city: string;
+      budget: number;
+      interested_property: string;
+      configuration: PropertyConfiguration;
+      lead_source: LeadSource;
+      assigned_to: string;
+      status: EnquiryStatus;
+      project_id: string;
+      unit_id: string;
+      property_id: string;
+    }>,
     user: JWTPayload
-  ): Promise<{ lead: Lead; enquiry: Enquiry }> {
-    const enquiry = await this.getEnquiryById(enquiryId, user);
+  ): Promise<Enquiry> {
+    const enquiry = await EnquiryModel.findById(id);
     if (!enquiry) {
       const error: any = new Error('Enquiry not found.');
       error.statusCode = 404;
       throw error;
     }
 
-    // Prevent duplicate conversion
-    if (enquiry.status === 'Converted' || enquiry.converted_lead_id) {
-      const error: any = new Error('This enquiry has already been converted to a Lead.');
-      error.statusCode = 400;
+    if (data.customer_name !== undefined) enquiry.customer_name = data.customer_name.trim();
+    if (data.phone !== undefined) enquiry.phone = data.phone.trim();
+    if (data.email !== undefined) enquiry.email = data.email.trim().toLowerCase();
+    if (data.city !== undefined) enquiry.city = data.city.trim();
+    if (data.budget !== undefined) enquiry.budget = data.budget;
+    if (data.interested_property !== undefined) enquiry.interested_property = data.interested_property.trim();
+    if (data.configuration !== undefined) enquiry.configuration = data.configuration;
+    if (data.lead_source !== undefined) enquiry.lead_source = data.lead_source;
+    if (data.assigned_to !== undefined) enquiry.assigned_to = data.assigned_to;
+    if (data.status !== undefined) enquiry.status = data.status;
+    if (data.project_id !== undefined) enquiry.project_id = data.project_id;
+    if (data.unit_id !== undefined) enquiry.unit_id = data.unit_id;
+    if (data.property_id !== undefined) enquiry.property_id = data.property_id;
+
+    await enquiry.save();
+    return (await this.getEnquiryById(id, user))!;
+  }
+
+  /**
+   * Delete enquiry
+   */
+  public static async deleteEnquiry(id: string): Promise<boolean> {
+    const result = await EnquiryModel.findByIdAndDelete(id);
+    return !!result;
+  }
+
+  /**
+   * Assign single enquiry to an executive
+   */
+  public static async assignEnquiry(id: string, assignedTo: string | null): Promise<Enquiry> {
+    const enquiry = await EnquiryModel.findById(id);
+    if (!enquiry) {
+      const error: any = new Error('Enquiry not found.');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    enquiry.assigned_to = assignedTo;
+    await enquiry.save();
+
+    return (await this.getEnquiryById(id, { userId: '', email: '', roles: [UserRole.ADMIN] }))!;
+  }
+
+  /**
+   * Bulk assign enquiries
+   */
+  public static async bulkAssign(enquiryIds: string[], assignedTo: string): Promise<{ updatedCount: number }> {
+    const res = await EnquiryModel.updateMany({ _id: { $in: enquiryIds } }, { assigned_to: assignedTo });
+    return { updatedCount: res.modifiedCount };
+  }
+
+  /**
+   * Convert enquiry to a qualified lead
+   */
+  public static async convertToLead(
+    enquiryId: string,
+    leadData: {
+      preferred_location?: string;
+      loan_required?: number;
+      purchase_timeline?: string;
+      purpose?: string;
+      priority?: LeadPriority;
+      notes?: string;
+      assigned_to?: string;
+      pipeline_stage?: string;
+      qualification_status?: string;
+    },
+    userId?: string
+  ): Promise<{ enquiry: Enquiry; lead: Lead }> {
+    const enquiry = await EnquiryModel.findById(enquiryId);
+    if (!enquiry) {
+      const error: any = new Error('Enquiry not found.');
+      error.statusCode = 404;
       throw error;
     }
 
     const leadId = `lead_${crypto.randomUUID()}`;
     const now = new Date().toISOString();
-    const assignedTo = conversionData.assigned_to || enquiry.assigned_to || user.userId;
-    const projectId = conversionData.project_id || enquiry.project_id || null;
-    const unitId = conversionData.unit_id || enquiry.unit_id || null;
-    const propertyId = conversionData.property_id || enquiry.property_id || null;
 
-    // Insert into leads table
-    await db.run(
-      `INSERT INTO leads (
-        id, enquiry_id, customer_name, phone, email, city, budget,
-        preferred_location, flat_type, interested_property, project_id, unit_id, property_id, loan_required,
-        purchase_timeline, purpose, assigned_to, pipeline_stage,
-        qualification_status, priority, notes, created_by, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        leadId,
-        enquiry.id,
-        enquiry.customer_name,
-        enquiry.phone,
-        enquiry.email,
-        enquiry.city,
-        enquiry.budget,
-        conversionData.preferred_location || enquiry.city || null,
-        enquiry.configuration,
-        enquiry.interested_property,
-        projectId,
-        unitId,
-        propertyId,
-        conversionData.loan_required || 0,
-        conversionData.purchase_timeline || '1-3 Months',
-        conversionData.purpose || 'Self Use',
-        assignedTo,
-        'New',
-        'Qualified',
-        conversionData.priority || 'Medium',
-        conversionData.notes || `Converted from enquiry #${enquiry.id} (${enquiry.lead_source})`,
-        user.userId,
-        now,
-        now,
-      ]
-    );
+    const newLead = await LeadModel.create({
+      _id: leadId,
+      enquiry_id: enquiry._id,
+      customer_name: enquiry.customer_name,
+      phone: enquiry.phone,
+      email: enquiry.email,
+      city: enquiry.city,
+      budget: enquiry.budget,
+      preferred_location: leadData.preferred_location || enquiry.city || null,
+      flat_type: enquiry.configuration,
+      interested_property: enquiry.interested_property,
+      project_id: enquiry.project_id,
+      unit_id: enquiry.unit_id,
+      property_id: enquiry.property_id,
+      loan_required: leadData.loan_required || 0,
+      purchase_timeline: (leadData.purchase_timeline || '1-3 Months') as any,
+      purpose: (leadData.purpose || 'Self Use') as any,
+      assigned_to: leadData.assigned_to || enquiry.assigned_to || null,
+      pipeline_stage: (leadData.pipeline_stage || 'New') as any,
+      qualification_status: (leadData.qualification_status || 'Qualified') as any,
+      priority: leadData.priority || 'Medium',
+      notes: leadData.notes || 'Converted from enquiry profile.',
+      created_by: userId || null,
+    });
 
-    // Update enquiry record status and link converted lead
-    await db.run(
-      `UPDATE enquiries SET status = 'Converted', converted_lead_id = ?, updated_at = ? WHERE id = ?`,
-      [leadId, now, enquiry.id]
-    );
+    enquiry.status = 'Converted';
+    enquiry.converted_lead_id = leadId;
+    await enquiry.save();
 
-    // Record lead creation & enquiry conversion activity
-    await db.run(
-      `INSERT INTO lead_activities (id, lead_id, activity_type, title, description, performed_by, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [
-        `act_${crypto.randomUUID()}`,
-        leadId,
-        'ENQUIRY_CONVERTED',
-        'Enquiry Converted to Lead',
-        `Successfully converted from Client Enquiry (${enquiry.lead_source}) for ${enquiry.interested_property}.`,
-        user.userId,
-        now,
-      ]
-    );
+    await LeadActivityModel.create({
+      _id: `act_${crypto.randomUUID()}`,
+      lead_id: leadId,
+      activity_type: 'ENQUIRY_CONVERTED',
+      title: 'Converted from Enquiry',
+      description: `Enquiry for ${enquiry.interested_property} converted into active pipeline lead.`,
+      performed_by: userId || null,
+    });
 
-    // Audit log
-    await db.run(
-      `INSERT INTO audit_logs (id, user_id, action, resource, details)
-       VALUES (?, ?, ?, ?, ?)`,
-      [
-        `log_${crypto.randomUUID()}`,
-        user.userId,
-        'ENQUIRY_CONVERTED',
-        'leads',
-        JSON.stringify({ enquiryId: enquiry.id, leadId, customerName: enquiry.customer_name }),
-      ]
-    );
+    const updatedEnquiry = (await this.getEnquiryById(enquiryId, { userId: userId || '', email: '', roles: [UserRole.ADMIN] }))!;
+    return { enquiry: updatedEnquiry, lead: newLead as any };
+  }
 
-    const lead = await db.get<Lead>(
-      `SELECT l.*,
-              u.name as assigned_name,
-              u.email as assigned_email,
-              cb.name as created_by_name,
-              p.name as project_name,
-              un.unit_number as unit_number,
-              pl.code as property_code,
-              COALESCE(pl.title, l.interested_property) as property_title,
-              pl.subtype as property_subtype,
-              pl.price as property_price,
-              pl.cover_image as property_cover_image
-       FROM leads l
-       LEFT JOIN users u ON l.assigned_to = u.id
-       LEFT JOIN users cb ON l.created_by = cb.id
-       LEFT JOIN property_projects p ON l.project_id = p.id
-       LEFT JOIN property_units un ON l.unit_id = un.id
-       LEFT JOIN property_listings pl ON l.property_id = pl.id OR l.interested_property = pl.id OR l.interested_property = pl.title
-       WHERE l.id = ?`,
-      [leadId]
-    );
+  /**
+   * Aggregate statistics for dashboard summary
+   */
+  public static async getEnquiryStats(user: JWTPayload): Promise<{
+    total: number;
+    newLeads: number;
+    inProgress: number;
+    converted: number;
+    dropped: number;
+    bySource: Record<string, number>;
+  }> {
+    const query: any = {};
+    const isAdmin = user.roles.includes(UserRole.ADMIN);
+    const isEmployee = user.roles.includes(UserRole.EMPLOYEE);
+    if (!isAdmin && !isEmployee) {
+      query.assigned_to = user.userId;
+    }
 
-    const updatedEnquiry = (await this.getEnquiryById(enquiryId, user))!;
+    const enquiries = await EnquiryModel.find(query);
+    const total = enquiries.length;
+    const newLeads = enquiries.filter((e) => e.status === 'New Lead').length;
+    const inProgress = enquiries.filter((e) => e.status === 'In Progress').length;
+    const converted = enquiries.filter((e) => e.status === 'Converted').length;
+    const dropped = enquiries.filter((e) => e.status === 'Dropped').length;
 
-    return { lead: lead!, enquiry: updatedEnquiry };
+    const bySource: Record<string, number> = {};
+    for (const e of enquiries) {
+      bySource[e.lead_source] = (bySource[e.lead_source] || 0) + 1;
+    }
+
+    return { total, newLeads, inProgress, converted, dropped, bySource };
   }
 }

@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { db } from '../db/database.js';
+import { ProjectModel, UnitModel, UserModel, PropertyActivityModel } from '../models/index.js';
 import { PropertyProject, PropertyWing, ProjectStatus } from '../types/index.js';
 
 export interface ListProjectsFilter {
@@ -57,84 +57,82 @@ export class ProjectService {
   }> {
     const page = Math.max(1, filter.page || 1);
     const limit = Math.min(100, Math.max(1, filter.limit || 20));
-    const offset = (page - 1) * limit;
+    const skip = (page - 1) * limit;
 
-    const conditions: string[] = [];
-    const params: any[] = [];
-
+    const query: any = {};
     if (filter.is_active !== undefined) {
-      conditions.push('p.is_active = ?');
-      params.push(filter.is_active);
+      query.is_active = filter.is_active;
     } else {
-      conditions.push('p.is_active = 1');
+      query.is_active = 1;
     }
 
     if (filter.status) {
-      conditions.push('p.status = ?');
-      params.push(filter.status);
+      query.status = filter.status;
     }
 
     if (filter.city) {
-      conditions.push('p.city = ?');
-      params.push(filter.city);
+      query.city = filter.city;
     }
 
     if (filter.search && filter.search.trim()) {
-      const searchPattern = `%${filter.search.trim()}%`;
-      conditions.push(
-        '(p.name LIKE ? OR p.code LIKE ? OR p.location LIKE ? OR p.city LIKE ? OR p.developer LIKE ?)'
-      );
-      params.push(searchPattern, searchPattern, searchPattern, searchPattern, searchPattern);
+      const regex = new RegExp(filter.search.trim(), 'i');
+      query.$or = [
+        { name: regex },
+        { code: regex },
+        { location: regex },
+        { city: regex },
+        { developer: regex },
+      ];
     }
 
-    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+    const total = await ProjectModel.countDocuments(query);
+    const rows = await ProjectModel.find(query).sort({ created_at: -1 }).skip(skip).limit(limit);
 
-    const countRow = await db.get<{ count: number }>(
-      `SELECT COUNT(*) as count FROM property_projects p ${whereClause}`,
-      params
+    const projects: PropertyProject[] = await Promise.all(
+      rows.map(async (r) => {
+        const units = await UnitModel.find({ project_id: r._id });
+        const available = units.filter((u) => u.availability_status === 'Available').length;
+        const reserved = units.filter((u) => u.availability_status === 'Reserved').length;
+        const sold = units.filter((u) => u.availability_status === 'Sold').length;
+
+        let created_by_name: string | null = null;
+        if (r.created_by) {
+          const user = await UserModel.findById(r.created_by);
+          created_by_name = user?.name || null;
+        }
+
+        return {
+          id: r._id,
+          name: r.name,
+          code: r.code,
+          location: r.location,
+          city: r.city,
+          state: r.state,
+          description: r.description,
+          developer: r.developer,
+          status: r.status,
+          total_wings: r.total_wings,
+          total_units: units.length,
+          is_active: r.is_active,
+          created_by: r.created_by,
+          created_at: typeof r.created_at === 'string' ? r.created_at : r.created_at.toISOString(),
+          updated_at: typeof r.updated_at === 'string' ? r.updated_at : r.updated_at.toISOString(),
+          created_by_name,
+          available_units: available,
+          reserved_units: reserved,
+          sold_units: sold,
+          wings: (r.wings || []).map((w) => ({
+            id: w._id,
+            project_id: r._id,
+            name: w.name,
+            total_floors: w.total_floors,
+            units_per_floor: w.units_per_floor,
+            created_at: typeof w.created_at === 'string' ? w.created_at : (w.created_at?.toISOString() || new Date().toISOString()),
+            updated_at: typeof w.updated_at === 'string' ? w.updated_at : (w.updated_at?.toISOString() || new Date().toISOString()),
+          })),
+        };
+      })
     );
-    const total = countRow?.count || 0;
-
-    const query = `
-      SELECT 
-        p.*,
-        u.name as created_by_name,
-        COUNT(un.id) as total_units,
-        SUM(CASE WHEN un.availability_status = 'Available' THEN 1 ELSE 0 END) as available_units,
-        SUM(CASE WHEN un.availability_status = 'Reserved' THEN 1 ELSE 0 END) as reserved_units,
-        SUM(CASE WHEN un.availability_status = 'Sold' THEN 1 ELSE 0 END) as sold_units
-      FROM property_projects p
-      LEFT JOIN users u ON p.created_by = u.id
-      LEFT JOIN property_units un ON p.id = un.project_id
-      ${whereClause}
-      GROUP BY p.id
-      ORDER BY p.created_at DESC
-      LIMIT ? OFFSET ?
-    `;
-
-    const rows = await db.all<any>(query, [...params, limit, offset]);
-
-    const projects: PropertyProject[] = rows.map((r) => ({
-      id: r.id,
-      name: r.name,
-      code: r.code,
-      location: r.location,
-      city: r.city,
-      state: r.state,
-      description: r.description,
-      developer: r.developer,
-      status: r.status,
-      total_wings: r.total_wings,
-      total_units: Number(r.total_units || 0),
-      is_active: r.is_active,
-      created_by: r.created_by,
-      created_at: r.created_at,
-      updated_at: r.updated_at,
-      created_by_name: r.created_by_name,
-      available_units: Number(r.available_units || 0),
-      reserved_units: Number(r.reserved_units || 0),
-      sold_units: Number(r.sold_units || 0),
-    }));
 
     return {
       projects,
@@ -149,345 +147,170 @@ export class ProjectService {
    * Get single project by ID with full wing breakdown and unit availability
    */
   static async getProjectById(id: string): Promise<PropertyProject | null> {
-    const row = await db.get<any>(
-      `SELECT 
-        p.*,
-        u.name as created_by_name,
-        COUNT(un.id) as total_units,
-        SUM(CASE WHEN un.availability_status = 'Available' THEN 1 ELSE 0 END) as available_units,
-        SUM(CASE WHEN un.availability_status = 'Reserved' THEN 1 ELSE 0 END) as reserved_units,
-        SUM(CASE WHEN un.availability_status = 'Sold' THEN 1 ELSE 0 END) as sold_units
-       FROM property_projects p
-       LEFT JOIN users u ON p.created_by = u.id
-       LEFT JOIN property_units un ON p.id = un.project_id
-       WHERE p.id = ?
-       GROUP BY p.id`,
-      [id]
-    );
+    const project = await ProjectModel.findById(id);
+    if (!project) return null;
 
-    if (!row) return null;
+    const units = await UnitModel.find({ project_id: project._id });
 
-    // Fetch Wings
-    const wingRows = await db.all<any>(
-      `SELECT 
-        w.*,
-        COUNT(un.id) as total_units,
-        SUM(CASE WHEN un.availability_status = 'Available' THEN 1 ELSE 0 END) as available_units,
-        SUM(CASE WHEN un.availability_status = 'Reserved' THEN 1 ELSE 0 END) as reserved_units,
-        SUM(CASE WHEN un.availability_status = 'Sold' THEN 1 ELSE 0 END) as sold_units
-       FROM property_wings w
-       LEFT JOIN property_units un ON w.id = un.wing_id
-       WHERE w.project_id = ?
-       GROUP BY w.id
-       ORDER BY w.name ASC`,
-      [id]
-    );
+    const wings: PropertyWing[] = project.wings.map((w) => {
+      const wingUnits = units.filter((u) => u.wing_id === w._id);
+      return {
+        id: w._id,
+        project_id: project._id,
+        name: w.name,
+        total_floors: w.total_floors,
+        units_per_floor: w.units_per_floor,
+        created_at: typeof w.created_at === 'string' ? w.created_at : (w.created_at?.toISOString() || new Date().toISOString()),
+        updated_at: typeof w.updated_at === 'string' ? w.updated_at : (w.updated_at?.toISOString() || new Date().toISOString()),
+        total_units: wingUnits.length,
+        available_units: wingUnits.filter((u) => u.availability_status === 'Available').length,
+        reserved_units: wingUnits.filter((u) => u.availability_status === 'Reserved').length,
+        sold_units: wingUnits.filter((u) => u.availability_status === 'Sold').length,
+      };
+    });
 
-    const wings: PropertyWing[] = wingRows.map((w) => ({
-      id: w.id,
-      project_id: w.project_id,
-      name: w.name,
-      total_floors: w.total_floors,
-      units_per_floor: w.units_per_floor,
-      created_at: w.created_at,
-      updated_at: w.updated_at,
-      total_units: Number(w.total_units || 0),
-      available_units: Number(w.available_units || 0),
-      reserved_units: Number(w.reserved_units || 0),
-      sold_units: Number(w.sold_units || 0),
-    }));
+    let created_by_name: string | null = null;
+    if (project.created_by) {
+      const user = await UserModel.findById(project.created_by);
+      created_by_name = user?.name || null;
+    }
 
     return {
-      id: row.id,
-      name: row.name,
-      code: row.code,
-      location: row.location,
-      city: row.city,
-      state: row.state,
-      description: row.description,
-      developer: row.developer,
-      status: row.status,
-      total_wings: row.total_wings,
-      total_units: Number(row.total_units || 0),
-      is_active: row.is_active,
-      created_by: row.created_by,
-      created_at: row.created_at,
-      updated_at: row.updated_at,
-      created_by_name: row.created_by_name,
-      available_units: Number(row.available_units || 0),
-      reserved_units: Number(row.reserved_units || 0),
-      sold_units: Number(row.sold_units || 0),
+      id: project._id,
+      name: project.name,
+      code: project.code,
+      location: project.location,
+      city: project.city,
+      state: project.state,
+      description: project.description,
+      developer: project.developer,
+      status: project.status,
+      total_wings: project.total_wings,
+      total_units: units.length,
+      is_active: project.is_active,
+      created_by: project.created_by,
+      created_at: typeof project.created_at === 'string' ? project.created_at : project.created_at.toISOString(),
+      updated_at: typeof project.updated_at === 'string' ? project.updated_at : project.updated_at.toISOString(),
+      created_by_name,
+      available_units: units.filter((u) => u.availability_status === 'Available').length,
+      reserved_units: units.filter((u) => u.availability_status === 'Reserved').length,
+      sold_units: units.filter((u) => u.availability_status === 'Sold').length,
       wings,
     };
   }
 
   /**
-   * Create a new project master and optional initial wings
+   * Create a new project master and its wings
    */
-  static async createProject(data: CreateProjectDTO, actorId: string): Promise<PropertyProject> {
-    const codeNormalized = data.code.trim().toUpperCase();
-
-    const existingCode = await db.get('SELECT id FROM property_projects WHERE code = ?', [
-      codeNormalized,
-    ]);
-    if (existingCode) {
-      throw new Error(`Project code "${codeNormalized}" already exists. Please choose a unique project code.`);
+  static async createProject(dto: CreateProjectDTO, userId?: string): Promise<PropertyProject> {
+    const existing = await ProjectModel.findOne({ code: dto.code.trim().toUpperCase() });
+    if (existing) {
+      throw new Error(`Project code "${dto.code}" is already registered. Codes must be unique.`);
     }
 
     const projectId = `proj_${crypto.randomUUID()}`;
-    const wingsData = data.wings && data.wings.length > 0 ? data.wings : [{ name: 'Wing A' }];
-
-    await db.run(
-      `INSERT INTO property_projects (id, name, code, location, city, state, description, developer, status, total_wings, total_units, is_active, created_by, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 1, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
-      [
-        projectId,
-        data.name.trim(),
-        codeNormalized,
-        data.location.trim(),
-        data.city.trim(),
-        data.state.trim(),
-        data.description?.trim() || null,
-        data.developer?.trim() || 'Skyline Realty Group',
-        data.status || 'Active',
-        wingsData.length,
-        actorId,
-      ]
-    );
-
-    // Insert Wings
-    for (const w of wingsData) {
-      const wingId = `wng_${crypto.randomUUID()}`;
-      await db.run(
-        `INSERT INTO property_wings (id, project_id, name, total_floors, units_per_floor, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
-        [wingId, projectId, w.name.trim(), w.total_floors || 10, w.units_per_floor || 4]
-      );
-    }
-
-    // Log Activity
-    await db.run(
-      `INSERT INTO property_activities (id, resource_type, resource_id, activity_type, title, description, performed_by, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
-      [
-        `pact_${crypto.randomUUID()}`,
-        'PROJECT',
-        projectId,
-        'PROJECT_CREATED',
-        `Project ${data.name} Created`,
-        `Project code ${codeNormalized} in ${data.city} registered with ${wingsData.length} wings.`,
-        actorId,
-      ]
-    );
-
-    const created = await this.getProjectById(projectId);
-    return created!;
-  }
-
-  /**
-   * Update an existing project's metadata
-   */
-  static async updateProject(
-    id: string,
-    data: UpdateProjectDTO,
-    actorId: string
-  ): Promise<PropertyProject> {
-    const existing = await this.getProjectById(id);
-    if (!existing) {
-      throw new Error('Project not found');
-    }
-
-    const updates: string[] = [];
-    const params: any[] = [];
-
-    if (data.name !== undefined) {
-      updates.push('name = ?');
-      params.push(data.name.trim());
-    }
-    if (data.location !== undefined) {
-      updates.push('location = ?');
-      params.push(data.location.trim());
-    }
-    if (data.city !== undefined) {
-      updates.push('city = ?');
-      params.push(data.city.trim());
-    }
-    if (data.state !== undefined) {
-      updates.push('state = ?');
-      params.push(data.state.trim());
-    }
-    if (data.description !== undefined) {
-      updates.push('description = ?');
-      params.push(data.description ? data.description.trim() : null);
-    }
-    if (data.developer !== undefined) {
-      updates.push('developer = ?');
-      params.push(data.developer.trim());
-    }
-    if (data.status !== undefined) {
-      updates.push('status = ?');
-      params.push(data.status);
-    }
-    if (data.is_active !== undefined) {
-      updates.push('is_active = ?');
-      params.push(data.is_active);
-    }
-
-    if (updates.length > 0) {
-      updates.push('updated_at = CURRENT_TIMESTAMP');
-      params.push(id);
-      await db.run(`UPDATE property_projects SET ${updates.join(', ')} WHERE id = ?`, params);
-
-      // Log Activity
-      await db.run(
-        `INSERT INTO property_activities (id, resource_type, resource_id, activity_type, title, description, performed_by, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
-        [
-          `pact_${crypto.randomUUID()}`,
-          'PROJECT',
-          id,
-          'PROJECT_UPDATED',
-          `Project Details Updated`,
-          `Modified project specifications and status.`,
-          actorId,
-        ]
-      );
-    }
-
-    const updated = await this.getProjectById(id);
-    return updated!;
-  }
-
-  /**
-   * Safe Archive / Deactivate a project
-   */
-  static async archiveProject(id: string, actorId: string): Promise<PropertyProject> {
-    const existing = await this.getProjectById(id);
-    if (!existing) {
-      throw new Error('Project not found');
-    }
-
-    // Check if there are active reserved or sold units
-    if (existing.reserved_units && existing.reserved_units > 0) {
-      throw new Error(
-        `Cannot archive project with ${existing.reserved_units} active reserved unit(s). Release reservations first.`
-      );
-    }
-
-    await db.run(
-      `UPDATE property_projects SET is_active = 0, status = 'On Hold', updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
-      [id]
-    );
-
-    // Log Activity
-    await db.run(
-      `INSERT INTO property_activities (id, resource_type, resource_id, activity_type, title, description, performed_by, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
-      [
-        `pact_${crypto.randomUUID()}`,
-        'PROJECT',
-        id,
-        'PROJECT_ARCHIVED',
-        `Project Archived`,
-        `Project marked inactive and moved to On Hold status.`,
-        actorId,
-      ]
-    );
-
-    const updated = await this.getProjectById(id);
-    return updated!;
-  }
-
-  /**
-   * List wings for a specific project
-   */
-  static async listWings(projectId: string): Promise<PropertyWing[]> {
-    const rows = await db.all<any>(
-      `SELECT 
-        w.*,
-        COUNT(un.id) as total_units,
-        SUM(CASE WHEN un.availability_status = 'Available' THEN 1 ELSE 0 END) as available_units,
-        SUM(CASE WHEN un.availability_status = 'Reserved' THEN 1 ELSE 0 END) as reserved_units,
-        SUM(CASE WHEN un.availability_status = 'Sold' THEN 1 ELSE 0 END) as sold_units
-       FROM property_wings w
-       LEFT JOIN property_units un ON w.id = un.wing_id
-       WHERE w.project_id = ?
-       GROUP BY w.id
-       ORDER BY w.name ASC`,
-      [projectId]
-    );
-
-    return rows.map((w) => ({
-      id: w.id,
-      project_id: w.project_id,
-      name: w.name,
-      total_floors: w.total_floors,
-      units_per_floor: w.units_per_floor,
-      created_at: w.created_at,
-      updated_at: w.updated_at,
-      total_units: Number(w.total_units || 0),
-      available_units: Number(w.available_units || 0),
-      reserved_units: Number(w.reserved_units || 0),
-      sold_units: Number(w.sold_units || 0),
+    const wingsData = (dto.wings && dto.wings.length > 0 ? dto.wings : [{ name: 'Wing A' }]).map((w) => ({
+      _id: `wng_${crypto.randomUUID()}`,
+      name: w.name.trim(),
+      total_floors: w.total_floors || 10,
+      units_per_floor: w.units_per_floor || 4,
     }));
+
+    const project = await ProjectModel.create({
+      _id: projectId,
+      name: dto.name.trim(),
+      code: dto.code.trim().toUpperCase(),
+      location: dto.location.trim(),
+      city: dto.city.trim(),
+      state: dto.state.trim(),
+      description: dto.description?.trim() || null,
+      developer: dto.developer?.trim() || 'Skyline Realty Group',
+      status: dto.status || 'Active',
+      total_wings: wingsData.length,
+      total_units: 0,
+      is_active: 1,
+      created_by: userId || null,
+      wings: wingsData,
+    });
+
+    await PropertyActivityModel.create({
+      _id: `pact_${crypto.randomUUID()}`,
+      resource_type: 'PROJECT',
+      resource_id: projectId,
+      activity_type: 'PROJECT_CREATED',
+      title: `Project ${project.name} Created`,
+      description: `Master project created with code ${project.code} and ${wingsData.length} wing(s).`,
+      performed_by: userId || null,
+    });
+
+    return (await this.getProjectById(projectId))!;
   }
 
   /**
-   * Add a new wing to a project
+   * Update an existing project
    */
-  static async createWing(
-    projectId: string,
-    data: CreateWingDTO,
-    actorId: string
-  ): Promise<PropertyWing> {
-    const project = await db.get('SELECT id, name FROM property_projects WHERE id = ?', [projectId]);
+  static async updateProject(id: string, dto: UpdateProjectDTO, userId?: string): Promise<PropertyProject> {
+    const project = await ProjectModel.findById(id);
     if (!project) {
-      throw new Error('Project not found');
+      throw new Error(`Project with ID "${id}" not found.`);
     }
 
-    const wingName = data.name.trim();
-    const existing = await db.get(
-      'SELECT id FROM property_wings WHERE project_id = ? AND name = ?',
-      [projectId, wingName]
-    );
-    if (existing) {
-      throw new Error(`Wing "${wingName}" already exists in this project.`);
+    if (dto.name !== undefined) project.name = dto.name.trim();
+    if (dto.location !== undefined) project.location = dto.location.trim();
+    if (dto.city !== undefined) project.city = dto.city.trim();
+    if (dto.state !== undefined) project.state = dto.state.trim();
+    if (dto.description !== undefined) project.description = dto.description?.trim() || null;
+    if (dto.developer !== undefined) project.developer = dto.developer?.trim() || 'Skyline Realty Group';
+    if (dto.status !== undefined) project.status = dto.status;
+    if (dto.is_active !== undefined) project.is_active = dto.is_active;
+
+    await project.save();
+
+    await PropertyActivityModel.create({
+      _id: `pact_${crypto.randomUUID()}`,
+      resource_type: 'PROJECT',
+      resource_id: id,
+      activity_type: 'PROJECT_UPDATED',
+      title: `Project ${project.name} Updated`,
+      description: `Project metadata updated by executive.`,
+      performed_by: userId || null,
+    });
+
+    return (await this.getProjectById(id))!;
+  }
+
+  /**
+   * Add a new wing to an existing project
+   */
+  static async addWing(projectId: string, dto: CreateWingDTO, userId?: string): Promise<PropertyWing> {
+    const project = await ProjectModel.findById(projectId);
+    if (!project) {
+      throw new Error(`Project with ID "${projectId}" not found.`);
+    }
+
+    const wingExists = project.wings.some((w) => w.name.toLowerCase() === dto.name.trim().toLowerCase());
+    if (wingExists) {
+      throw new Error(`Wing "${dto.name}" already exists in project "${project.name}".`);
     }
 
     const wingId = `wng_${crypto.randomUUID()}`;
-    await db.run(
-      `INSERT INTO property_wings (id, project_id, name, total_floors, units_per_floor, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
-      [wingId, projectId, wingName, data.total_floors || 10, data.units_per_floor || 4]
-    );
+    const newWing = {
+      _id: wingId,
+      name: dto.name.trim(),
+      total_floors: dto.total_floors || 10,
+      units_per_floor: dto.units_per_floor || 4,
+    };
 
-    // Increment project total_wings
-    await db.run(
-      `UPDATE property_projects SET total_wings = total_wings + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
-      [projectId]
-    );
-
-    // Log Activity
-    await db.run(
-      `INSERT INTO property_activities (id, resource_type, resource_id, activity_type, title, description, performed_by, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
-      [
-        `pact_${crypto.randomUUID()}`,
-        'PROJECT',
-        projectId,
-        'PROJECT_UPDATED',
-        `New Wing Added`,
-        `Wing "${wingName}" registered with ${data.total_floors || 10} floors.`,
-        actorId,
-      ]
-    );
+    project.wings.push(newWing as any);
+    project.total_wings = project.wings.length;
+    await project.save();
 
     return {
       id: wingId,
       project_id: projectId,
-      name: wingName,
-      total_floors: data.total_floors || 10,
-      units_per_floor: data.units_per_floor || 4,
+      name: newWing.name,
+      total_floors: newWing.total_floors,
+      units_per_floor: newWing.units_per_floor,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       total_units: 0,
@@ -495,5 +318,39 @@ export class ProjectService {
       reserved_units: 0,
       sold_units: 0,
     };
+  }
+
+  /**
+   * Soft-delete / Archive a project
+   */
+  static async listWings(projectId: string): Promise<PropertyWing[]> {
+    const project = await this.getProjectById(projectId);
+    if (!project) throw new Error(`Project with ID "${projectId}" not found.`);
+    return project.wings || [];
+  }
+
+  static async createWing(projectId: string, dto: CreateWingDTO, userId?: string): Promise<PropertyWing> {
+    return this.addWing(projectId, dto, userId);
+  }
+
+  static async archiveProject(id: string, userId?: string): Promise<void> {
+    const project = await ProjectModel.findById(id);
+    if (!project) {
+      throw new Error(`Project with ID "${id}" not found.`);
+    }
+
+    project.is_active = 0;
+    project.status = 'On Hold';
+    await project.save();
+
+    await PropertyActivityModel.create({
+      _id: `pact_${crypto.randomUUID()}`,
+      resource_type: 'PROJECT',
+      resource_id: id,
+      activity_type: 'PROJECT_ARCHIVED',
+      title: `Project ${project.name} Archived`,
+      description: 'Project moved to inactive/archived status.',
+      performed_by: userId || null,
+    });
   }
 }

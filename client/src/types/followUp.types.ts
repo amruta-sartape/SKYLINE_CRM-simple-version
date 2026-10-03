@@ -35,7 +35,11 @@ export interface FollowUpItem {
   property_title?: string;
   property_subtype?: string;
   property_cover_image?: string;
+  property_location?: string;
+  property_city?: string;
+  property_price?: string;
   is_overdue?: boolean;
+  activities?: any[];
 }
 
 export interface FollowUpFormData {

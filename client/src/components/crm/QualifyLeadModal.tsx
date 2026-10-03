@@ -119,8 +119,8 @@ export const QualifyLeadModal: React.FC<QualifyLeadModalProps> = ({
         )}
 
         {/* Qualification Status Picker */}
-        <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-          <label className="font-bold text-slate-800 text-xs block">
+        <div className="p-3.5 bg-slate-50 dark:bg-[#141A24] border border-slate-200 dark:border-[#242F42] rounded-xl space-y-2">
+          <label className="font-bold text-slate-800 dark:text-slate-200 text-xs block">
             Lead Qualification Outcome
           </label>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -135,8 +135,8 @@ export const QualifyLeadModal: React.FC<QualifyLeadModalProps> = ({
                 key={st.id}
                 className={`flex items-center gap-2 p-2 rounded-lg border text-xs cursor-pointer font-medium transition-all ${
                   formData.qualification_status === st.id
-                    ? 'bg-white border-slate-900 shadow-2xs font-bold text-slate-900 ring-1 ring-slate-900'
-                    : 'bg-white/60 border-slate-200 text-slate-600 hover:bg-white'
+                    ? 'bg-white dark:bg-[#101622] border-slate-900 dark:border-amber-400 shadow-2xs font-bold text-slate-900 dark:text-amber-200 ring-1 ring-slate-900 dark:ring-amber-400'
+                    : 'bg-white/60 dark:bg-[#101622]/60 border-slate-200 dark:border-[#242F42] text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-[#101622]'
                 }`}
               >
                 <input
@@ -189,7 +189,7 @@ export const QualifyLeadModal: React.FC<QualifyLeadModalProps> = ({
               value={formData.flat_type || '2 BHK'}
               onChange={handleChange}
               disabled={isSubmitting}
-              className="w-full h-10 px-3 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-900"
+              className="w-full h-10 px-3 text-xs bg-white dark:bg-[#101622] border border-slate-300 dark:border-[#242F42] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-amber-400/20 focus:border-slate-900 dark:focus:border-amber-400/50 text-slate-900 dark:text-slate-100"
             >
               <option value="1 BHK">1 BHK Apartment</option>
               <option value="2 BHK">2 BHK Apartment</option>
@@ -216,7 +216,7 @@ export const QualifyLeadModal: React.FC<QualifyLeadModalProps> = ({
               value={formData.purchase_timeline || '1-3 Months'}
               onChange={handleChange}
               disabled={isSubmitting}
-              className="w-full h-10 px-3 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-900"
+              className="w-full h-10 px-3 text-xs bg-white dark:bg-[#101622] border border-slate-300 dark:border-[#242F42] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-amber-400/20 focus:border-slate-900 dark:focus:border-amber-400/50 text-slate-900 dark:text-slate-100"
             >
               <option value="Immediate">Immediate</option>
               <option value="1-3 Months">1-3 Months</option>
@@ -231,7 +231,7 @@ export const QualifyLeadModal: React.FC<QualifyLeadModalProps> = ({
               value={formData.purpose || 'Self Use'}
               onChange={handleChange}
               disabled={isSubmitting}
-              className="w-full h-10 px-3 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-900"
+              className="w-full h-10 px-3 text-xs bg-white dark:bg-[#101622] border border-slate-300 dark:border-[#242F42] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-amber-400/20 focus:border-slate-900 dark:focus:border-amber-400/50 text-slate-900 dark:text-slate-100"
             >
               <option value="Self Use">Self Use</option>
               <option value="Investment">Investment</option>
@@ -240,12 +240,12 @@ export const QualifyLeadModal: React.FC<QualifyLeadModalProps> = ({
         </div>
 
         {/* Loan Required Toggle */}
-        <div className="p-3 bg-slate-50 border border-slate-200/80 rounded-lg flex items-center justify-between">
+        <div className="p-3 bg-slate-50 dark:bg-[#141A24] border border-slate-200/80 dark:border-[#242F42] rounded-lg flex items-center justify-between">
           <div>
-            <label htmlFor="qual_loan_required" className="font-bold text-slate-800 cursor-pointer">
+            <label htmlFor="qual_loan_required" className="font-bold text-slate-800 dark:text-slate-200 cursor-pointer">
               Bank Home Loan Required?
             </label>
-            <p className="text-[11px] text-slate-500 mt-0.5">
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
               Identifies financing needs for loan processing assistance
             </p>
           </div>
@@ -256,7 +256,7 @@ export const QualifyLeadModal: React.FC<QualifyLeadModalProps> = ({
             checked={Boolean(formData.loan_required)}
             onChange={handleChange}
             disabled={isSubmitting}
-            className="w-4 h-4 text-brand-600 rounded border-slate-300 focus:ring-brand-500 cursor-pointer"
+            className="w-4 h-4 text-brand-600 rounded border-slate-300 dark:border-slate-600 focus:ring-brand-500 cursor-pointer"
           />
         </div>
 
@@ -269,7 +269,7 @@ export const QualifyLeadModal: React.FC<QualifyLeadModalProps> = ({
             onChange={handleChange}
             placeholder="e.g. Verified budget capability, client looking for possession within 6 months..."
             disabled={isSubmitting}
-            className="w-full p-2.5 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-900 resize-none"
+            className="w-full p-2.5 text-xs bg-white dark:bg-[#101622] border border-slate-300 dark:border-[#242F42] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-amber-400/20 focus:border-slate-900 dark:focus:border-amber-400/50 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 resize-none"
           />
         </FormField>
       </form>

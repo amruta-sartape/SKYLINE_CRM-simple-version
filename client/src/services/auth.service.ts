@@ -11,11 +11,27 @@ import {
 
 export const authService = {
   /**
-   * Register a new agent account
+   * Register a new account
    */
   async register(data: RegisterFormData): Promise<AuthResponse> {
     const res = await api.post<ApiResponse<AuthResponse>>('/auth/register', data);
     return res.data.data!;
+  },
+
+  /**
+   * Verify email using cryptographic token
+   */
+  async verifyEmail(token: string): Promise<string> {
+    const res = await api.post<ApiResponse<null>>('/auth/verify-email', { token });
+    return res.data.message || 'Email verified successfully.';
+  },
+
+  /**
+   * Request a new email verification link
+   */
+  async resendVerification(email: string): Promise<string> {
+    const res = await api.post<ApiResponse<null>>('/auth/resend-verification', { email });
+    return res.data.message || 'Verification link sent.';
   },
 
   /**

@@ -229,7 +229,7 @@ export const UnitFormModal: React.FC<UnitFormModalProps> = ({
 
         {/* Section 1: Location & Identification */}
         <div className="space-y-3">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-1 flex items-center gap-1.5">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-[#242F42] pb-1 flex items-center gap-1.5">
             <Building2 className="w-3.5 h-3.5 text-slate-400" />
             <span>Building Placement</span>
           </h4>
@@ -241,7 +241,7 @@ export const UnitFormModal: React.FC<UnitFormModalProps> = ({
                 value={formData.project_id}
                 onChange={(e) => handleProjectChange(e.target.value)}
                 disabled={isSubmitting || isEdit}
-                className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-brand-500 bg-white"
+                className="w-full px-3 py-2 text-xs border border-slate-300 dark:border-[#242F42] rounded-lg focus:outline-hidden focus:ring-2 focus:ring-brand-500 bg-white dark:bg-[#101622] text-slate-900 dark:text-slate-100"
               >
                 <option value="">Select Project</option>
                 {projects.map((p) => (
@@ -258,7 +258,7 @@ export const UnitFormModal: React.FC<UnitFormModalProps> = ({
                 value={formData.wing_id}
                 onChange={handleChange}
                 disabled={isSubmitting || isEdit || availableWings.length === 0}
-                className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-brand-500 bg-white"
+                className="w-full px-3 py-2 text-xs border border-slate-300 dark:border-[#242F42] rounded-lg focus:outline-hidden focus:ring-2 focus:ring-brand-500 bg-white dark:bg-[#101622] text-slate-900 dark:text-slate-100"
               >
                 <option value="">Select Wing</option>
                 {availableWings.map((w) => (
@@ -303,7 +303,7 @@ export const UnitFormModal: React.FC<UnitFormModalProps> = ({
                 value={formData.configuration}
                 onChange={handleChange}
                 disabled={isSubmitting}
-                className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-brand-500 bg-white font-semibold"
+                className="w-full px-3 py-2 text-xs border border-slate-300 dark:border-[#242F42] rounded-lg focus:outline-hidden focus:ring-2 focus:ring-brand-500 bg-white dark:bg-[#101622] text-slate-900 dark:text-slate-100 font-semibold"
               >
                 {configOptions.map((c) => (
                   <option key={c} value={c}>
@@ -317,7 +317,7 @@ export const UnitFormModal: React.FC<UnitFormModalProps> = ({
 
         {/* Section 2: Area & Pricing */}
         <div className="space-y-3">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-1 flex items-center gap-1.5">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-[#242F42] pb-1 flex items-center gap-1.5">
             <Maximize2 className="w-3.5 h-3.5 text-slate-400" />
             <span>Specifications & Pricing</span>
           </h4>
@@ -357,7 +357,7 @@ export const UnitFormModal: React.FC<UnitFormModalProps> = ({
                 error={errors.price}
                 leftIcon={<DollarSign className="w-4 h-4" />}
                 disabled={isSubmitting}
-                className="font-bold text-slate-900"
+                className="font-bold text-slate-900 dark:text-slate-100"
               />
             </FormField>
           </div>
@@ -369,7 +369,7 @@ export const UnitFormModal: React.FC<UnitFormModalProps> = ({
                 value={formData.parking_type}
                 onChange={handleChange}
                 disabled={isSubmitting}
-                className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-brand-500 bg-white"
+                className="w-full px-3 py-2 text-xs border border-slate-300 dark:border-[#242F42] rounded-lg focus:outline-hidden focus:ring-2 focus:ring-brand-500 bg-white dark:bg-[#101622] text-slate-900 dark:text-slate-100"
               >
                 {parkingOptions.map((p) => (
                   <option key={p} value={p}>
@@ -405,7 +405,7 @@ export const UnitFormModal: React.FC<UnitFormModalProps> = ({
 
         {/* Section 3: Availability Status */}
         <div className="space-y-3">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-1 flex items-center gap-1.5">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-[#242F42] pb-1 flex items-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5 text-slate-400" />
             <span>Availability Status</span>
           </h4>
@@ -417,7 +417,7 @@ export const UnitFormModal: React.FC<UnitFormModalProps> = ({
                 value={formData.availability_status}
                 onChange={handleChange}
                 disabled={isSubmitting}
-                className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-brand-500 bg-white font-semibold"
+                className="w-full px-3 py-2 text-xs border border-slate-300 dark:border-[#242F42] rounded-lg focus:outline-hidden focus:ring-2 focus:ring-brand-500 bg-white dark:bg-[#101622] text-slate-900 dark:text-slate-100 font-semibold"
               >
                 {availabilityOptions.map((a) => (
                   <option key={a} value={a}>
@@ -428,7 +428,7 @@ export const UnitFormModal: React.FC<UnitFormModalProps> = ({
             </FormField>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-700">Unit Remarks / Notes</label>
+              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Unit Remarks / Notes</label>
               <Input
                 name="description"
                 placeholder="e.g. Corner flat, balcony deck, morning light..."
@@ -442,10 +442,10 @@ export const UnitFormModal: React.FC<UnitFormModalProps> = ({
 
         {/* Section 4: Amenities Checklist */}
         <div className="space-y-2">
-          <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block">
+          <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block">
             Select Unit / Project Amenities ({formData.amenity_ids?.length || 0})
           </label>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200/80 max-h-36 overflow-y-auto">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-3 bg-slate-50 dark:bg-[#141A24] rounded-lg border border-slate-200/80 dark:border-[#242F42] max-h-36 overflow-y-auto">
             {amenities.map((a) => {
               const selected = formData.amenity_ids?.includes(a.id);
               return (
@@ -453,16 +453,16 @@ export const UnitFormModal: React.FC<UnitFormModalProps> = ({
                   type="button"
                   key={a.id}
                   onClick={() => toggleAmenity(a.id)}
-                  className={`flex items-center gap-2 p-2 rounded-md border text-left transition-colors text-[11px] ${
+                  className={`flex items-center gap-2 p-2 rounded-md border text-left transition-colors text-[11px] cursor-pointer ${
                     selected
-                      ? 'bg-brand-50 border-brand-300 text-brand-900 font-semibold'
-                      : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
+                      ? 'bg-brand-50 dark:bg-amber-950/40 border-brand-300 dark:border-amber-700/50 text-brand-900 dark:text-amber-200 font-semibold'
+                      : 'bg-white dark:bg-[#101622] border-slate-200 dark:border-[#242F42] text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1A2230]'
                   }`}
                 >
                   {selected ? (
-                    <CheckSquare className="w-3.5 h-3.5 text-brand-600 shrink-0" />
+                    <CheckSquare className="w-3.5 h-3.5 text-brand-600 dark:text-amber-400 shrink-0" />
                   ) : (
-                    <Square className="w-3.5 h-3.5 text-slate-300 shrink-0" />
+                    <Square className="w-3.5 h-3.5 text-slate-300 dark:text-slate-600 shrink-0" />
                   )}
                   <span className="truncate">{a.name}</span>
                 </button>

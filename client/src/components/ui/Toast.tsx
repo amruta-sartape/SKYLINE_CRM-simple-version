@@ -34,18 +34,18 @@ export const Toast: React.FC<ToastProps> = ({ toast, onDismiss }) => {
     <div
       role="alert"
       className={clsx(
-        'w-84 max-w-sm bg-white rounded-lg shadow-xl border border-slate-200 p-3.5 flex items-start gap-3 pointer-events-auto transform transition-all duration-200 animate-slide-up',
+        'w-84 max-w-sm bg-white dark:bg-[#141A24] rounded-lg shadow-xl border border-slate-200 dark:border-[#242F42] p-3.5 flex items-start gap-3 pointer-events-auto transform transition-all duration-200 animate-slide-up',
         borderColors[toast.variant]
       )}
     >
       {icons[toast.variant]}
       <div className="flex-1 min-w-0 text-left">
-        {toast.title && <h5 className="text-xs font-bold text-slate-900 leading-none mb-1">{toast.title}</h5>}
-        <p className="text-xs text-slate-600 leading-relaxed">{toast.message}</p>
+        {toast.title && <h5 className="text-xs font-bold text-slate-900 dark:text-slate-100 leading-none mb-1">{toast.title}</h5>}
+        <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{toast.message}</p>
       </div>
       <button
         onClick={() => onDismiss(toast.id)}
-        className="text-slate-400 hover:text-slate-600 p-0.5 rounded transition-colors"
+        className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 p-0.5 rounded transition-colors cursor-pointer"
         aria-label="Close notification"
       >
         <X className="w-3.5 h-3.5" />

@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { db } from '../db/database.js';
+import { PropertyListingModel, IPropertyImage } from '../models/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -117,16 +117,19 @@ export class PropertyListingService {
   /**
    * List properties with multi-criteria filtering
    */
-  static async listProperties(filter: {
-    search?: string;
-    category?: string;
-    subtype?: string;
-    city?: string;
-    status?: string;
-    is_active?: number;
-    page?: number;
-    limit?: number;
-  } = {}): Promise<{
+  static async listProperties(
+    filter: {
+      search?: string;
+      category?: string;
+      subtype?: string;
+      city?: string;
+      status?: string;
+      is_active?: number;
+      page?: number;
+      limit?: number;
+    } = {},
+    user?: any
+  ): Promise<{
     properties: PropertyListing[];
     total: number;
     page: number;
@@ -135,83 +138,95 @@ export class PropertyListingService {
   }> {
     const page = Math.max(1, filter.page || 1);
     const limit = Math.min(100, Math.max(1, filter.limit || 50));
-    const offset = (page - 1) * limit;
+    const skip = (page - 1) * limit;
 
-    const conditions: string[] = [];
-    const params: any[] = [];
+    const query: any = {};
 
     if (filter.is_active !== undefined) {
-      conditions.push('p.is_active = ?');
-      params.push(filter.is_active);
+      query.is_active = filter.is_active;
     } else {
-      conditions.push('p.is_active = 1');
+      query.is_active = 1;
     }
 
     if (filter.category && filter.category !== 'All') {
-      conditions.push('p.main_category = ?');
-      params.push(filter.category);
+      query.main_category = filter.category;
     }
 
     if (filter.subtype) {
-      conditions.push('p.subtype = ?');
-      params.push(filter.subtype);
+      query.subtype = filter.subtype;
     }
 
     if (filter.city && filter.city !== 'All') {
-      conditions.push('p.city = ?');
-      params.push(filter.city);
+      query.city = filter.city;
     }
 
     if (filter.status) {
-      conditions.push('p.status = ?');
-      params.push(filter.status);
+      query.status = filter.status;
     }
 
     if (filter.search && filter.search.trim()) {
-      const q = `%${filter.search.trim()}%`;
-      conditions.push(
-        '(p.title LIKE ? OR p.code LIKE ? OR p.location LIKE ? OR p.city LIKE ? OR p.developer LIKE ? OR p.subtype LIKE ?)'
-      );
-      params.push(q, q, q, q, q, q);
+      const regex = new RegExp(filter.search.trim(), 'i');
+      query.$or = [
+        { title: regex },
+        { code: regex },
+        { location: regex },
+        { city: regex },
+        { developer: regex },
+        { subtype: regex },
+      ];
     }
 
-    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+    const total = await PropertyListingModel.countDocuments(query);
+    const rows = await PropertyListingModel.find(query).sort({ created_at: -1 }).skip(skip).limit(limit);
 
-    const countRow = await db.get<{ count: number }>(
-      `SELECT COUNT(*) as count FROM property_listings p ${whereClause}`,
-      params
-    );
-    const total = countRow?.count || 0;
+    const properties: PropertyListing[] = rows.map((p) => {
+      const images: PropertyImageRecord[] = (p.images || []).map((img) => ({
+        id: (img._id || img.id || "") as string,
+        property_id: p._id,
+        url: img.url,
+        label: img.label,
+        category: img.category,
+        alt_text: img.alt_text || undefined,
+        is_cover: img.is_cover,
+        display_order: img.display_order,
+        created_at: typeof img.created_at === 'string' ? img.created_at : (img.created_at?.toISOString() || new Date().toISOString()),
+      }));
 
-    const rows = await db.all<any>(
-      `SELECT p.* FROM property_listings p ${whereClause} ORDER BY p.created_at DESC LIMIT ? OFFSET ?`,
-      [...params, limit, offset]
-    );
-
-    // Attach images to each property
-    const properties: PropertyListing[] = [];
-    for (const row of rows) {
-      const images = await db.all<PropertyImageRecord>(
-        `SELECT * FROM property_images WHERE property_id = ? ORDER BY is_cover DESC, display_order ASC, created_at ASC`,
-        [row.id]
-      );
-
-      properties.push({
-        ...row,
-        highlights: row.highlights ? JSON.parse(row.highlights) : [],
-        address_details: row.address_details ? JSON.parse(row.address_details) : {},
-        specs_data: row.specs_data ? JSON.parse(row.specs_data) : {},
-        amenity_ids: row.amenity_ids ? JSON.parse(row.amenity_ids) : [],
+      return {
+        id: p._id,
+        title: p.title,
+        code: p.code,
+        main_category: p.main_category,
+        subtype: p.subtype,
+        price: p.price,
+        price_label: p.price_label || this.formatPrice(p.price),
+        price_per_sqft: p.price_per_sqft || undefined,
+        location: p.location,
+        city: p.city,
+        state: p.state,
+        developer: p.developer,
+        availability: p.availability,
+        status: p.status,
+        description: p.description || undefined,
+        highlights: p.highlights || [],
+        address_details: p.address_details || {},
+        specs_data: p.specs_data || {},
+        amenity_ids: p.amenity_ids || [],
+        cover_image: p.cover_image || undefined,
+        is_active: p.is_active,
+        created_by: p.created_by || undefined,
+        created_at: typeof p.created_at === 'string' ? p.created_at : p.created_at.toISOString(),
+        updated_at: typeof p.updated_at === 'string' ? p.updated_at : p.updated_at.toISOString(),
         images,
-      });
-    }
+      };
+    });
 
     return {
       properties,
       total,
       page,
       limit,
-      totalPages: Math.ceil(total / limit),
+      totalPages: Math.ceil(total / limit) || 1,
     };
   }
 
@@ -219,24 +234,49 @@ export class PropertyListingService {
    * Get single property listing by ID or Code
    */
   static async getPropertyById(idOrCode: string): Promise<PropertyListing | null> {
-    const row = await db.get<any>(
-      `SELECT * FROM property_listings WHERE id = ? OR code = ?`,
-      [idOrCode, idOrCode]
-    );
+    const p = await PropertyListingModel.findOne({
+      $or: [{ _id: idOrCode }, { code: idOrCode }],
+    });
 
-    if (!row) return null;
+    if (!p) return null;
 
-    const images = await db.all<PropertyImageRecord>(
-      `SELECT * FROM property_images WHERE property_id = ? ORDER BY is_cover DESC, display_order ASC, created_at ASC`,
-      [row.id]
-    );
+    const images: PropertyImageRecord[] = (p.images || []).map((img) => ({
+      id: (img._id || img.id || "") as string,
+      property_id: p._id,
+      url: img.url,
+      label: img.label,
+      category: img.category,
+      alt_text: img.alt_text || undefined,
+      is_cover: img.is_cover,
+      display_order: img.display_order,
+      created_at: typeof img.created_at === 'string' ? img.created_at : (img.created_at?.toISOString() || new Date().toISOString()),
+    }));
 
     return {
-      ...row,
-      highlights: row.highlights ? JSON.parse(row.highlights) : [],
-      address_details: row.address_details ? JSON.parse(row.address_details) : {},
-      specs_data: row.specs_data ? JSON.parse(row.specs_data) : {},
-      amenity_ids: row.amenity_ids ? JSON.parse(row.amenity_ids) : [],
+      id: p._id,
+      title: p.title,
+      code: p.code,
+      main_category: p.main_category,
+      subtype: p.subtype,
+      price: p.price,
+      price_label: p.price_label || this.formatPrice(p.price),
+      price_per_sqft: p.price_per_sqft || undefined,
+      location: p.location,
+      city: p.city,
+      state: p.state,
+      developer: p.developer,
+      availability: p.availability,
+      status: p.status,
+      description: p.description || undefined,
+      highlights: p.highlights || [],
+      address_details: p.address_details || {},
+      specs_data: p.specs_data || {},
+      amenity_ids: p.amenity_ids || [],
+      cover_image: p.cover_image || undefined,
+      is_active: p.is_active,
+      created_by: p.created_by || undefined,
+      created_at: typeof p.created_at === 'string' ? p.created_at : p.created_at.toISOString(),
+      updated_at: typeof p.updated_at === 'string' ? p.updated_at : p.updated_at.toISOString(),
       images,
     };
   }
@@ -248,16 +288,11 @@ export class PropertyListingService {
     dto: CreatePropertyListingDTO,
     userId?: string
   ): Promise<PropertyListing> {
-    // Generate unique code if not provided
     const code =
       dto.code?.trim() ||
       `SKP-${dto.subtype.slice(0, 3).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
 
-    // Uniqueness check for code
-    const existingCode = await db.get(
-      `SELECT id FROM property_listings WHERE code = ?`,
-      [code]
-    );
+    const existingCode = await PropertyListingModel.findOne({ code });
     if (existingCode) {
       throw new Error(`Property Code "${code}" is already registered. Please use a unique property code.`);
     }
@@ -269,366 +304,235 @@ export class PropertyListingService {
     const availability = dto.availability || 'Available';
     const status = dto.status || 'Active';
 
-    // Store JSON structures
-    const highlightsJson = JSON.stringify(dto.highlights || []);
-    const addressJson = JSON.stringify(dto.address_details || {});
-    const specsJson = JSON.stringify(dto.specs_data || {});
-    const amenityIdsJson = JSON.stringify(dto.amenity_ids || []);
+    const p = await PropertyListingModel.create({
+      _id: id,
+      title: dto.title.trim(),
+      code,
+      main_category: dto.main_category,
+      subtype: dto.subtype,
+      price: dto.price,
+      price_label: priceLabel,
+      price_per_sqft: dto.price_per_sqft || null,
+      location: dto.location.trim(),
+      city: dto.city.trim(),
+      state,
+      developer,
+      availability,
+      status,
+      description: dto.description?.trim() || '',
+      highlights: dto.highlights || [],
+      address_details: dto.address_details || {},
+      specs_data: dto.specs_data || {},
+      amenity_ids: dto.amenity_ids || [],
+      cover_image: dto.cover_image || null,
+      is_active: 1,
+      created_by: userId || null,
+      images: [],
+    });
 
-    await db.run(
-      `INSERT INTO property_listings (
-        id, title, code, main_category, subtype, price, price_label, price_per_sqft,
-        location, city, state, developer, availability, status, description,
-        highlights, address_details, specs_data, amenity_ids, cover_image, is_active, created_by
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)`,
-      [
-        id,
-        dto.title.trim(),
-        code,
-        dto.main_category,
-        dto.subtype,
-        dto.price,
-        priceLabel,
-        dto.price_per_sqft || null,
-        dto.location.trim(),
-        dto.city.trim(),
-        state,
-        developer,
-        availability,
-        status,
-        dto.description?.trim() || '',
-        highlightsJson,
-        addressJson,
-        specsJson,
-        amenityIdsJson,
-        dto.cover_image || null,
-        userId || null,
-      ]
-    );
-
-    // Record audit log
-    await db.run(
-      `INSERT INTO audit_logs (id, user_id, action, resource, details) VALUES (?, ?, ?, ?, ?)`,
-      [
-        crypto.randomUUID(),
-        userId || 'SYSTEM',
-        'PROPERTY_CREATED',
-        `PROPERTY:${id}`,
-        JSON.stringify({ title: dto.title, code, category: dto.main_category, subtype: dto.subtype }),
-      ]
-    );
-
-    const created = await this.getPropertyById(id);
-    return created!;
+    return (await this.getPropertyById(p._id))!;
   }
 
   /**
-   * Update property listing (Admin Only)
+   * Update existing property listing (Admin Only)
    */
   static async updateProperty(
     id: string,
     dto: UpdatePropertyListingDTO,
     userId?: string
   ): Promise<PropertyListing> {
-    const existing = await this.getPropertyById(id);
-    if (!existing) {
-      throw new Error(`Property listing ${id} not found.`);
+    const p = await PropertyListingModel.findById(id);
+    if (!p) throw new Error(`Property Listing with ID "${id}" not found.`);
+
+    if (dto.title !== undefined) p.title = dto.title.trim();
+    if (dto.main_category !== undefined) p.main_category = dto.main_category;
+    if (dto.subtype !== undefined) p.subtype = dto.subtype;
+    if (dto.price !== undefined) {
+      p.price = dto.price;
+      p.price_label = dto.price_label || this.formatPrice(dto.price);
     }
+    if (dto.price_label !== undefined) p.price_label = dto.price_label;
+    if (dto.price_per_sqft !== undefined) p.price_per_sqft = dto.price_per_sqft;
+    if (dto.location !== undefined) p.location = dto.location.trim();
+    if (dto.city !== undefined) p.city = dto.city.trim();
+    if (dto.state !== undefined) p.state = dto.state.trim();
+    if (dto.developer !== undefined) p.developer = dto.developer.trim();
+    if (dto.availability !== undefined) p.availability = dto.availability;
+    if (dto.status !== undefined) p.status = dto.status;
+    if (dto.description !== undefined) p.description = dto.description.trim();
+    if (dto.highlights !== undefined) p.highlights = dto.highlights;
+    if (dto.address_details !== undefined) p.address_details = dto.address_details;
+    if (dto.specs_data !== undefined) p.specs_data = dto.specs_data;
+    if (dto.amenity_ids !== undefined) p.amenity_ids = dto.amenity_ids;
+    if (dto.cover_image !== undefined) p.cover_image = dto.cover_image;
+    if (dto.is_active !== undefined) p.is_active = dto.is_active;
 
-    // Clean incompatible fields if category was changed
-    let specsData = dto.specs_data !== undefined ? dto.specs_data : existing.specs_data;
-    if (dto.main_category && dto.main_category !== existing.main_category) {
-      if (dto.main_category === 'Land') {
-        // Strip residential BHK/bedrooms/bathrooms
-        delete specsData?.residentialSpecs;
-        delete specsData?.commercialSpecs;
-      } else if (dto.main_category === 'Commercial') {
-        delete specsData?.residentialSpecs;
-        delete specsData?.landSpecs;
-      }
-    }
-
-    const title = dto.title !== undefined ? dto.title.trim() : existing.title;
-    const mainCategory = dto.main_category || existing.main_category;
-    const subtype = dto.subtype || existing.subtype;
-    const price = dto.price !== undefined ? dto.price : existing.price;
-    const priceLabel = dto.price_label || this.formatPrice(price);
-    const pricePerSqft = dto.price_per_sqft !== undefined ? dto.price_per_sqft : existing.price_per_sqft;
-    const location = dto.location !== undefined ? dto.location.trim() : existing.location;
-    const city = dto.city !== undefined ? dto.city.trim() : existing.city;
-    const state = dto.state !== undefined ? dto.state.trim() : existing.state;
-    const developer = dto.developer !== undefined ? dto.developer.trim() : existing.developer;
-    const availability = dto.availability || existing.availability;
-    const status = dto.status || existing.status;
-    const description = dto.description !== undefined ? dto.description.trim() : existing.description;
-    const coverImage = dto.cover_image !== undefined ? dto.cover_image : existing.cover_image;
-    const isActive = dto.is_active !== undefined ? dto.is_active : existing.is_active;
-
-    const highlightsJson = JSON.stringify(dto.highlights !== undefined ? dto.highlights : existing.highlights || []);
-    const addressJson = JSON.stringify(dto.address_details !== undefined ? dto.address_details : existing.address_details || {});
-    const specsJson = JSON.stringify(specsData || {});
-    const amenityIdsJson = JSON.stringify(dto.amenity_ids !== undefined ? dto.amenity_ids : existing.amenity_ids || []);
-
-    await db.run(
-      `UPDATE property_listings SET
-        title = ?, main_category = ?, subtype = ?, price = ?, price_label = ?, price_per_sqft = ?,
-        location = ?, city = ?, state = ?, developer = ?, availability = ?, status = ?, description = ?,
-        highlights = ?, address_details = ?, specs_data = ?, amenity_ids = ?, cover_image = ?, is_active = ?,
-        updated_at = CURRENT_TIMESTAMP
-       WHERE id = ?`,
-      [
-        title,
-        mainCategory,
-        subtype,
-        price,
-        priceLabel,
-        pricePerSqft || null,
-        location,
-        city,
-        state,
-        developer,
-        availability,
-        status,
-        description,
-        highlightsJson,
-        addressJson,
-        specsJson,
-        amenityIdsJson,
-        coverImage || null,
-        isActive,
-        id,
-      ]
-    );
-
-    // Record audit log
-    await db.run(
-      `INSERT INTO audit_logs (id, user_id, action, resource, details) VALUES (?, ?, ?, ?, ?)`,
-      [
-        crypto.randomUUID(),
-        userId || 'SYSTEM',
-        'PROPERTY_UPDATED',
-        `PROPERTY:${id}`,
-        JSON.stringify({ title, status, price }),
-      ]
-    );
-
-    const updated = await this.getPropertyById(id);
-    return updated!;
+    await p.save();
+    return (await this.getPropertyById(id))!;
   }
 
   /**
-   * Safe Archive Property Listing (Admin Only - Preserves CRM Relations)
+   * Archive property listing
    */
   static async archiveProperty(id: string, userId?: string): Promise<PropertyListing> {
-    const existing = await this.getPropertyById(id);
-    if (!existing) {
-      throw new Error(`Property listing ${id} not found.`);
-    }
+    const p = await PropertyListingModel.findById(id);
+    if (!p) throw new Error(`Property Listing with ID "${id}" not found.`);
 
-    await db.run(
-      `UPDATE property_listings SET is_active = 0, status = 'Archived', updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
-      [id]
-    );
+    p.is_active = 0;
+    p.status = 'Archived';
+    await p.save();
 
-    await db.run(
-      `INSERT INTO audit_logs (id, user_id, action, resource, details) VALUES (?, ?, ?, ?, ?)`,
-      [
-        crypto.randomUUID(),
-        userId || 'SYSTEM',
-        'PROPERTY_ARCHIVED',
-        `PROPERTY:${id}`,
-        JSON.stringify({ title: existing.title, code: existing.code }),
-      ]
-    );
-
-    const archived = await this.getPropertyById(id);
-    return archived!;
+    return (await this.getPropertyById(id))!;
   }
 
   /**
-   * Restore Archived Property Listing (Admin Only)
+   * Restore archived property listing
    */
   static async restoreProperty(id: string, userId?: string): Promise<PropertyListing> {
-    const existing = await this.getPropertyById(id);
-    if (!existing) {
-      throw new Error(`Property listing ${id} not found.`);
-    }
+    const p = await PropertyListingModel.findById(id);
+    if (!p) throw new Error(`Property Listing with ID "${id}" not found.`);
 
-    await db.run(
-      `UPDATE property_listings SET is_active = 1, status = 'Ready to Move', updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
-      [id]
-    );
+    p.is_active = 1;
+    p.status = 'Ready to Move';
+    await p.save();
 
-    await db.run(
-      `INSERT INTO audit_logs (id, user_id, action, resource, details) VALUES (?, ?, ?, ?, ?)`,
-      [
-        crypto.randomUUID(),
-        userId || 'SYSTEM',
-        'PROPERTY_RESTORED',
-        `PROPERTY:${id}`,
-        JSON.stringify({ title: existing.title, code: existing.code }),
-      ]
-    );
-
-    const restored = await this.getPropertyById(id);
-    return restored!;
+    return (await this.getPropertyById(id))!;
   }
 
   /**
-   * Upload and Associate Property Images (Admin Only - Strict Property Isolation)
+   * Multi-image upload for a property
    */
   static async uploadPropertyImages(
     propertyId: string,
     images: UploadImageInput[],
     userId?: string
   ): Promise<PropertyImageRecord[]> {
-    const property = await this.getPropertyById(propertyId);
-    if (!property) {
-      throw new Error(`Property ${propertyId} not found.`);
-    }
+    const p = await PropertyListingModel.findById(propertyId);
+    if (!p) throw new Error(`Property Listing with ID "${propertyId}" not found.`);
 
-    // Determine target upload directories (both client public and server fallback)
-    const clientUploadDir = path.resolve(__dirname, '../../../client/public/images/uploads', propertyId);
-    if (!fs.existsSync(clientUploadDir)) {
-      fs.mkdirSync(clientUploadDir, { recursive: true });
-    }
+    const uploadDir = path.resolve(process.cwd(), '../client/public/uploads/properties', propertyId);
+    const serverUploadDir = path.resolve(process.cwd(), 'public/uploads/properties', propertyId);
 
-    const savedRecords: PropertyImageRecord[] = [];
+    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+    if (!fs.existsSync(serverUploadDir)) fs.mkdirSync(serverUploadDir, { recursive: true });
+
+    let hasCover = p.images.some((img) => img.is_cover === 1);
 
     for (let i = 0; i < images.length; i++) {
       const img = images[i];
-      if (!img.base64Data) continue;
+      const imageId = `img_${Date.now()}_${i}_${Math.random().toString(36).substr(2, 6)}`;
+      let fileExt = '.jpg';
+      if (img.contentType.includes('png')) fileExt = '.png';
+      if (img.contentType.includes('webp')) fileExt = '.webp';
+      if (img.contentType.includes('jpeg')) fileExt = '.jpg';
 
-      // Extract format and buffer
-      let extension = 'jpg';
-      if (img.filename.endsWith('.png') || img.contentType?.includes('png')) extension = 'png';
-      else if (img.filename.endsWith('.webp') || img.contentType?.includes('webp')) extension = 'webp';
+      const fileName = `${imageId}${fileExt}`;
+      const clientFilePath = path.join(uploadDir, fileName);
+      const serverFilePath = path.join(serverUploadDir, fileName);
 
-      const cleanFilename = `${img.category ? img.category.toLowerCase() : 'gallery'}_${Date.now()}_${i}.${extension}`;
-      const filePath = path.join(clientUploadDir, cleanFilename);
-
-      // Clean base64 header if present (e.g. data:image/jpeg;base64,...)
-      const base64Clean = img.base64Data.replace(/^data:image\/\w+;base64,/, '');
-      const fileBuffer = Buffer.from(base64Clean, 'base64');
-
-      fs.writeFileSync(filePath, fileBuffer);
-
-      const publicUrl = `/images/uploads/${propertyId}/${cleanFilename}`;
-      const imgId = `img_${propertyId}_${Date.now()}_${i}`;
-      const label = img.label || `${property.title} - ${img.category || 'View'}`;
-      const category = img.category || 'Exterior';
-      const isCover = img.isCover || (property.images && property.images.length === 0 && i === 0) ? 1 : 0;
-
-      await db.run(
-        `INSERT INTO property_images (id, property_id, url, label, category, alt_text, is_cover, display_order)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-        [imgId, propertyId, publicUrl, label, category, label, isCover, i]
-      );
-
-      // If marked as cover, update property_listings table cover_image
-      if (isCover) {
-        await db.run(
-          `UPDATE property_images SET is_cover = 0 WHERE property_id = ? AND id != ?`,
-          [propertyId, imgId]
-        );
-        await db.run(
-          `UPDATE property_listings SET cover_image = ? WHERE id = ?`,
-          [publicUrl, propertyId]
-        );
+      let cleanBase64 = img.base64Data;
+      if (cleanBase64.includes('base64,')) {
+        cleanBase64 = cleanBase64.split('base64,')[1];
       }
 
-      savedRecords.push({
-        id: imgId,
-        property_id: propertyId,
+      const buffer = Buffer.from(cleanBase64, 'base64');
+      fs.writeFileSync(clientFilePath, buffer);
+      fs.writeFileSync(serverFilePath, buffer);
+
+      const publicUrl = `/uploads/properties/${propertyId}/${fileName}`;
+      const isCoverNum = img.isCover || (!hasCover && i === 0) ? 1 : 0;
+      if (isCoverNum === 1) {
+        hasCover = true;
+        p.cover_image = publicUrl;
+        p.images.forEach((im) => {
+          im.is_cover = 0;
+        });
+      }
+
+      p.images.push({
+        _id: imageId,
         url: publicUrl,
-        label,
-        category,
-        alt_text: label,
-        is_cover: isCover,
-        display_order: i,
+        label: img.label || `Image ${p.images.length + 1}`,
+        category: img.category || 'Exterior',
+        alt_text: `${p.title} - ${img.label || 'View'}`,
+        is_cover: isCoverNum,
+        display_order: p.images.length,
         created_at: new Date().toISOString(),
       });
     }
 
-    // Audit log
-    await db.run(
-      `INSERT INTO audit_logs (id, user_id, action, resource, details) VALUES (?, ?, ?, ?, ?)`,
-      [
-        crypto.randomUUID(),
-        userId || 'SYSTEM',
-        'PROPERTY_IMAGES_UPLOADED',
-        `PROPERTY:${propertyId}`,
-        JSON.stringify({ count: savedRecords.length }),
-      ]
-    );
+    await p.save();
 
-    const allImages = await db.all<PropertyImageRecord>(
-      `SELECT * FROM property_images WHERE property_id = ? ORDER BY is_cover DESC, display_order ASC`,
-      [propertyId]
-    );
-    return allImages;
+    return p.images.map((img) => ({
+      id: (img._id || img.id || "") as string,
+      property_id: p._id,
+      url: img.url,
+      label: img.label,
+      category: img.category,
+      alt_text: img.alt_text || undefined,
+      is_cover: img.is_cover,
+      display_order: img.display_order,
+      created_at: typeof img.created_at === 'string' ? img.created_at : (img.created_at?.toISOString() || new Date().toISOString()),
+    }));
   }
 
   /**
-   * Set Cover Image for a property
+   * Set an existing image as the cover image
    */
-  static async setCoverImage(
-    propertyId: string,
-    imageId: string,
-    userId?: string
-  ): Promise<PropertyListing> {
-    const img = await db.get<PropertyImageRecord>(
-      `SELECT * FROM property_images WHERE id = ? AND property_id = ?`,
-      [imageId, propertyId]
-    );
-    if (!img) {
-      throw new Error(`Image ${imageId} does not belong to property ${propertyId}.`);
-    }
+  static async setCoverImage(propertyId: string, imageId: string, userId?: string): Promise<PropertyListing> {
+    const p = await PropertyListingModel.findById(propertyId);
+    if (!p) throw new Error(`Property Listing with ID "${propertyId}" not found.`);
 
-    await db.run(`UPDATE property_images SET is_cover = 0 WHERE property_id = ?`, [propertyId]);
-    await db.run(`UPDATE property_images SET is_cover = 1 WHERE id = ?`, [imageId]);
-    await db.run(`UPDATE property_listings SET cover_image = ? WHERE id = ?`, [img.url, propertyId]);
+    const img = p.images.find((im) => im._id === imageId);
+    if (!img) throw new Error(`Image with ID "${imageId}" not found in property.`);
 
-    const updated = await this.getPropertyById(propertyId);
-    return updated!;
+    p.images.forEach((im) => {
+      im.is_cover = im._id === imageId ? 1 : 0;
+    });
+    p.cover_image = img.url;
+
+    await p.save();
+    return (await this.getPropertyById(propertyId))!;
   }
 
   /**
-   * Delete Property Image
+   * Delete an image from property
    */
-  static async deletePropertyImage(
-    propertyId: string,
-    imageId: string,
-    userId?: string
-  ): Promise<PropertyImageRecord[]> {
-    const img = await db.get<PropertyImageRecord>(
-      `SELECT * FROM property_images WHERE id = ? AND property_id = ?`,
-      [imageId, propertyId]
-    );
-    if (!img) {
-      throw new Error(`Image ${imageId} not found.`);
-    }
+  static async deletePropertyImage(propertyId: string, imageId: string, userId?: string): Promise<PropertyImageRecord[]> {
+    return this.deleteImage(propertyId, imageId);
+  }
 
-    await db.run(`DELETE FROM property_images WHERE id = ?`, [imageId]);
+  static async deleteImage(propertyId: string, imageId: string): Promise<PropertyImageRecord[]> {
+    const p = await PropertyListingModel.findById(propertyId);
+    if (!p) throw new Error(`Property Listing with ID "${propertyId}" not found.`);
 
-    // If deleted image was cover, reassign cover to first available image
-    if (img.is_cover) {
-      const nextImg = await db.get<PropertyImageRecord>(
-        `SELECT * FROM property_images WHERE property_id = ? ORDER BY display_order ASC LIMIT 1`,
-        [propertyId]
-      );
-      if (nextImg) {
-        await db.run(`UPDATE property_images SET is_cover = 1 WHERE id = ?`, [nextImg.id]);
-        await db.run(`UPDATE property_listings SET cover_image = ? WHERE id = ?`, [nextImg.url, propertyId]);
+    const imgIndex = p.images.findIndex((im) => im._id === imageId);
+    if (imgIndex === -1) throw new Error(`Image with ID "${imageId}" not found in property.`);
+
+    const wasCover = p.images[imgIndex].is_cover === 1;
+    p.images.splice(imgIndex, 1);
+
+    if (wasCover) {
+      if (p.images.length > 0) {
+        p.images[0].is_cover = 1;
+        p.cover_image = p.images[0].url;
       } else {
-        await db.run(`UPDATE property_listings SET cover_image = NULL WHERE id = ?`, [propertyId]);
+        p.cover_image = null;
       }
     }
 
-    const remaining = await db.all<PropertyImageRecord>(
-      `SELECT * FROM property_images WHERE property_id = ? ORDER BY is_cover DESC, display_order ASC`,
-      [propertyId]
-    );
-    return remaining;
+    await p.save();
+
+    return p.images.map((img) => ({
+      id: (img._id || img.id || "") as string,
+      property_id: p._id,
+      url: img.url,
+      label: img.label,
+      category: img.category,
+      alt_text: img.alt_text || undefined,
+      is_cover: img.is_cover,
+      display_order: img.display_order,
+      created_at: typeof img.created_at === 'string' ? img.created_at : (img.created_at?.toISOString() || new Date().toISOString()),
+    }));
   }
 }

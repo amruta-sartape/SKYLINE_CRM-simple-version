@@ -1,4 +1,4 @@
-export type UserRole = 'ADMIN' | 'EMPLOYEE' | 'AGENT';
+export type UserRole = 'ADMIN' | 'EMPLOYEE' | 'AGENT' | 'CUSTOMER';
 
 export type UserStatus = 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
 
@@ -9,6 +9,8 @@ export interface User {
   phone: string;
   status: UserStatus;
   roles: UserRole[];
+  is_email_verified?: boolean;
+  email_verified_at?: string | null;
   created_at: string;
   last_login_at: string | null;
 }
@@ -16,6 +18,8 @@ export interface User {
 export interface AuthResponse {
   user: User;
   token: string;
+  requiresVerification?: boolean;
+  message?: string;
 }
 
 export interface ApiResponse<T = any> {
@@ -39,6 +43,7 @@ export interface RegisterFormData {
   password: string;
   confirmPassword: string;
   termsAccepted: boolean;
+  role?: UserRole;
 }
 
 export interface ForgotPasswordFormData {

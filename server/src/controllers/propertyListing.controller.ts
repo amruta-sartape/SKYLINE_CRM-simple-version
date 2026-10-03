@@ -37,7 +37,7 @@ export class PropertyListingController {
 
   static async getById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const property = await PropertyListingService.getPropertyById(id);
 
       if (!property) {
@@ -59,7 +59,7 @@ export class PropertyListingController {
 
   static async create(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const userId = (req as any).user?.id;
+      const userId = (req as any).user?.userId || (req as any).user?.id;
       const property = await PropertyListingService.createProperty(req.body, userId);
 
       res.status(201).json({
@@ -74,8 +74,8 @@ export class PropertyListingController {
 
   static async update(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
-      const userId = (req as any).user?.id;
+      const id = req.params.id as string;
+      const userId = (req as any).user?.userId || (req as any).user?.id;
       const property = await PropertyListingService.updateProperty(id, req.body, userId);
 
       res.status(200).json({
@@ -90,8 +90,8 @@ export class PropertyListingController {
 
   static async archive(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
-      const userId = (req as any).user?.id;
+      const id = req.params.id as string;
+      const userId = (req as any).user?.userId || (req as any).user?.id;
       const property = await PropertyListingService.archiveProperty(id, userId);
 
       res.status(200).json({
@@ -106,8 +106,8 @@ export class PropertyListingController {
 
   static async restore(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
-      const userId = (req as any).user?.id;
+      const id = req.params.id as string;
+      const userId = (req as any).user?.userId || (req as any).user?.id;
       const property = await PropertyListingService.restoreProperty(id, userId);
 
       res.status(200).json({
@@ -122,8 +122,8 @@ export class PropertyListingController {
 
   static async uploadImages(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
-      const userId = (req as any).user?.id;
+      const id = req.params.id as string;
+      const userId = (req as any).user?.userId || (req as any).user?.id;
       const { images } = req.body;
 
       if (!images || !Array.isArray(images) || images.length === 0) {
@@ -148,8 +148,9 @@ export class PropertyListingController {
 
   static async setCover(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id, imageId } = req.params;
-      const userId = (req as any).user?.id;
+      const id = req.params.id as string;
+      const imageId = req.params.imageId as string;
+      const userId = (req as any).user?.userId || (req as any).user?.id;
       const property = await PropertyListingService.setCoverImage(id, imageId, userId);
 
       res.status(200).json({
@@ -164,8 +165,9 @@ export class PropertyListingController {
 
   static async deleteImage(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id, imageId } = req.params;
-      const userId = (req as any).user?.id;
+      const id = req.params.id as string;
+      const imageId = req.params.imageId as string;
+      const userId = (req as any).user?.userId || (req as any).user?.id;
       const remainingImages = await PropertyListingService.deletePropertyImage(id, imageId, userId);
 
       res.status(200).json({

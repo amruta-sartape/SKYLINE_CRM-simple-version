@@ -2,6 +2,7 @@ export enum UserRole {
   ADMIN = 'ADMIN',
   EMPLOYEE = 'EMPLOYEE',
   AGENT = 'AGENT',
+  CUSTOMER = 'CUSTOMER',
 }
 
 export enum UserStatus {
@@ -36,6 +37,8 @@ export interface UserDTO {
   phone: string;
   status: UserStatus;
   roles: UserRole[];
+  is_email_verified?: boolean;
+  email_verified_at?: string | null;
   created_at: string;
   last_login_at: string | null;
 }
@@ -48,7 +51,9 @@ export interface JWTPayload {
 
 export interface AuthSuccessResponse {
   user: UserDTO;
-  token: string;
+  token?: string;
+  requiresVerification?: boolean;
+  message?: string;
 }
 
 export interface ApiResponse<T = any> {
@@ -240,7 +245,7 @@ export interface FollowUp {
   remarks: string;
   next_followup_date?: string | null;
   executive_id?: string | null;
-  status: 'Completed' | 'Planned' | 'Cancelled';
+  status: FollowUpStatus | 'Completed' | 'Planned' | 'Cancelled';
   created_at: string;
   // Joined
   executive_name?: string | null;
@@ -481,6 +486,9 @@ export interface FollowUpItem {
   property_code?: string;
   property_subtype?: string;
   property_cover_image?: string;
+  property_location?: string;
+  property_city?: string;
+  property_price?: string;
 }
 
 export interface SiteVisitSummary {

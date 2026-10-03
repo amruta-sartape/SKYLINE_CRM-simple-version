@@ -113,7 +113,7 @@ export const PropertyGallery: React.FC<PropertyGalleryProps> = ({
     <div className="space-y-3 text-left">
       {/* 1. Large Primary Hero Display */}
       <div
-        className="relative h-72 sm:h-96 md:h-[420px] w-full rounded-2xl overflow-hidden bg-stone-900 border border-stone-200/90 shadow-sm group cursor-pointer select-none"
+        className="relative h-72 sm:h-96 md:h-[420px] w-full rounded-2xl overflow-hidden bg-stone-900 border border-stone-200/90 dark:border-[#242F42] shadow-sm group cursor-pointer select-none"
         onClick={() => setIsLightboxOpen(true)}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
@@ -123,6 +123,10 @@ export const PropertyGallery: React.FC<PropertyGalleryProps> = ({
           src={currentImage.url}
           alt={currentImage.altText || propertyTitle}
           onLoad={() => setIsLoaded(true)}
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = '/images/property-penthouse.jpg';
+          }}
           className={`w-full h-full object-cover object-center transition-all duration-500 ease-out group-hover:scale-105 ${
             isLoaded ? 'opacity-100' : 'opacity-0'
           }`}
@@ -134,8 +138,8 @@ export const PropertyGallery: React.FC<PropertyGalleryProps> = ({
 
         {/* Top Badges */}
         <div className="absolute top-3.5 left-3.5 flex items-center gap-2 z-10">
-          <span className="px-3 py-1 rounded-full bg-white/95 backdrop-blur-md text-xs font-bold text-stone-800 border border-stone-200/80 shadow-xs flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-amber-700" />
+          <span className="px-3 py-1 rounded-full bg-white/95 dark:bg-stone-900/95 backdrop-blur-md text-xs font-bold text-stone-800 dark:text-stone-100 border border-stone-200/80 dark:border-stone-700 shadow-xs flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
             {propertySubtype}
           </span>
           <span className="px-2.5 py-1 rounded-md bg-stone-900/80 backdrop-blur-md text-[11px] font-bold text-stone-200 border border-white/10 uppercase tracking-wider">
@@ -224,13 +228,17 @@ export const PropertyGallery: React.FC<PropertyGalleryProps> = ({
                 onClick={() => setActiveIndex(idx)}
                 className={`relative h-18 sm:h-20 rounded-xl overflow-hidden border-2 transition-all duration-200 group cursor-pointer ${
                   isSelected
-                    ? 'border-amber-700 ring-2 ring-amber-700/30 shadow-xs scale-[1.02]'
-                    : 'border-stone-200 hover:border-stone-400 opacity-80 hover:opacity-100'
+                    ? 'border-amber-700 dark:border-amber-500 ring-2 ring-amber-700/30 dark:ring-amber-500/30 shadow-xs scale-[1.02]'
+                    : 'border-stone-200 dark:border-[#242F42] hover:border-stone-400 dark:hover:border-slate-500 opacity-80 hover:opacity-100'
                 }`}
               >
                 <img
                   src={img.url}
                   alt={img.altText || img.label}
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = '/images/property-penthouse.jpg';
+                  }}
                   className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
                   loading="lazy"
                 />
@@ -307,6 +315,10 @@ export const PropertyGallery: React.FC<PropertyGalleryProps> = ({
             <img
               src={currentImage.url}
               alt={currentImage.altText || propertyTitle}
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = '/images/property-penthouse.jpg';
+              }}
               className="max-h-full max-w-full object-contain rounded-xl shadow-2xl transition-all duration-300"
             />
 
@@ -354,6 +366,10 @@ export const PropertyGallery: React.FC<PropertyGalleryProps> = ({
                 <img
                   src={img.url}
                   alt={img.label}
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = '/images/property-penthouse.jpg';
+                  }}
                   className="w-full h-full object-cover"
                 />
               </button>

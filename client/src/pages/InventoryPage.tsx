@@ -240,27 +240,27 @@ export const InventoryPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
               Property Inventory Management
             </h1>
-            <span className="px-2 py-0.5 text-[11px] font-extrabold bg-brand-50 text-brand-700 border border-brand-200 rounded-full">
+            <span className="px-2 py-0.5 text-[11px] font-extrabold bg-brand-50 dark:bg-amber-950/40 text-brand-700 dark:text-amber-400 border border-brand-200 dark:border-amber-800/40 rounded-full">
               {totalUnits} Units
             </span>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Central real estate unit repository with availability transitions, specs, and visual matrix.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           {/* View Mode Toggle */}
-          <div className="flex items-center border border-slate-200 rounded-lg p-0.5 bg-slate-50">
+          <div className="flex items-center border border-slate-200 dark:border-[#242F42] rounded-lg p-0.5 bg-slate-50 dark:bg-[#101622]">
             <button
               onClick={() => setViewMode('table')}
               className={`flex items-center gap-1 px-2.5 py-1 text-xs rounded-md font-semibold transition-all ${
                 viewMode === 'table'
-                  ? 'bg-white shadow-2xs text-brand-600'
-                  : 'text-slate-500 hover:text-slate-900'
+                  ? 'bg-white dark:bg-[#1E293B] shadow-2xs text-brand-600 dark:text-amber-400'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
             >
               <TableIcon className="w-3.5 h-3.5" />
@@ -275,8 +275,8 @@ export const InventoryPage: React.FC = () => {
               }}
               className={`flex items-center gap-1 px-2.5 py-1 text-xs rounded-md font-semibold transition-all ${
                 viewMode === 'matrix'
-                  ? 'bg-white shadow-2xs text-brand-600'
-                  : 'text-slate-500 hover:text-slate-900'
+                  ? 'bg-white dark:bg-[#1E293B] shadow-2xs text-brand-600 dark:text-amber-400'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
             >
               <LayoutGrid className="w-3.5 h-3.5" />
@@ -313,7 +313,7 @@ export const InventoryPage: React.FC = () => {
       <InventoryStats summary={summary} isLoading={isLoading} />
 
       {/* Search & Multi-Filter Bar */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-subtle space-y-3">
+      <div className="bg-white dark:bg-[#141A24] p-4 rounded-xl border border-slate-200/90 dark:border-[#242F42] shadow-subtle space-y-3">
         <div className="flex flex-col md:flex-row items-center justify-between gap-3">
           {/* Search */}
           <div className="relative w-full md:w-80">
@@ -326,7 +326,7 @@ export const InventoryPage: React.FC = () => {
                 setSearchQuery(e.target.value);
                 setPage(1);
               }}
-              className="w-full pl-9 pr-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-brand-500 bg-slate-50/50"
+              className="w-full pl-9 pr-3 py-2 text-xs border border-slate-200 dark:border-[#242F42] rounded-lg focus:outline-hidden focus:ring-2 focus:ring-amber-500 bg-slate-50/50 dark:bg-[#101622] text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
             />
           </div>
 
@@ -340,7 +340,7 @@ export const InventoryPage: React.FC = () => {
                 setSelectedWing('');
                 setPage(1);
               }}
-              className="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg bg-white text-slate-700 font-medium"
+              className="px-2.5 py-1.5 text-xs border border-slate-200 dark:border-[#242F42] rounded-lg bg-white dark:bg-[#101622] text-slate-700 dark:text-slate-200 font-medium"
             >
               <option value="">All Projects</option>
               {projects.map((p) => (
@@ -358,7 +358,7 @@ export const InventoryPage: React.FC = () => {
                 setPage(1);
               }}
               disabled={!selectedProject}
-              className="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg bg-white text-slate-700 disabled:opacity-40 font-medium"
+              className="px-2.5 py-1.5 text-xs border border-slate-200 dark:border-[#242F42] rounded-lg bg-white dark:bg-[#101622] text-slate-700 dark:text-slate-200 disabled:opacity-40 font-medium"
             >
               <option value="">All Wings</option>
               {availableWings.map((w) => (
@@ -375,7 +375,7 @@ export const InventoryPage: React.FC = () => {
                 setSelectedConfig(e.target.value);
                 setPage(1);
               }}
-              className="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg bg-white text-slate-700 font-medium"
+              className="px-2.5 py-1.5 text-xs border border-slate-200 dark:border-[#242F42] rounded-lg bg-white dark:bg-[#101622] text-slate-700 dark:text-slate-200 font-medium"
             >
               <option value="">All Configurations</option>
               {configOptions.map((c) => (
@@ -392,7 +392,7 @@ export const InventoryPage: React.FC = () => {
                 setSelectedAvailability(e.target.value);
                 setPage(1);
               }}
-              className="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg bg-white text-slate-700 font-medium"
+              className="px-2.5 py-1.5 text-xs border border-slate-200 dark:border-[#242F42] rounded-lg bg-white dark:bg-[#101622] text-slate-700 dark:text-slate-200 font-medium"
             >
               <option value="">All Statuses</option>
               {availabilityOptions.map((a) => (
@@ -408,7 +408,7 @@ export const InventoryPage: React.FC = () => {
               size="sm"
               onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
               leftIcon={<Filter className="w-3.5 h-3.5" />}
-              className={showAdvancedFilters ? 'bg-slate-100 text-brand-700 font-bold' : ''}
+              className={showAdvancedFilters ? 'bg-slate-100 dark:bg-slate-800 text-brand-700 dark:text-amber-400 font-bold' : ''}
             >
               Filters {showAdvancedFilters ? '▲' : '▼'}
             </Button>
@@ -417,9 +417,9 @@ export const InventoryPage: React.FC = () => {
 
         {/* Advanced Filters Drawer */}
         {showAdvancedFilters && (
-          <div className="pt-3 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs animate-in fade-in duration-150">
+          <div className="pt-3 border-t border-slate-100 dark:border-[#242F42] grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs animate-in fade-in duration-150">
             <div>
-              <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+              <label className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 block mb-1">
                 Min Price (₹)
               </label>
               <input
@@ -427,11 +427,11 @@ export const InventoryPage: React.FC = () => {
                 placeholder="e.g. 5000000"
                 value={minPrice}
                 onChange={(e) => setMinPrice(e.target.value)}
-                className="w-full px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg"
+                className="w-full px-2.5 py-1.5 text-xs border border-slate-200 dark:border-[#242F42] rounded-lg bg-white dark:bg-[#101622] text-slate-900 dark:text-slate-100"
               />
             </div>
             <div>
-              <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+              <label className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 block mb-1">
                 Max Price (₹)
               </label>
               <input
@@ -439,11 +439,11 @@ export const InventoryPage: React.FC = () => {
                 placeholder="e.g. 25000000"
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(e.target.value)}
-                className="w-full px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg"
+                className="w-full px-2.5 py-1.5 text-xs border border-slate-200 dark:border-[#242F42] rounded-lg bg-white dark:bg-[#101622] text-slate-900 dark:text-slate-100"
               />
             </div>
             <div>
-              <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+              <label className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 block mb-1">
                 Carpet Area (sq ft)
               </label>
               <div className="flex items-center gap-1">
@@ -452,21 +452,21 @@ export const InventoryPage: React.FC = () => {
                   placeholder="Min"
                   value={minCarpet}
                   onChange={(e) => setMinCarpet(e.target.value)}
-                  className="w-1/2 px-2 py-1.5 text-xs border border-slate-200 rounded-lg"
+                  className="w-1/2 px-2 py-1.5 text-xs border border-slate-200 dark:border-[#242F42] rounded-lg bg-white dark:bg-[#101622] text-slate-900 dark:text-slate-100"
                 />
-                <span className="text-slate-400">-</span>
+                <span className="text-slate-400 dark:text-slate-500">-</span>
                 <input
                   type="number"
                   placeholder="Max"
                   value={maxCarpet}
                   onChange={(e) => setMaxCarpet(e.target.value)}
-                  className="w-1/2 px-2 py-1.5 text-xs border border-slate-200 rounded-lg"
+                  className="w-1/2 px-2 py-1.5 text-xs border border-slate-200 dark:border-[#242F42] rounded-lg bg-white dark:bg-[#101622] text-slate-900 dark:text-slate-100"
                 />
               </div>
             </div>
             <div className="flex items-end gap-2">
               <div className="flex-1">
-                <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+                <label className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 block mb-1">
                   Floor Range
                 </label>
                 <div className="flex items-center gap-1">
@@ -475,22 +475,22 @@ export const InventoryPage: React.FC = () => {
                     placeholder="Min"
                     value={floorMin}
                     onChange={(e) => setFloorMin(e.target.value)}
-                    className="w-1/2 px-2 py-1.5 text-xs border border-slate-200 rounded-lg"
+                    className="w-1/2 px-2 py-1.5 text-xs border border-slate-200 dark:border-[#242F42] rounded-lg bg-white dark:bg-[#101622] text-slate-900 dark:text-slate-100"
                   />
-                  <span className="text-slate-400">-</span>
+                  <span className="text-slate-400 dark:text-slate-500">-</span>
                   <input
                     type="number"
                     placeholder="Max"
                     value={floorMax}
                     onChange={(e) => setFloorMax(e.target.value)}
-                    className="w-1/2 px-2 py-1.5 text-xs border border-slate-200 rounded-lg"
+                    className="w-1/2 px-2 py-1.5 text-xs border border-slate-200 dark:border-[#242F42] rounded-lg bg-white dark:bg-[#101622] text-slate-900 dark:text-slate-100"
                   />
                 </div>
               </div>
               <button
                 type="button"
                 onClick={handleResetFilters}
-                className="px-2.5 py-1.5 text-xs text-rose-600 hover:bg-rose-50 rounded-lg border border-rose-200 font-semibold"
+                className="px-2.5 py-1.5 text-xs text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg border border-rose-200 dark:border-rose-800/50 font-semibold"
               >
                 Reset
               </button>
@@ -524,17 +524,17 @@ export const InventoryPage: React.FC = () => {
         />
       ) : (
         /* Table View Mode */
-        <div className="bg-white rounded-xl border border-slate-200/90 shadow-subtle overflow-hidden">
+        <div className="bg-white dark:bg-[#141A24] rounded-xl border border-slate-200/90 dark:border-[#242F42] shadow-subtle overflow-hidden">
           {isLoading ? (
-            <div className="p-12 text-center text-slate-400">
-              <div className="animate-spin w-8 h-8 border-3 border-brand-600 border-t-transparent rounded-full mx-auto mb-3" />
+            <div className="p-12 text-center text-slate-400 dark:text-slate-500">
+              <div className="animate-spin w-8 h-8 border-3 border-amber-600 dark:border-amber-400 border-t-transparent rounded-full mx-auto mb-3" />
               <p className="text-xs font-medium">Loading inventory specifications...</p>
             </div>
           ) : units.length === 0 ? (
-            <div className="p-16 text-center text-slate-400">
-              <Home className="w-10 h-10 mx-auto mb-2 text-slate-300" />
-              <p className="text-base font-bold text-slate-700">No Inventory Units Found</p>
-              <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+            <div className="p-16 text-center text-slate-400 dark:text-slate-500">
+              <Home className="w-10 h-10 mx-auto mb-2 text-slate-300 dark:text-slate-600" />
+              <p className="text-base font-bold text-slate-700 dark:text-slate-300">No Inventory Units Found</p>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 max-w-sm mx-auto">
                 No units match your active filter parameters. Adjust filters or register new units.
               </p>
               {isAdmin && (
@@ -555,10 +555,10 @@ export const InventoryPage: React.FC = () => {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                <thead className="bg-slate-50 dark:bg-[#101622] border-b border-slate-200 dark:border-[#242F42] text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   <tr>
                     <th
-                      className="py-3 px-4 cursor-pointer hover:text-slate-800"
+                      className="py-3 px-4 cursor-pointer hover:text-slate-800 dark:hover:text-slate-200"
                       onClick={() => {
                         setSortBy('unit_number');
                         setSortOrder(sortOrder === 'ASC' ? 'DESC' : 'ASC');
@@ -571,7 +571,7 @@ export const InventoryPage: React.FC = () => {
                     </th>
                     <th className="py-3 px-4">Project & Wing</th>
                     <th
-                      className="py-3 px-4 text-center cursor-pointer hover:text-slate-800"
+                      className="py-3 px-4 text-center cursor-pointer hover:text-slate-800 dark:hover:text-slate-200"
                       onClick={() => {
                         setSortBy('floor');
                         setSortOrder(sortOrder === 'ASC' ? 'DESC' : 'ASC');
@@ -584,7 +584,7 @@ export const InventoryPage: React.FC = () => {
                     </th>
                     <th className="py-3 px-4">Config</th>
                     <th
-                      className="py-3 px-4 cursor-pointer hover:text-slate-800"
+                      className="py-3 px-4 cursor-pointer hover:text-slate-800 dark:hover:text-slate-200"
                       onClick={() => {
                         setSortBy('carpet_area');
                         setSortOrder(sortOrder === 'ASC' ? 'DESC' : 'ASC');
@@ -596,7 +596,7 @@ export const InventoryPage: React.FC = () => {
                       </div>
                     </th>
                     <th
-                      className="py-3 px-4 cursor-pointer hover:text-slate-800"
+                      className="py-3 px-4 cursor-pointer hover:text-slate-800 dark:hover:text-slate-200"
                       onClick={() => {
                         setSortBy('price');
                         setSortOrder(sortOrder === 'ASC' ? 'DESC' : 'ASC');
@@ -612,50 +612,50 @@ export const InventoryPage: React.FC = () => {
                     <th className="py-3 px-4 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-slate-100 dark:divide-[#242F42]">
                   {units.map((u) => (
-                    <tr key={u.id} className="hover:bg-slate-50/70 transition-colors">
-                      <td className="py-3.5 px-4 font-black text-slate-900 tracking-tight text-xs sm:text-sm">
+                    <tr key={u.id} className="hover:bg-slate-50/70 dark:hover:bg-[#1A2230] transition-colors">
+                      <td className="py-3.5 px-4 font-black text-slate-900 dark:text-slate-100 tracking-tight text-xs sm:text-sm">
                         {u.unit_number}
                       </td>
                       <td className="py-3.5 px-4">
                         <div>
-                          <span className="font-bold text-slate-900 block">{u.project_name}</span>
-                          <span className="text-[11px] text-slate-500 font-medium">
+                          <span className="font-bold text-slate-900 dark:text-slate-100 block">{u.project_name}</span>
+                          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                             {u.wing_name} • {u.project_city}
                           </span>
                         </div>
                       </td>
-                      <td className="py-3.5 px-4 text-center font-bold text-slate-800">
+                      <td className="py-3.5 px-4 text-center font-bold text-slate-800 dark:text-slate-200">
                         {u.floor}
                       </td>
                       <td className="py-3.5 px-4">
-                        <span className="font-bold text-brand-800 bg-brand-50 px-2 py-0.5 rounded border border-brand-200">
+                        <span className="font-bold text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-800/40">
                           {u.configuration}
                         </span>
                       </td>
-                      <td className="py-3.5 px-4 text-slate-700 font-semibold">
+                      <td className="py-3.5 px-4 text-slate-700 dark:text-slate-300 font-semibold">
                         {u.carpet_area}{' '}
-                        <span className="text-[10px] text-slate-400 font-normal">
+                        <span className="text-[10px] text-slate-400 dark:text-slate-500 font-normal">
                           ({u.built_up_area} built)
                         </span>
                       </td>
                       <td className="py-3.5 px-4">
-                        <span className="font-extrabold text-slate-900 block">
+                        <span className="font-extrabold text-slate-900 dark:text-slate-100 block">
                           {formatCurrency(u.price)}
                         </span>
-                        <span className="text-[10px] text-slate-400 font-medium">
+                        <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
                           ₹{Math.round(u.price / (u.carpet_area || 1))}/sqft
                         </span>
                       </td>
                       <td className="py-3.5 px-4">
                         {u.parking_slot ? (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
-                            <Car className="w-3 h-3 text-slate-500" />
+                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-200 dark:border-[#242F42]">
+                            <Car className="w-3 h-3 text-slate-500 dark:text-slate-400" />
                             {u.parking_slot}
                           </span>
                         ) : (
-                          <span className="text-slate-400 text-[11px]">{u.parking_type}</span>
+                          <span className="text-slate-400 dark:text-slate-500 text-[11px]">{u.parking_type}</span>
                         )}
                       </td>
                       <td className="py-3.5 px-4">
@@ -680,7 +680,7 @@ export const InventoryPage: React.FC = () => {
                                 setSelectedUnitForEdit(u);
                                 setIsUnitFormOpen(true);
                               }}
-                              className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors"
+                              className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors"
                               title="Edit Unit"
                             >
                               <Edit2 className="w-3.5 h-3.5" />
@@ -707,7 +707,7 @@ export const InventoryPage: React.FC = () => {
 
           {/* Pagination */}
           {!isLoading && units.length > 0 && (
-            <div className="p-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+            <div className="p-4 border-t border-slate-100 dark:border-[#242F42] flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
               <div>
                 Showing {(page - 1) * limit + 1} to {Math.min(page * limit, totalUnits)} of{' '}
                 {totalUnits} units
@@ -722,7 +722,7 @@ export const InventoryPage: React.FC = () => {
                 >
                   Prev
                 </Button>
-                <span className="px-2 font-bold text-slate-800">
+                <span className="px-2 font-bold text-slate-800 dark:text-slate-200">
                   {page} / {totalPages}
                 </span>
                 <Button

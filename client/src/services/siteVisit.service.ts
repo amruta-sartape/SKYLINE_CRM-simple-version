@@ -60,7 +60,14 @@ export const siteVisitService = {
    */
   async getById(id: string): Promise<SiteVisit> {
     const response = await api.get(`/site-visits/${id}`);
-    return response.data.data;
+    const data = response.data?.data;
+    if (data && data.visit) {
+      return {
+        ...data.visit,
+        activities: data.activities || [],
+      };
+    }
+    return data;
   },
 
   /**

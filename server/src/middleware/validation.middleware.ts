@@ -24,6 +24,7 @@ export const registerSchema = z.object({
     .regex(/[0-9]/, 'Password must contain at least one number')
     .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character'),
   confirmPassword: z.string({ required_error: 'Please confirm your password' }),
+  role: z.string().optional(),
   termsAccepted: z
     .boolean({ required_error: 'You must accept the terms of service' })
     .refine((val) => val === true, 'You must agree to the Terms of Service and Privacy Policy'),
@@ -40,6 +41,16 @@ export const loginSchema = z.object({
     .string({ required_error: 'Password is required' })
     .min(1, 'Password is required'),
   rememberMe: z.boolean().optional(),
+});
+
+export const verifyEmailSchema = z.object({
+  token: z.string({ required_error: 'Verification token is required' }).min(1, 'Verification token is required'),
+});
+
+export const resendVerificationSchema = z.object({
+  email: z
+    .string({ required_error: 'Email address is required' })
+    .email('Please enter a valid email address'),
 });
 
 export const forgotPasswordSchema = z.object({
@@ -82,27 +93,21 @@ export const createEnquirySchema = z.object({
     .or(z.literal('')),
   city: z.string().max(100).optional().or(z.literal('')),
   budget: z.coerce
-    .number({ required_error: 'Budget is required' })
-    .positive('Budget must be greater than 0'),
+    .number()
+    .positive('Budget must be greater than 0')
+    .optional()
+    .default(10000000),
   interested_property: z
-    .string({ required_error: 'Interested property is required' })
-    .min(2, 'Interested property is required')
-    .max(200, 'Property title cannot exceed 200 characters'),
-  configuration: z.enum(['1 BHK', '2 BHK', '3 BHK', '4 BHK'], {
-    required_error: 'Configuration flat type is required',
-  }),
-  lead_source: z.enum([
-    'Website',
-    'Facebook / Instagram',
-    'Google Ads',
-    'WhatsApp',
-    'Phone Call',
-    'Walk-in',
-    'Referral',
-    'Property Portal',
-  ], {
-    required_error: 'Lead source is required',
-  }),
+    .string()
+    .max(200, 'Property title cannot exceed 200 characters')
+    .optional()
+    .or(z.literal('')),
+  property_id: z.string().optional().nullable().or(z.literal('')),
+  configuration: z.string().optional().default('2 BHK'),
+  lead_source: z.string().optional().default('Website'),
+  source: z.string().optional(),
+  message: z.string().max(1000).optional().or(z.literal('')),
+  notes: z.string().max(1000).optional().or(z.literal('')),
   assigned_to: z.string().optional().nullable().or(z.literal('')),
   project_id: z.string().optional().nullable().or(z.literal('')),
   unit_id: z.string().optional().nullable().or(z.literal('')),
@@ -329,11 +334,14 @@ export const updateAvailabilitySchema = z.object({
 // ============================================================================
 
 export const createSiteVisitSchema = z.object({
-  lead_id: z.string({ required_error: 'Lead is required' }).min(1, 'Lead is required'),
-  project_id: z.string({ required_error: 'Project is required' }).min(1, 'Project is required'),
+  lead_id: z.string().optional().nullable().or(z.literal('')),
+  customer_name: z.string().optional().nullable().or(z.literal('')),
+  phone: z.string().optional().nullable().or(z.literal('')),
+  email: z.string().optional().nullable().or(z.literal('')),
+  project_id: z.string().optional().nullable().or(z.literal('')),
   unit_id: z.string().optional().nullable().or(z.literal('')),
   property_id: z.string().optional().nullable().or(z.literal('')),
-  assigned_user_id: z.string({ required_error: 'Assigned executive is required' }).min(1, 'Assigned executive is required'),
+  assigned_user_id: z.string().optional().nullable().or(z.literal('')),
   visit_date: z.string({ required_error: 'Visit date is required' }).min(1, 'Visit date is required'),
   visit_time: z.string({ required_error: 'Visit time is required' }).min(1, 'Visit time is required'),
   visit_type: z.enum(['Direct Visit', 'Executive Accompanied', 'Pickup & Drop']).default('Direct Visit'),

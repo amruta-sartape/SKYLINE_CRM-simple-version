@@ -23,19 +23,19 @@ export const FloorMatrixView: React.FC<FloorMatrixViewProps> = ({
 
   if (isLoading) {
     return (
-      <div className="p-8 text-center bg-white rounded-xl border border-slate-200">
-        <div className="animate-spin w-8 h-8 border-3 border-brand-600 border-t-transparent rounded-full mx-auto mb-3" />
-        <p className="text-xs text-slate-500 font-medium">Generating visual floor matrix...</p>
+      <div className="p-8 text-center bg-white dark:bg-[#141A24] rounded-xl border border-slate-200 dark:border-[#242F42]">
+        <div className="animate-spin w-8 h-8 border-3 border-brand-600 dark:border-amber-400 border-t-transparent rounded-full mx-auto mb-3" />
+        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Generating visual floor matrix...</p>
       </div>
     );
   }
 
   if (!matrixData || matrixData.floors.length === 0) {
     return (
-      <div className="p-12 text-center bg-white rounded-xl border border-slate-200 text-slate-400">
-        <Layers className="w-8 h-8 mx-auto mb-2 text-slate-300" />
-        <p className="text-sm font-semibold text-slate-600">No Unit Matrix Found</p>
-        <p className="text-xs text-slate-400 mt-1">
+      <div className="p-12 text-center bg-white dark:bg-[#141A24] rounded-xl border border-slate-200 dark:border-[#242F42] text-slate-400 dark:text-slate-500">
+        <Layers className="w-8 h-8 mx-auto mb-2 text-slate-300 dark:text-slate-600" />
+        <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">No Unit Matrix Found</p>
+        <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
           Select a project and wing with registered units to display the graphical floor grid.
         </p>
       </div>
@@ -51,16 +51,16 @@ export const FloorMatrixView: React.FC<FloorMatrixViewProps> = ({
   return (
     <div className="space-y-4">
       {/* Legend & Header */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200/90 flex flex-wrap items-center justify-between gap-3 shadow-subtle">
+      <div className="bg-white dark:bg-[#141A24] p-4 rounded-xl border border-slate-200/90 dark:border-[#242F42] flex flex-wrap items-center justify-between gap-3 shadow-subtle">
         <div className="flex items-center gap-2">
-          <div className="p-2 rounded-lg bg-brand-50 text-brand-700">
+          <div className="p-2 rounded-lg bg-brand-50 dark:bg-amber-950/40 text-brand-700 dark:text-amber-400">
             <Layers className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="font-bold text-slate-900 text-xs sm:text-sm">
+            <h3 className="font-bold text-slate-900 dark:text-slate-100 text-xs sm:text-sm">
               {matrixData.project_name} • {matrixData.wing_name}
             </h3>
-            <span className="text-[11px] text-slate-500">
+            <span className="text-[11px] text-slate-500 dark:text-slate-400">
               {matrixData.floors.length} Active Floors • {matrixData.total_floors} Building Floors
             </span>
           </div>
@@ -70,32 +70,32 @@ export const FloorMatrixView: React.FC<FloorMatrixViewProps> = ({
         <div className="flex items-center gap-3 text-xs">
           <div className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-sm bg-emerald-500 inline-block" />
-            <span className="text-slate-600 text-[11px] font-medium">Available</span>
+            <span className="text-slate-600 dark:text-slate-300 text-[11px] font-medium">Available</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-sm bg-amber-400 inline-block" />
-            <span className="text-slate-600 text-[11px] font-medium">Reserved</span>
+            <span className="text-slate-600 dark:text-slate-300 text-[11px] font-medium">Reserved</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-sm bg-slate-400 inline-block" />
-            <span className="text-slate-600 text-[11px] font-medium">Sold Out</span>
+            <span className="w-3 h-3 rounded-sm bg-slate-400 dark:bg-slate-600 inline-block" />
+            <span className="text-slate-600 dark:text-slate-300 text-[11px] font-medium">Sold Out</span>
           </div>
         </div>
       </div>
 
       {/* Floors Matrix Grid */}
-      <div className="bg-white p-5 rounded-xl border border-slate-200/90 shadow-subtle space-y-3 overflow-x-auto">
+      <div className="bg-white dark:bg-[#141A24] p-5 rounded-xl border border-slate-200/90 dark:border-[#242F42] shadow-subtle space-y-3 overflow-x-auto">
         {matrixData.floors.map((floorData) => (
           <div
             key={floorData.floor}
-            className="flex items-center gap-3 pb-3 border-b border-slate-100 last:border-0 last:pb-0"
+            className="flex items-center gap-3 pb-3 border-b border-slate-100 dark:border-[#242F42] last:border-0 last:pb-0"
           >
             {/* Floor Label */}
-            <div className="w-20 shrink-0 text-right pr-2 border-r border-slate-200">
-              <span className="text-[11px] font-extrabold uppercase text-slate-400 block tracking-wider">
+            <div className="w-20 shrink-0 text-right pr-2 border-r border-slate-200 dark:border-[#242F42]">
+              <span className="text-[11px] font-extrabold uppercase text-slate-400 dark:text-slate-500 block tracking-wider">
                 Floor
               </span>
-              <span className="text-sm font-black text-slate-800">{floorData.floor}</span>
+              <span className="text-sm font-black text-slate-800 dark:text-slate-200">{floorData.floor}</span>
             </div>
 
             {/* Units on Floor */}
@@ -105,16 +105,16 @@ export const FloorMatrixView: React.FC<FloorMatrixViewProps> = ({
                 const isRes = u.availability_status === 'Reserved';
 
                 const tileColors = isAvail
-                  ? 'border-emerald-300 bg-emerald-50/50 hover:bg-emerald-100/70 text-emerald-950'
+                  ? 'border-emerald-300 dark:border-emerald-800/80 bg-emerald-50/50 dark:bg-emerald-950/30 hover:bg-emerald-100/70 dark:hover:bg-emerald-900/40 text-emerald-950 dark:text-emerald-200'
                   : isRes
-                  ? 'border-amber-300 bg-amber-50/50 hover:bg-amber-100/70 text-amber-950'
-                  : 'border-slate-200 bg-slate-100/70 hover:bg-slate-200/70 text-slate-700';
+                  ? 'border-amber-300 dark:border-amber-800/80 bg-amber-50/50 dark:bg-amber-950/30 hover:bg-amber-100/70 dark:hover:bg-amber-900/40 text-amber-950 dark:text-amber-200'
+                  : 'border-slate-200 dark:border-slate-800 bg-slate-100/70 dark:bg-slate-900/60 hover:bg-slate-200/70 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-300';
 
                 const statusIndicator = isAvail
                   ? 'bg-emerald-500'
                   : isRes
                   ? 'bg-amber-400'
-                  : 'bg-slate-400';
+                  : 'bg-slate-400 dark:bg-slate-600';
 
                 return (
                   <div

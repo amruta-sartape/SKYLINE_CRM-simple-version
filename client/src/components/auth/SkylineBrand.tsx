@@ -73,12 +73,12 @@ export const SkylineBrand: React.FC<SkylineBrandProps> = ({
             className={clsx(
               'font-extrabold font-sans uppercase',
               titleSizes[size],
-              isLight ? 'text-white' : 'text-slate-900'
+              isLight ? 'text-white' : 'text-slate-900 dark:text-slate-100'
             )}
           >
             SKYLINE
           </span>
-          <span className="text-[10px] uppercase font-bold tracking-widest px-1.5 py-0.5 rounded bg-brand-500/10 text-brand-600 border border-brand-500/20">
+          <span className="text-[10px] uppercase font-bold tracking-widest px-1.5 py-0.5 rounded bg-brand-500/10 dark:bg-amber-500/15 text-brand-600 dark:text-amber-300 border border-brand-500/20 dark:border-amber-500/30">
             CRM
           </span>
         </div>
@@ -87,7 +87,7 @@ export const SkylineBrand: React.FC<SkylineBrandProps> = ({
           <span
             className={clsx(
               'text-[10px] font-medium tracking-wide uppercase mt-1',
-              isLight ? 'text-slate-400' : 'text-slate-500'
+              isLight ? 'text-slate-400' : 'text-slate-500 dark:text-slate-400'
             )}
           >
             Real Estate Enterprise Platform

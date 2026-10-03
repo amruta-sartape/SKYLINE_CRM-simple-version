@@ -195,7 +195,7 @@ export const LeadFormModal: React.FC<LeadFormModalProps> = ({
 
         {/* Section 1: Customer Profile */}
         <div className="space-y-3">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-1 flex items-center gap-1.5">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-[#242F42] pb-1 flex items-center gap-1.5">
             <User className="w-3.5 h-3.5 text-slate-400" />
             <span>Customer Profile</span>
           </h4>
@@ -255,7 +255,7 @@ export const LeadFormModal: React.FC<LeadFormModalProps> = ({
 
         {/* Section 2: Requirements */}
         <div className="space-y-3">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-1 flex items-center gap-1.5">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-[#242F42] pb-1 flex items-center gap-1.5">
             <Building className="w-3.5 h-3.5 text-slate-400" />
             <span>Requirements & Interest</span>
           </h4>
@@ -285,7 +285,7 @@ export const LeadFormModal: React.FC<LeadFormModalProps> = ({
                 value={formData.flat_type}
                 onChange={handleChange}
                 disabled={isSubmitting}
-                className="w-full h-10 px-3 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-900"
+                className="w-full h-10 px-3 text-xs bg-white dark:bg-[#101622] border border-slate-300 dark:border-[#242F42] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-amber-400/20 focus:border-slate-900 dark:focus:border-amber-400/50 text-slate-900 dark:text-slate-100"
               >
                 <option value="1 BHK">1 BHK</option>
                 <option value="2 BHK">2 BHK</option>
@@ -320,7 +320,7 @@ export const LeadFormModal: React.FC<LeadFormModalProps> = ({
                         }));
                       }
                     }}
-                    className="w-full text-[11px] px-2 py-1 bg-slate-50 border border-slate-200 rounded text-slate-600 mb-1"
+                    className="w-full text-[11px] px-2 py-1 bg-slate-50 dark:bg-[#101622] border border-slate-200 dark:border-[#242F42] rounded text-slate-600 dark:text-slate-300 mb-1"
                   >
                     <option value="">-- Quick Pick Project --</option>
                     {projects.map((p) => (
@@ -346,7 +346,7 @@ export const LeadFormModal: React.FC<LeadFormModalProps> = ({
                 value={formData.purchase_timeline || '1-3 Months'}
                 onChange={handleChange}
                 disabled={isSubmitting}
-                className="w-full h-10 px-3 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-900"
+                className="w-full h-10 px-3 text-xs bg-white dark:bg-[#101622] border border-slate-300 dark:border-[#242F42] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-amber-400/20 focus:border-slate-900 dark:focus:border-amber-400/50 text-slate-900 dark:text-slate-100"
               >
                 <option value="Immediate">Immediate</option>
                 <option value="1-3 Months">1-3 Months</option>
@@ -361,7 +361,7 @@ export const LeadFormModal: React.FC<LeadFormModalProps> = ({
                 value={formData.purpose || 'Self Use'}
                 onChange={handleChange}
                 disabled={isSubmitting}
-                className="w-full h-10 px-3 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-900"
+                className="w-full h-10 px-3 text-xs bg-white dark:bg-[#101622] border border-slate-300 dark:border-[#242F42] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-amber-400/20 focus:border-slate-900 dark:focus:border-amber-400/50 text-slate-900 dark:text-slate-100"
               >
                 <option value="Self Use">Self Use</option>
                 <option value="Investment">Investment</option>
@@ -372,7 +372,7 @@ export const LeadFormModal: React.FC<LeadFormModalProps> = ({
 
         {/* Section 3: Assignment & Pipeline */}
         <div className="space-y-3">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-1 flex items-center gap-1.5">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-[#242F42] pb-1 flex items-center gap-1.5">
             <Calendar className="w-3.5 h-3.5 text-slate-400" />
             <span>Assignment & Pipeline Status</span>
           </h4>
@@ -384,7 +384,7 @@ export const LeadFormModal: React.FC<LeadFormModalProps> = ({
                 value={formData.assigned_to || ''}
                 onChange={handleChange}
                 disabled={isSubmitting}
-                className="w-full h-10 px-3 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-900"
+                className="w-full h-10 px-3 text-xs bg-white dark:bg-[#101622] border border-slate-300 dark:border-[#242F42] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-amber-400/20 focus:border-slate-900 dark:focus:border-amber-400/50 text-slate-900 dark:text-slate-100"
               >
                 <option value="">-- Unassigned --</option>
                 {executives.map((exec) => (
@@ -401,7 +401,7 @@ export const LeadFormModal: React.FC<LeadFormModalProps> = ({
                 value={formData.pipeline_stage || 'New'}
                 onChange={handleChange}
                 disabled={isSubmitting}
-                className="w-full h-10 px-3 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-900"
+                className="w-full h-10 px-3 text-xs bg-white dark:bg-[#101622] border border-slate-300 dark:border-[#242F42] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-amber-400/20 focus:border-slate-900 dark:focus:border-amber-400/50 text-slate-900 dark:text-slate-100"
               >
                 <option value="New">New</option>
                 <option value="Contacted">Contacted</option>
@@ -419,7 +419,7 @@ export const LeadFormModal: React.FC<LeadFormModalProps> = ({
                 value={formData.qualification_status || 'Future Prospect'}
                 onChange={handleChange}
                 disabled={isSubmitting}
-                className="w-full h-10 px-3 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-900"
+                className="w-full h-10 px-3 text-xs bg-white dark:bg-[#101622] border border-slate-300 dark:border-[#242F42] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-amber-400/20 focus:border-slate-900 dark:focus:border-amber-400/50 text-slate-900 dark:text-slate-100"
               >
                 <option value="Future Prospect">Future Prospect</option>
                 <option value="Qualified">Qualified</option>
@@ -435,7 +435,7 @@ export const LeadFormModal: React.FC<LeadFormModalProps> = ({
                 value={formData.priority || 'Medium'}
                 onChange={handleChange}
                 disabled={isSubmitting}
-                className="w-full h-10 px-3 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-900"
+                className="w-full h-10 px-3 text-xs bg-white dark:bg-[#101622] border border-slate-300 dark:border-[#242F42] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-amber-400/20 focus:border-slate-900 dark:focus:border-amber-400/50 text-slate-900 dark:text-slate-100"
               >
                 <option value="Low">Low</option>
                 <option value="Medium">Medium</option>
@@ -455,7 +455,7 @@ export const LeadFormModal: React.FC<LeadFormModalProps> = ({
             onChange={handleChange}
             placeholder="Special requirements, parking needs, decision timeline..."
             disabled={isSubmitting}
-            className="w-full p-2.5 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-900 resize-none"
+            className="w-full p-2.5 text-xs bg-white dark:bg-[#101622] border border-slate-300 dark:border-[#242F42] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-amber-400/20 focus:border-slate-900 dark:focus:border-amber-400/50 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 resize-none"
           />
         </FormField>
       </form>

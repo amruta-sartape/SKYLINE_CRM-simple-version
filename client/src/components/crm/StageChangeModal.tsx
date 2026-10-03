@@ -100,7 +100,7 @@ export const StageChangeModal: React.FC<StageChangeModalProps> = ({
         )}
 
         <div className="space-y-2">
-          <label className="font-bold text-slate-700 text-xs block">
+          <label className="font-bold text-slate-700 dark:text-slate-300 text-xs block">
             Target Pipeline Stage
           </label>
           <div className="space-y-1.5">
@@ -109,8 +109,8 @@ export const StageChangeModal: React.FC<StageChangeModalProps> = ({
                 key={s.stage}
                 className={`flex items-center justify-between p-2.5 rounded-lg border text-xs cursor-pointer transition-all ${
                   selectedStage === s.stage
-                    ? 'bg-brand-50/70 border-brand-500 shadow-2xs font-bold text-brand-950 ring-1 ring-brand-500'
-                    : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                    ? 'bg-brand-50/70 dark:bg-amber-950/30 border-brand-500 dark:border-amber-500/50 shadow-2xs font-bold text-brand-950 dark:text-amber-200 ring-1 ring-brand-500 dark:ring-amber-500/50'
+                    : 'bg-white dark:bg-[#101622] border-slate-200 dark:border-[#242F42] text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#1A2230]'
                 }`}
               >
                 <div className="flex items-center gap-2">
@@ -124,12 +124,12 @@ export const StageChangeModal: React.FC<StageChangeModalProps> = ({
                   />
                   <GitCommit
                     className={`w-3.5 h-3.5 ${
-                      selectedStage === s.stage ? 'text-brand-600' : 'text-slate-400'
+                      selectedStage === s.stage ? 'text-brand-600 dark:text-amber-400' : 'text-slate-400'
                     }`}
                   />
                   <span>{s.stage}</span>
                 </div>
-                <span className="text-[10px] text-slate-400 font-normal">{s.desc}</span>
+                <span className="text-[10px] text-slate-400 dark:text-slate-400 font-normal">{s.desc}</span>
               </label>
             ))}
           </div>
@@ -143,7 +143,7 @@ export const StageChangeModal: React.FC<StageChangeModalProps> = ({
             onChange={(e) => setRemarks(e.target.value)}
             placeholder="e.g. Completed initial briefing call, customer confirmed site visit date for Saturday..."
             disabled={isSubmitting}
-            className="w-full p-2.5 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-900 resize-none"
+            className="w-full p-2.5 text-xs bg-white dark:bg-[#101622] border border-slate-300 dark:border-[#242F42] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-amber-400/20 focus:border-slate-900 dark:focus:border-amber-400/50 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 resize-none"
           />
         </FormField>
       </form>

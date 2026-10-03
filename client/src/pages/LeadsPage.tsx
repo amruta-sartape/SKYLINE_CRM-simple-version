@@ -165,14 +165,14 @@ export const LeadsPage: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold tracking-tight text-slate-900 font-sans">
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 font-sans">
                 Lead Management
               </h1>
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[#1A2230] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#242F42]">
                 {total} Active Leads
               </span>
             </div>
-            <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
               Track qualified buyers, manage assignment, and monitor sales progression across all stages.
             </p>
           </div>
@@ -182,7 +182,7 @@ export const LeadsPage: React.FC = () => {
               <Button
                 variant="outline"
                 size="md"
-                leftIcon={<Kanban className="w-4 h-4 text-brand-600" />}
+                leftIcon={<Kanban className="w-4 h-4 text-brand-600 dark:text-amber-400" />}
               >
                 Visual Pipeline Board
               </Button>
@@ -212,7 +212,7 @@ export const LeadsPage: React.FC = () => {
         )}
 
         {/* Filter Bar */}
-        <div className="bg-white rounded-xl border border-slate-200/90 p-4 shadow-subtle space-y-3">
+        <div className="bg-white dark:bg-[#141A24] rounded-xl border border-slate-200/90 dark:border-[#242F42] p-4 shadow-subtle space-y-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2.5">
             <div className="lg:col-span-2">
               <Input
@@ -233,7 +233,7 @@ export const LeadsPage: React.FC = () => {
                   setSelectedStage(e.target.value);
                   setPage(1);
                 }}
-                className="w-full h-10 px-3 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-800"
+                className="w-full h-10 px-3 text-xs bg-slate-50 dark:bg-[#101622] border border-slate-200 dark:border-[#242F42] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-800 dark:text-slate-100"
               >
                 <option value="">All Pipeline Stages</option>
                 <option value="New">New</option>
@@ -253,7 +253,7 @@ export const LeadsPage: React.FC = () => {
                   setSelectedQual(e.target.value);
                   setPage(1);
                 }}
-                className="w-full h-10 px-3 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-800"
+                className="w-full h-10 px-3 text-xs bg-slate-50 dark:bg-[#101622] border border-slate-200 dark:border-[#242F42] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-800 dark:text-slate-100"
               >
                 <option value="">All Qualifications</option>
                 <option value="Qualified">Qualified</option>
@@ -271,7 +271,7 @@ export const LeadsPage: React.FC = () => {
                   setSelectedConfig(e.target.value);
                   setPage(1);
                 }}
-                className="w-full h-10 px-3 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-800"
+                className="w-full h-10 px-3 text-xs bg-slate-50 dark:bg-[#101622] border border-slate-200 dark:border-[#242F42] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-800 dark:text-slate-100"
               >
                 <option value="">All Flat Types</option>
                 <option value="1 BHK">1 BHK</option>
@@ -296,19 +296,19 @@ export const LeadsPage: React.FC = () => {
         </div>
 
         {/* Leads Table */}
-        <div className="bg-white rounded-xl border border-slate-200/90 shadow-subtle overflow-hidden">
+        <div className="bg-white dark:bg-[#141A24] rounded-xl border border-slate-200/90 dark:border-[#242F42] shadow-subtle overflow-hidden">
           {isLoading ? (
             <div className="py-20 flex flex-col items-center justify-center gap-3">
               <Spinner size="lg" variant="primary" />
-              <span className="text-xs text-slate-500 font-medium">Loading CRM leads...</span>
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Loading CRM leads...</span>
             </div>
           ) : leads.length === 0 ? (
             <div className="py-16 px-4 text-center space-y-3">
-              <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+              <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-[#1A2230] text-slate-400 dark:text-slate-500 flex items-center justify-center mx-auto">
                 <User className="w-6 h-6" />
               </div>
-              <h3 className="text-sm font-bold text-slate-800">No Leads Found</h3>
-              <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
+              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">No Leads Found</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto leading-relaxed">
                 {searchTerm || selectedStage || selectedQual || selectedConfig
                   ? 'No leads match your current filter settings. Reset filters to view all leads.'
                   : 'Convert client enquiries or create direct leads to populate your CRM sales pipeline.'}
@@ -329,7 +329,7 @@ export const LeadsPage: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[11px]">
+                  <tr className="bg-slate-50/80 dark:bg-[#101622]/90 border-b border-slate-200 dark:border-[#242F42] text-slate-600 dark:text-slate-400 font-bold uppercase tracking-wider text-[11px]">
                     <th className="py-3 px-4">Customer</th>
                     <th className="py-3 px-4">Requirements & Property</th>
                     <th className="py-3 px-4">Budget</th>
@@ -341,20 +341,20 @@ export const LeadsPage: React.FC = () => {
                     <th className="py-3 px-4 text-right">Quick Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-slate-100 dark:divide-[#242F42]">
                   {leads.map((lead) => (
                     <tr
                       key={lead.id}
-                      className="hover:bg-slate-50/70 transition-colors group cursor-pointer"
+                      className="hover:bg-slate-50/70 dark:hover:bg-[#1A2230]/50 transition-colors group cursor-pointer"
                       onClick={() => navigate(`/leads/${lead.id}`)}
                     >
                       {/* Customer */}
                       <td className="py-3 px-4">
-                        <div className="font-bold text-slate-900 group-hover:text-brand-700 transition-colors">
+                        <div className="font-bold text-slate-900 dark:text-slate-100 group-hover:text-brand-700 dark:group-hover:text-amber-400 transition-colors">
                           {lead.customer_name}
                         </div>
-                        <div className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
-                          <Phone className="w-3 h-3 text-slate-400" />
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5">
+                          <Phone className="w-3 h-3 text-slate-400 dark:text-slate-500" />
                           <span>{lead.phone}</span>
                           {lead.city && <span>• {lead.city}</span>}
                         </div>
@@ -362,17 +362,17 @@ export const LeadsPage: React.FC = () => {
 
                       {/* Requirements */}
                       <td className="py-3 px-4">
-                        <div className="font-semibold text-slate-800">
+                        <div className="font-semibold text-slate-800 dark:text-slate-200">
                           {lead.flat_type} • {lead.interested_property || 'General Inquiry'}
                         </div>
-                        <div className="text-[10px] text-slate-400 mt-0.5">
+                        <div className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
                           {lead.preferred_location || 'Location flexible'} •{' '}
                           {lead.purchase_timeline || 'N/A'}
                         </div>
                       </td>
 
                       {/* Budget */}
-                      <td className="py-3 px-4 font-bold text-slate-900">
+                      <td className="py-3 px-4 font-bold text-slate-900 dark:text-slate-100">
                         ₹{(lead.budget / 100000).toFixed(1)} L
                       </td>
 
@@ -392,21 +392,21 @@ export const LeadsPage: React.FC = () => {
                       </td>
 
                       {/* Assigned Executive */}
-                      <td className="py-3 px-4 text-slate-700 font-medium">
+                      <td className="py-3 px-4 text-slate-700 dark:text-slate-300 font-medium">
                         {lead.assigned_name || (
-                          <span className="text-slate-400 italic">Unassigned</span>
+                          <span className="text-slate-400 dark:text-slate-500 italic">Unassigned</span>
                         )}
                       </td>
 
                       {/* Next Follow-up */}
                       <td className="py-3 px-4 text-[11px]">
                         {lead.next_followup_date ? (
-                          <div className="flex items-center gap-1 text-amber-800 font-medium">
-                            <Clock className="w-3 h-3 text-amber-600" />
+                          <div className="flex items-center gap-1 text-amber-800 dark:text-amber-400 font-medium">
+                            <Clock className="w-3 h-3 text-amber-600 dark:text-amber-400" />
                             <span>{lead.next_followup_date.split('T')[0]}</span>
                           </div>
                         ) : (
-                          <span className="text-slate-400">None scheduled</span>
+                          <span className="text-slate-400 dark:text-slate-500">None scheduled</span>
                         )}
                       </td>
 
@@ -423,7 +423,7 @@ export const LeadsPage: React.FC = () => {
                               setActiveLead(lead);
                               setIsQualifyModalOpen(true);
                             }}
-                            className="p-1.5 text-slate-600 hover:text-brand-600 hover:bg-brand-50 rounded-md transition-colors"
+                            className="p-1.5 text-slate-600 dark:text-slate-400 hover:text-brand-600 dark:hover:text-amber-400 hover:bg-brand-50 dark:hover:bg-[#101622] rounded-md transition-colors"
                             title="Qualify Buyer Criteria"
                           >
                             <ShieldCheck className="w-4 h-4" />
@@ -436,7 +436,7 @@ export const LeadsPage: React.FC = () => {
                               setActiveLead(lead);
                               setIsStageModalOpen(true);
                             }}
-                            className="p-1.5 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors"
+                            className="p-1.5 text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-[#101622] rounded-md transition-colors"
                             title="Update Pipeline Stage"
                           >
                             <GitCommit className="w-4 h-4" />
@@ -449,7 +449,7 @@ export const LeadsPage: React.FC = () => {
                               setActiveLead(lead);
                               setIsFollowUpModalOpen(true);
                             }}
-                            className="p-1.5 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors"
+                            className="p-1.5 text-slate-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-[#101622] rounded-md transition-colors"
                             title="Log Follow-Up"
                           >
                             <PhoneCall className="w-4 h-4" />
@@ -475,7 +475,7 @@ export const LeadsPage: React.FC = () => {
 
           {/* Pagination */}
           {!isLoading && leads.length > 0 && (
-            <div className="p-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+            <div className="p-4 border-t border-slate-100 dark:border-[#242F42] flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
               <div>
                 Showing {(page - 1) * limit + 1} to{' '}
                 {Math.min(page * limit, total)} of {total} leads
@@ -490,7 +490,7 @@ export const LeadsPage: React.FC = () => {
                 >
                   Previous
                 </Button>
-                <span className="font-semibold text-slate-700">
+                <span className="font-semibold text-slate-700 dark:text-slate-300">
                   Page {page} of {totalPages}
                 </span>
                 <Button

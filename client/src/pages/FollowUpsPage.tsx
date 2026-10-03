@@ -170,14 +170,14 @@ export const FollowUpsPage: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold tracking-tight text-slate-900 font-sans">
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 font-sans">
                 Follow-Up Management
               </h1>
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[#1A2230] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#242F42]">
                 {total} Items
               </span>
             </div>
-            <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
               Manage client calls, WhatsApp conversations, meetings, and track overdue touchpoints.
             </p>
           </div>
@@ -218,7 +218,7 @@ export const FollowUpsPage: React.FC = () => {
         )}
 
         {/* Filter Bar */}
-        <div className="bg-white rounded-xl border border-slate-200/90 p-4 shadow-subtle space-y-3">
+        <div className="bg-white dark:bg-[#141A24] rounded-xl border border-slate-200/90 dark:border-[#242F42] p-4 shadow-subtle space-y-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2.5">
             <div className="lg:col-span-2">
               <Input
@@ -239,7 +239,7 @@ export const FollowUpsPage: React.FC = () => {
                   setSelectedType(e.target.value);
                   setPage(1);
                 }}
-                className="w-full h-10 px-3 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-800"
+                className="w-full h-10 px-3 text-xs bg-slate-50 dark:bg-[#101622] border border-slate-200 dark:border-[#242F42] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-800 dark:text-slate-100"
               >
                 <option value="">All Channels</option>
                 <option value="Phone Call">Phone Call</option>
@@ -258,7 +258,7 @@ export const FollowUpsPage: React.FC = () => {
                   setSelectedStatus(e.target.value);
                   setPage(1);
                 }}
-                className="w-full h-10 px-3 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-800"
+                className="w-full h-10 px-3 text-xs bg-slate-50 dark:bg-[#101622] border border-slate-200 dark:border-[#242F42] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-800 dark:text-slate-100"
               >
                 <option value="">All Statuses</option>
                 <option value="Scheduled">Scheduled</option>
@@ -275,7 +275,7 @@ export const FollowUpsPage: React.FC = () => {
                   setSelectedExecutive(e.target.value);
                   setPage(1);
                 }}
-                className="w-full h-10 px-3 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-800"
+                className="w-full h-10 px-3 text-xs bg-slate-50 dark:bg-[#101622] border border-slate-200 dark:border-[#242F42] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-800 dark:text-slate-100"
               >
                 <option value="">All Executives</option>
                 {executives.map((exec) => (
@@ -301,19 +301,19 @@ export const FollowUpsPage: React.FC = () => {
         </div>
 
         {/* Follow-up Table */}
-        <div className="bg-white rounded-xl border border-slate-200/90 shadow-subtle overflow-hidden">
+        <div className="bg-white dark:bg-[#141A24] rounded-xl border border-slate-200/90 dark:border-[#242F42] shadow-subtle overflow-hidden">
           {isLoading ? (
             <div className="py-20 flex flex-col items-center justify-center gap-3">
               <Spinner size="lg" variant="primary" />
-              <span className="text-xs text-slate-500 font-medium">Loading follow-ups...</span>
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Loading follow-ups...</span>
             </div>
           ) : followUps.length === 0 ? (
             <div className="py-16 px-4 text-center space-y-3">
-              <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+              <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-[#1A2230] text-slate-400 dark:text-slate-500 flex items-center justify-center mx-auto">
                 <Calendar className="w-6 h-6" />
               </div>
-              <h3 className="text-sm font-bold text-slate-800">No Follow-Ups Found</h3>
-              <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
+              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">No Follow-Ups Found</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto leading-relaxed">
                 {searchTerm || selectedType || selectedStatus || selectedExecutive
                   ? 'No follow-ups match your current filter selection.'
                   : `No tasks or follow-ups currently found in the "${activeView}" view.`}
@@ -334,7 +334,7 @@ export const FollowUpsPage: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[11px]">
+                  <tr className="bg-slate-50/80 dark:bg-[#101622]/90 border-b border-slate-200 dark:border-[#242F42] text-slate-600 dark:text-slate-400 font-bold uppercase tracking-wider text-[11px]">
                     <th className="py-3 px-4">Customer</th>
                     <th className="py-3 px-4">Channel</th>
                     <th className="py-3 px-4">Scheduled For</th>
@@ -345,11 +345,11 @@ export const FollowUpsPage: React.FC = () => {
                     <th className="py-3 px-4 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-slate-100 dark:divide-[#242F42]">
                   {followUps.map((item) => (
                     <tr
                       key={item.id}
-                      className="hover:bg-slate-50/70 transition-colors group cursor-pointer"
+                      className="hover:bg-slate-50/70 dark:hover:bg-[#1A2230]/50 transition-colors group cursor-pointer"
                       onClick={() => navigate(`/follow-ups/${item.id}`)}
                     >
                       {/* Customer */}
@@ -359,22 +359,22 @@ export const FollowUpsPage: React.FC = () => {
                             <img
                               src={item.property_cover_image}
                               alt={item.property_title || item.project_name || 'Property'}
-                              className="w-9 h-9 rounded-lg object-cover border border-slate-200 shrink-0"
+                              className="w-9 h-9 rounded-lg object-cover border border-slate-200 dark:border-[#242F42] shrink-0"
                             />
                           ) : null}
                           <div className="min-w-0">
-                            <div className="font-bold text-slate-900 group-hover:text-brand-700 transition-colors">
+                            <div className="font-bold text-slate-900 dark:text-slate-100 group-hover:text-brand-700 dark:group-hover:text-amber-400 transition-colors">
                               {item.customer_name}
                             </div>
-                            <div className="text-[11px] text-slate-500 flex items-center gap-1.5 mt-0.5 flex-wrap">
+                            <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mt-0.5 flex-wrap">
                               <span>{item.customer_phone}</span>
                               {(item.property_title || item.project_name) && (
-                                <span className="text-slate-700 font-medium truncate max-w-[140px]">
+                                <span className="text-slate-700 dark:text-slate-300 font-medium truncate max-w-[140px]">
                                   • {item.property_title || item.project_name}
                                 </span>
                               )}
                               {item.property_code && (
-                                <span className="font-mono text-[9px] bg-slate-100 text-slate-600 px-1 py-0.2 rounded font-semibold">
+                                <span className="font-mono text-[9px] bg-slate-100 dark:bg-[#101622] text-slate-600 dark:text-slate-400 px-1 py-0.2 rounded font-semibold border border-transparent dark:border-[#242F42]">
                                   {item.property_code}
                                 </span>
                               )}
@@ -385,7 +385,7 @@ export const FollowUpsPage: React.FC = () => {
 
                       {/* Channel */}
                       <td className="py-3 px-4">
-                        <div className="flex items-center gap-1.5 font-medium text-slate-800">
+                        <div className="flex items-center gap-1.5 font-medium text-slate-800 dark:text-slate-200">
                           {getTypeIcon(item.follow_up_type)}
                           <span>{item.follow_up_type}</span>
                         </div>
@@ -393,18 +393,18 @@ export const FollowUpsPage: React.FC = () => {
 
                       {/* Schedule */}
                       <td className="py-3 px-4">
-                        <div className="flex items-center gap-1.5 font-semibold text-slate-900">
-                          <Calendar className="w-3.5 h-3.5 text-blue-600" />
+                        <div className="flex items-center gap-1.5 font-semibold text-slate-900 dark:text-slate-100">
+                          <Calendar className="w-3.5 h-3.5 text-blue-600 dark:text-sky-400" />
                           <span>{item.scheduled_date}</span>
                           {item.is_overdue && (
-                            <span className="px-1.5 py-0.2 text-[9px] rounded bg-rose-100 text-rose-700 font-bold uppercase">
+                            <span className="px-1.5 py-0.2 text-[9px] rounded bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 font-bold uppercase">
                               Overdue
                             </span>
                           )}
                         </div>
                         {item.scheduled_time && (
-                          <div className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
-                            <Clock className="w-3 h-3 text-slate-400" />
+                          <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5">
+                            <Clock className="w-3 h-3 text-slate-400 dark:text-slate-500" />
                             <span>{item.scheduled_time}</span>
                           </div>
                         )}
@@ -412,15 +412,15 @@ export const FollowUpsPage: React.FC = () => {
 
                       {/* Remarks */}
                       <td className="py-3 px-4 max-w-xs">
-                        <div className="text-slate-800 truncate" title={item.remarks}>
+                        <div className="text-slate-800 dark:text-slate-300 truncate" title={item.remarks}>
                           {item.remarks}
                         </div>
                       </td>
 
                       {/* Executive */}
-                      <td className="py-3 px-4 text-slate-800 font-medium">
+                      <td className="py-3 px-4 text-slate-800 dark:text-slate-200 font-medium">
                         <div className="flex items-center gap-1.5">
-                          <User className="w-3.5 h-3.5 text-slate-400" />
+                          <User className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
                           <span>{item.assigned_user_name || 'Unassigned'}</span>
                         </div>
                       </td>
@@ -433,11 +433,11 @@ export const FollowUpsPage: React.FC = () => {
                       {/* Outcome */}
                       <td className="py-3 px-4 max-w-[150px]">
                         {item.outcome ? (
-                          <span className="text-emerald-800 font-medium truncate block" title={item.outcome}>
+                          <span className="text-emerald-800 dark:text-emerald-400 font-medium truncate block" title={item.outcome}>
                             {item.outcome}
                           </span>
                         ) : (
-                          <span className="text-slate-400 italic">Pending</span>
+                          <span className="text-slate-400 dark:text-slate-500 italic">Pending</span>
                         )}
                       </td>
 
@@ -456,10 +456,10 @@ export const FollowUpsPage: React.FC = () => {
                                   setSelectedFollowUp(item);
                                   setIsCompleteModalOpen(true);
                                 }}
-                                className="p-1.5 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors"
+                                className="p-1.5 text-slate-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-[#101622] rounded-md transition-colors"
                                 title="Mark Complete"
                               >
-                                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                               </button>
 
                               <button
@@ -468,16 +468,16 @@ export const FollowUpsPage: React.FC = () => {
                                   setSelectedFollowUp(item);
                                   setIsRescheduleModalOpen(true);
                                 }}
-                                className="p-1.5 text-slate-600 hover:text-amber-600 hover:bg-amber-50 rounded-md transition-colors"
+                                className="p-1.5 text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-[#101622] rounded-md transition-colors"
                                 title="Reschedule Follow-up"
                               >
-                                <Clock className="w-4 h-4 text-amber-600" />
+                                <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                               </button>
 
                               <button
                                 type="button"
                                 onClick={() => handleCancelFollowUp(item)}
-                                className="p-1.5 text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors"
+                                className="p-1.5 text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-[#101622] rounded-md transition-colors"
                                 title="Cancel Follow-up"
                               >
                                 <XCircle className="w-4 h-4 text-rose-500" />
@@ -504,7 +504,7 @@ export const FollowUpsPage: React.FC = () => {
 
           {/* Pagination */}
           {!isLoading && followUps.length > 0 && (
-            <div className="p-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+            <div className="p-4 border-t border-slate-100 dark:border-[#242F42] flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
               <div>
                 Showing {(page - 1) * limit + 1} to{' '}
                 {Math.min(page * limit, total)} of {total} follow-ups
@@ -519,7 +519,7 @@ export const FollowUpsPage: React.FC = () => {
                 >
                   Previous
                 </Button>
-                <span className="font-semibold text-slate-700">
+                <span className="font-semibold text-slate-700 dark:text-slate-300">
                   Page {page} of {totalPages}
                 </span>
                 <Button

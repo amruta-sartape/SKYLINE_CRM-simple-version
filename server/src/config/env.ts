@@ -8,6 +8,7 @@ export const config = {
   nodeEnv: process.env.NODE_ENV || 'development',
   jwtSecret: process.env.JWT_SECRET || 'skyline_crm_default_secure_secret_2026',
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
-  databasePath: process.env.DATABASE_PATH || './skyline_crm.db',
+  mongodbUri: process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/skyline_crm',
+  mongodbDbName: process.env.MONGODB_DB_NAME || 'skyline_crm',
   clientUrl: process.env.CLIENT_URL || 'http://localhost:5173',
 };

@@ -117,19 +117,19 @@ export const CompleteFollowUpModal: React.FC<CompleteFollowUpModalProps> = ({
         )}
 
         {/* Header summary */}
-        <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+        <div className="p-3 bg-slate-50 dark:bg-[#141A24] border border-slate-200 dark:border-[#242F42] rounded-xl space-y-1">
           <div className="flex justify-between items-center text-xs">
-            <span className="font-bold text-slate-900">{followUp.customer_name}</span>
-            <span className="text-slate-500 font-medium">{followUp.scheduled_date} {followUp.scheduled_time || ''}</span>
+            <span className="font-bold text-slate-900 dark:text-slate-100">{followUp.customer_name}</span>
+            <span className="text-slate-500 dark:text-slate-400 font-medium">{followUp.scheduled_date} {followUp.scheduled_time || ''}</span>
           </div>
-          <div className="text-[11px] text-slate-600">
-            Agenda: <span className="text-slate-800 font-medium">{followUp.remarks}</span>
+          <div className="text-[11px] text-slate-600 dark:text-slate-300">
+            Agenda: <span className="text-slate-800 dark:text-slate-200 font-medium">{followUp.remarks}</span>
           </div>
         </div>
 
         {/* Quick Outcome Chips */}
         <div className="space-y-1.5">
-          <label className="font-bold text-slate-700 text-xs block">Quick Outcomes</label>
+          <label className="font-bold text-slate-700 dark:text-slate-300 text-xs block">Quick Outcomes</label>
           <div className="flex flex-wrap gap-1.5">
             {quickOutcomes.map((opt) => (
               <button
@@ -138,8 +138,8 @@ export const CompleteFollowUpModal: React.FC<CompleteFollowUpModalProps> = ({
                 onClick={() => setOutcome(opt)}
                 className={`px-2.5 py-1 rounded-md text-[11px] font-medium border transition-all ${
                   outcome === opt
-                    ? 'bg-slate-900 border-slate-900 text-white shadow-2xs'
-                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                    ? 'bg-slate-900 dark:bg-amber-400 border-slate-900 dark:border-amber-400 text-white dark:text-slate-950 shadow-2xs'
+                    : 'bg-white dark:bg-[#101622] border-slate-200 dark:border-[#242F42] text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#1A2230]'
                 }`}
               >
                 {opt}
@@ -173,12 +173,12 @@ export const CompleteFollowUpModal: React.FC<CompleteFollowUpModalProps> = ({
             onChange={(e) => setRemarks(e.target.value)}
             placeholder="e.g. Client requested sample flat video on WhatsApp and scheduled site visit for Saturday..."
             disabled={isSubmitting}
-            className="w-full p-2.5 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-900 resize-none"
+            className="w-full p-2.5 text-xs bg-white dark:bg-[#101622] border border-slate-300 dark:border-[#242F42] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-amber-400/20 focus:border-slate-900 dark:focus:border-amber-400/50 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 resize-none"
           />
         </FormField>
 
         {/* Auto Schedule Next Follow-up */}
-        <div className="p-3 bg-blue-50/60 border border-blue-200/80 rounded-xl space-y-3">
+        <div className="p-3 bg-blue-50/60 dark:bg-[#141A24] border border-blue-200/80 dark:border-[#242F42] rounded-xl space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Checkbox
@@ -187,11 +187,11 @@ export const CompleteFollowUpModal: React.FC<CompleteFollowUpModalProps> = ({
                 label="Automatically Schedule Next Follow-Up"
               />
             </div>
-            <CalendarPlus className="w-4 h-4 text-blue-600" />
+            <CalendarPlus className="w-4 h-4 text-blue-600 dark:text-blue-400" />
           </div>
 
           {createNext && (
-            <div className="space-y-3 pt-2 border-t border-blue-200/60">
+            <div className="space-y-3 pt-2 border-t border-blue-200/60 dark:border-[#242F42]">
               <div className="grid grid-cols-2 gap-3">
                 <FormField label="Next Follow-up Date" required>
                   <Input
@@ -207,7 +207,7 @@ export const CompleteFollowUpModal: React.FC<CompleteFollowUpModalProps> = ({
                     value={nextType}
                     onChange={(e) => setNextType(e.target.value as FollowUpType)}
                     disabled={isSubmitting}
-                    className="w-full h-10 px-3 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-900"
+                    className="w-full h-10 px-3 text-xs bg-white dark:bg-[#101622] border border-slate-300 dark:border-[#242F42] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-amber-400/20 focus:border-slate-900 dark:focus:border-amber-400/50 text-slate-900 dark:text-slate-100"
                   >
                     {followUpTypes.map((t) => (
                       <option key={t.type} value={t.type}>

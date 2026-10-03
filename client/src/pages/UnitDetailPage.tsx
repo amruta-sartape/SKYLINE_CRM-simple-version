@@ -134,7 +134,7 @@ export const UnitDetailPage: React.FC = () => {
     <AppShell>
       <div className="space-y-6">
       {/* Top Breadcrumb & Actions Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200/90 shadow-subtle">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#141A24] p-4 rounded-xl border border-slate-200/90 dark:border-[#242F42] shadow-subtle">
         <div className="flex items-center gap-3">
           <Button
             variant="outline"
@@ -145,19 +145,19 @@ export const UnitDetailPage: React.FC = () => {
             Inventory
           </Button>
 
-          <div className="h-4 w-px bg-slate-200" />
+          <div className="h-4 w-px bg-slate-200 dark:bg-[#242F42]" />
 
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-lg font-black text-slate-900 tracking-tight">
+              <span className="text-lg font-black text-slate-900 dark:text-slate-100 tracking-tight">
                 Unit {unit.unit_number}
               </span>
               <Badge availability={unit.availability_status} size="sm" />
-              <span className="px-2 py-0.5 text-[10px] font-bold bg-brand-50 text-brand-800 border border-brand-200 rounded">
+              <span className="px-2 py-0.5 text-[10px] font-bold bg-brand-50 dark:bg-amber-950/40 text-brand-800 dark:text-amber-300 border border-brand-200 dark:border-amber-800/40 rounded">
                 {unit.configuration}
               </span>
             </div>
-            <span className="text-[11px] text-slate-500">
+            <span className="text-[11px] text-slate-500 dark:text-slate-400">
               {unit.project_name} • {unit.wing_name} • Floor {unit.floor}
             </span>
           </div>
@@ -191,116 +191,116 @@ export const UnitDetailPage: React.FC = () => {
         {/* Left Column: Specifications & Project Context (7 cols) */}
         <div className="lg:col-span-7 space-y-6">
           {/* Unit Specs Card */}
-          <div className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-subtle space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
-                <Home className="w-4 h-4 text-brand-600" />
+          <div className="bg-white dark:bg-[#141A24] rounded-xl border border-slate-200/90 dark:border-[#242F42] p-5 shadow-subtle space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#242F42] pb-3">
+              <div className="flex items-center gap-2 text-slate-900 dark:text-slate-100 font-bold text-sm">
+                <Home className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                 <h3>Unit Architecture & Dimensions</h3>
               </div>
-              <span className="text-base font-extrabold text-slate-900">
+              <span className="text-base font-extrabold text-slate-900 dark:text-slate-100">
                 {formatPrice(unit.price)}
               </span>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200/80">
-                <span className="text-[10px] text-slate-400 font-bold uppercase block">Configuration</span>
-                <span className="text-sm font-extrabold text-slate-900 mt-0.5 block">
+              <div className="p-3 bg-slate-50 dark:bg-[#101622] rounded-lg border border-slate-200/80 dark:border-[#242F42]">
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase block">Configuration</span>
+                <span className="text-sm font-extrabold text-slate-900 dark:text-slate-100 mt-0.5 block">
                   {unit.configuration}
                 </span>
               </div>
 
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200/80">
-                <span className="text-[10px] text-slate-400 font-bold uppercase block">Carpet Area</span>
-                <span className="text-sm font-extrabold text-slate-900 mt-0.5 block">
+              <div className="p-3 bg-slate-50 dark:bg-[#101622] rounded-lg border border-slate-200/80 dark:border-[#242F42]">
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase block">Carpet Area</span>
+                <span className="text-sm font-extrabold text-slate-900 dark:text-slate-100 mt-0.5 block">
                   {unit.carpet_area} sq ft
                 </span>
               </div>
 
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200/80">
-                <span className="text-[10px] text-slate-400 font-bold uppercase block">Built-up Area</span>
-                <span className="text-sm font-extrabold text-slate-900 mt-0.5 block">
+              <div className="p-3 bg-slate-50 dark:bg-[#101622] rounded-lg border border-slate-200/80 dark:border-[#242F42]">
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase block">Built-up Area</span>
+                <span className="text-sm font-extrabold text-slate-900 dark:text-slate-100 mt-0.5 block">
                   {unit.built_up_area} sq ft
                 </span>
               </div>
 
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200/80">
-                <span className="text-[10px] text-slate-400 font-bold uppercase block">Floor Number</span>
-                <span className="text-sm font-extrabold text-slate-900 mt-0.5 block">
+              <div className="p-3 bg-slate-50 dark:bg-[#101622] rounded-lg border border-slate-200/80 dark:border-[#242F42]">
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase block">Floor Number</span>
+                <span className="text-sm font-extrabold text-slate-900 dark:text-slate-100 mt-0.5 block">
                   Floor {unit.floor}
                 </span>
               </div>
 
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200/80">
-                <span className="text-[10px] text-slate-400 font-bold uppercase block">Price / SqFt</span>
-                <span className="text-sm font-extrabold text-slate-900 mt-0.5 block">
+              <div className="p-3 bg-slate-50 dark:bg-[#101622] rounded-lg border border-slate-200/80 dark:border-[#242F42]">
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase block">Price / SqFt</span>
+                <span className="text-sm font-extrabold text-slate-900 dark:text-slate-100 mt-0.5 block">
                   ₹{pricePerSqft.toLocaleString('en-IN')}
                 </span>
               </div>
 
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200/80">
-                <span className="text-[10px] text-slate-400 font-bold uppercase block">Loading Factor</span>
-                <span className="text-sm font-extrabold text-slate-900 mt-0.5 block">
+              <div className="p-3 bg-slate-50 dark:bg-[#101622] rounded-lg border border-slate-200/80 dark:border-[#242F42]">
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase block">Loading Factor</span>
+                <span className="text-sm font-extrabold text-slate-900 dark:text-slate-100 mt-0.5 block">
                   {loadingFactor}%
                 </span>
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-              <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200/80">
-                <Car className="w-4 h-4 text-slate-500 shrink-0" />
+              <div className="flex items-center gap-2 p-3 bg-slate-50 dark:bg-[#101622] rounded-lg border border-slate-200/80 dark:border-[#242F42]">
+                <Car className="w-4 h-4 text-slate-500 dark:text-slate-400 shrink-0" />
                 <div>
-                  <span className="text-[10px] text-slate-400 font-bold uppercase block">Parking</span>
-                  <span className="font-bold text-slate-800">
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase block">Parking</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200">
                     {unit.parking_slot ? `Slot ${unit.parking_slot}` : unit.parking_type}
                   </span>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200/80">
-                <Compass className="w-4 h-4 text-slate-500 shrink-0" />
+              <div className="flex items-center gap-2 p-3 bg-slate-50 dark:bg-[#101622] rounded-lg border border-slate-200/80 dark:border-[#242F42]">
+                <Compass className="w-4 h-4 text-slate-500 dark:text-slate-400 shrink-0" />
                 <div>
-                  <span className="text-[10px] text-slate-400 font-bold uppercase block">Orientation / Facing</span>
-                  <span className="font-bold text-slate-800">{unit.facing || 'Standard View'}</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase block">Orientation / Facing</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200">{unit.facing || 'Standard View'}</span>
                 </div>
               </div>
             </div>
 
             {unit.description && (
-              <div className="p-3 bg-slate-50/70 border border-slate-200/70 rounded-lg">
-                <span className="text-[10px] text-slate-400 font-bold uppercase block mb-1">
+              <div className="p-3 bg-slate-50/70 dark:bg-[#101622] border border-slate-200/70 dark:border-[#242F42] rounded-lg">
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase block mb-1">
                   Unit Specification Notes
                 </span>
-                <p className="text-slate-700 leading-relaxed">{unit.description}</p>
+                <p className="text-slate-700 dark:text-slate-300 leading-relaxed">{unit.description}</p>
               </div>
             )}
           </div>
 
           {/* Project Context Card */}
-          <div className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-subtle space-y-3">
-            <div className="flex items-center gap-2 text-slate-900 font-bold text-sm border-b border-slate-100 pb-3">
-              <Building2 className="w-4 h-4 text-brand-600" />
+          <div className="bg-white dark:bg-[#141A24] rounded-xl border border-slate-200/90 dark:border-[#242F42] p-5 shadow-subtle space-y-3">
+            <div className="flex items-center gap-2 text-slate-900 dark:text-slate-100 font-bold text-sm border-b border-slate-100 dark:border-[#242F42] pb-3">
+              <Building2 className="w-4 h-4 text-amber-600 dark:text-amber-400" />
               <h3>Development Context</h3>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <span className="text-[10px] text-slate-400 font-bold uppercase block">Project Name</span>
-                <span className="font-bold text-slate-900 text-xs">{unit.project_name}</span>
-                <span className="text-[11px] text-slate-500 block">Code: {unit.project_code}</span>
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase block">Project Name</span>
+                <span className="font-bold text-slate-900 dark:text-slate-100 text-xs">{unit.project_name}</span>
+                <span className="text-[11px] text-slate-500 dark:text-slate-400 block">Code: {unit.project_code}</span>
               </div>
               <div>
-                <span className="text-[10px] text-slate-400 font-bold uppercase block">Building / Wing</span>
-                <span className="font-bold text-slate-900 text-xs">{unit.wing_name}</span>
-                <span className="text-[11px] text-slate-500 block">City: {unit.project_city}</span>
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase block">Building / Wing</span>
+                <span className="font-bold text-slate-900 dark:text-slate-100 text-xs">{unit.wing_name}</span>
+                <span className="text-[11px] text-slate-500 dark:text-slate-400 block">City: {unit.project_city}</span>
               </div>
             </div>
           </div>
 
           {/* Amenities Card */}
-          <div className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-subtle space-y-3">
-            <div className="flex items-center gap-2 text-slate-900 font-bold text-sm border-b border-slate-100 pb-3">
-              <Sparkles className="w-4 h-4 text-gold-600" />
+          <div className="bg-white dark:bg-[#141A24] rounded-xl border border-slate-200/90 dark:border-[#242F42] p-5 shadow-subtle space-y-3">
+            <div className="flex items-center gap-2 text-slate-900 dark:text-slate-100 font-bold text-sm border-b border-slate-100 dark:border-[#242F42] pb-3">
+              <Sparkles className="w-4 h-4 text-amber-500 dark:text-amber-400" />
               <h3>Included Amenities ({unit.amenities?.length || 0})</h3>
             </div>
 
@@ -309,15 +309,15 @@ export const UnitDetailPage: React.FC = () => {
                 {unit.amenities.map((a) => (
                   <div
                     key={a.id}
-                    className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg flex items-center gap-2 text-[11px]"
+                    className="p-2.5 bg-slate-50 dark:bg-[#101622] border border-slate-200 dark:border-[#242F42] rounded-lg flex items-center gap-2 text-[11px]"
                   >
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                    <span className="font-medium text-slate-800 truncate">{a.name}</span>
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <span className="font-medium text-slate-800 dark:text-slate-200 truncate">{a.name}</span>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-slate-400 text-xs py-2">Standard project amenities applicable.</p>
+              <p className="text-slate-400 dark:text-slate-500 text-xs py-2">Standard project amenities applicable.</p>
             )}
           </div>
         </div>
@@ -325,10 +325,10 @@ export const UnitDetailPage: React.FC = () => {
         {/* Right Column: Availability Lifecycle & Audit Timeline (5 cols) */}
         <div className="lg:col-span-5 space-y-6">
           {/* Availability Status Card */}
-          <div className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-subtle space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
-                <ShieldCheck className="w-4 h-4 text-brand-600" />
+          <div className="bg-white dark:bg-[#141A24] rounded-xl border border-slate-200/90 dark:border-[#242F42] p-5 shadow-subtle space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#242F42] pb-3">
+              <div className="flex items-center gap-2 text-slate-900 dark:text-slate-100 font-bold text-sm">
+                <ShieldCheck className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                 <h3>Availability Status</h3>
               </div>
               <Button
@@ -340,14 +340,14 @@ export const UnitDetailPage: React.FC = () => {
               </Button>
             </div>
 
-            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between">
+            <div className="p-4 bg-slate-50 dark:bg-[#101622] rounded-xl border border-slate-200 dark:border-[#242F42] flex items-center justify-between">
               <div>
-                <span className="text-[10px] text-slate-400 uppercase font-bold block">Current State</span>
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-bold block">Current State</span>
                 <Badge availability={unit.availability_status} size="md" className="mt-1" />
               </div>
               <div className="text-right">
-                <span className="text-[10px] text-slate-400 uppercase font-bold block">Base Valuation</span>
-                <span className="text-sm font-black text-slate-900 mt-1 block">
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-bold block">Base Valuation</span>
+                <span className="text-sm font-black text-slate-900 dark:text-slate-100 mt-1 block">
                   {formatPrice(unit.price)}
                 </span>
               </div>
@@ -355,35 +355,35 @@ export const UnitDetailPage: React.FC = () => {
           </div>
 
           {/* Audit & Activity Timeline */}
-          <div className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-subtle space-y-4">
-            <div className="flex items-center gap-2 text-slate-900 font-bold text-sm border-b border-slate-100 pb-3">
-              <Activity className="w-4 h-4 text-brand-600" />
+          <div className="bg-white dark:bg-[#141A24] rounded-xl border border-slate-200/90 dark:border-[#242F42] p-5 shadow-subtle space-y-4">
+            <div className="flex items-center gap-2 text-slate-900 dark:text-slate-100 font-bold text-sm border-b border-slate-100 dark:border-[#242F42] pb-3">
+              <Activity className="w-4 h-4 text-amber-600 dark:text-amber-400" />
               <h3>Activity & Transition Ledger ({activities.length})</h3>
             </div>
 
             {activities.length === 0 ? (
-              <p className="text-slate-400 text-xs py-4 text-center">No activity entries recorded.</p>
+              <p className="text-slate-400 dark:text-slate-500 text-xs py-4 text-center">No activity entries recorded.</p>
             ) : (
               <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
                 {activities.map((act) => (
                   <div
                     key={act.id}
-                    className="p-3 bg-slate-50 rounded-lg border border-slate-200/80 space-y-1"
+                    className="p-3 bg-slate-50 dark:bg-[#101622] rounded-lg border border-slate-200/80 dark:border-[#242F42] space-y-1"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-slate-900 text-xs">{act.title}</span>
-                      <span className="text-[10px] text-slate-400 font-medium">
+                      <span className="font-bold text-slate-900 dark:text-slate-100 text-xs">{act.title}</span>
+                      <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
                         {new Date(act.created_at).toLocaleDateString()}
                       </span>
                     </div>
 
                     {act.description && (
-                      <p className="text-[11px] text-slate-600 leading-relaxed">
+                      <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
                         {act.description}
                       </p>
                     )}
 
-                    <div className="flex items-center justify-between pt-1 text-[10px] text-slate-400 border-t border-slate-200/50">
+                    <div className="flex items-center justify-between pt-1 text-[10px] text-slate-400 dark:text-slate-500 border-t border-slate-200/50 dark:border-[#242F42]">
                       <span>Performer: {act.performer_name || 'System'}</span>
                       <span className="font-mono text-[9px]">{act.activity_type}</span>
                     </div>
@@ -394,12 +394,12 @@ export const UnitDetailPage: React.FC = () => {
           </div>
 
           {/* Future Integration Preparation Section */}
-          <div className="bg-amber-50/40 rounded-xl border border-amber-200/60 p-4 space-y-2 text-xs">
-            <div className="flex items-center gap-1.5 text-amber-900 font-bold">
-              <Sparkles className="w-4 h-4 text-gold-600" />
+          <div className="bg-amber-50/40 dark:bg-amber-950/20 rounded-xl border border-amber-200/60 dark:border-amber-800/30 p-4 space-y-2 text-xs">
+            <div className="flex items-center gap-1.5 text-amber-900 dark:text-amber-300 font-bold">
+              <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400" />
               <span>Future Phase Pipeline Links</span>
             </div>
-            <p className="text-amber-800 text-[11px] leading-relaxed">
+            <p className="text-amber-800 dark:text-amber-400 text-[11px] leading-relaxed">
               This unit is prepared for direct linking with Phase 4 Site Visit Dispatches, Negotiation
               Proposals, Token Deposits, and Final Booking Agreements.
             </p>

@@ -65,7 +65,7 @@ export class SiteVisitController {
 
   public static async create(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const visit = await SiteVisitService.create(req.body, req.user!);
+      const visit = await SiteVisitService.create(req.body, req.user!.userId);
       res.status(201).json({
         success: true,
         message: 'Site visit scheduled successfully.',

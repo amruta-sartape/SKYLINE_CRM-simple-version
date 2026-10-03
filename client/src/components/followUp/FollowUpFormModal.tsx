@@ -182,15 +182,15 @@ export const FollowUpFormModal: React.FC<FollowUpFormModalProps> = ({
 
         {/* Lead Selection */}
         {preselectedLead ? (
-          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
+          <div className="p-3 bg-slate-50 dark:bg-[#141A24] border border-slate-200 dark:border-[#242F42] rounded-xl flex items-center justify-between">
             <div>
-              <div className="text-[10px] font-bold uppercase text-slate-500">Target Customer</div>
-              <div className="text-sm font-bold text-slate-900">{preselectedLead.customer_name}</div>
-              <div className="text-xs text-slate-500">{preselectedLead.phone} • {preselectedLead.city}</div>
+              <div className="text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400">Target Customer</div>
+              <div className="text-sm font-bold text-slate-900 dark:text-slate-100">{preselectedLead.customer_name}</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400">{preselectedLead.phone} • {preselectedLead.city}</div>
             </div>
             <div className="text-right">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block">Stage</span>
-              <span className="text-xs font-semibold text-brand-600">{preselectedLead.pipeline_stage}</span>
+              <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 block">Stage</span>
+              <span className="text-xs font-semibold text-brand-600 dark:text-amber-400">{preselectedLead.pipeline_stage}</span>
             </div>
           </div>
         ) : (
@@ -200,7 +200,7 @@ export const FollowUpFormModal: React.FC<FollowUpFormModalProps> = ({
               value={formData.lead_id}
               onChange={handleChange}
               disabled={isSubmitting || isLoadingDropdowns}
-              className="w-full h-10 px-3 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-900"
+              className="w-full h-10 px-3 text-xs bg-white dark:bg-[#101622] border border-slate-300 dark:border-[#242F42] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-amber-400/20 focus:border-slate-900 dark:focus:border-amber-400/50 text-slate-900 dark:text-slate-100"
             >
               <option value="">-- Choose Lead --</option>
               {leads.map((l) => (
@@ -214,7 +214,7 @@ export const FollowUpFormModal: React.FC<FollowUpFormModalProps> = ({
 
         {/* Channel Selection */}
         <div className="space-y-1.5">
-          <label className="font-bold text-slate-700 text-xs block">Communication Channel</label>
+          <label className="font-bold text-slate-700 dark:text-slate-300 text-xs block">Communication Channel</label>
           <div className="grid grid-cols-3 gap-2">
             {followUpTypes.map((item) => (
               <button
@@ -223,8 +223,8 @@ export const FollowUpFormModal: React.FC<FollowUpFormModalProps> = ({
                 onClick={() => setFormData((prev) => ({ ...prev, follow_up_type: item.type }))}
                 className={`flex items-center justify-center gap-1.5 p-2 rounded-lg border text-xs font-semibold transition-all ${
                   formData.follow_up_type === item.type
-                    ? 'bg-white border-slate-900 shadow-2xs text-slate-900 ring-1 ring-slate-900'
-                    : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-white'
+                    ? 'bg-white dark:bg-[#101622] border-slate-900 dark:border-amber-400 shadow-2xs text-slate-900 dark:text-amber-200 ring-1 ring-slate-900 dark:ring-amber-400'
+                    : 'bg-slate-50 dark:bg-[#141A24] border-slate-200 dark:border-[#242F42] text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-[#1A2230]'
                 }`}
               >
                 {item.icon}
@@ -264,7 +264,7 @@ export const FollowUpFormModal: React.FC<FollowUpFormModalProps> = ({
             value={formData.assigned_user_id || ''}
             onChange={handleChange}
             disabled={isSubmitting || isLoadingDropdowns}
-            className="w-full h-10 px-3 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-900"
+            className="w-full h-10 px-3 text-xs bg-white dark:bg-[#101622] border border-slate-300 dark:border-[#242F42] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-amber-400/20 focus:border-slate-900 dark:focus:border-amber-400/50 text-slate-900 dark:text-slate-100"
           >
             <option value="">-- Keep Current Executive --</option>
             {executives.map((exec) => (
@@ -289,14 +289,14 @@ export const FollowUpFormModal: React.FC<FollowUpFormModalProps> = ({
             onChange={handleChange}
             placeholder="e.g. Call to discuss payment schedule options and bank loan approval status..."
             disabled={isSubmitting}
-            className="w-full p-2.5 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-900 resize-none"
+            className="w-full p-2.5 text-xs bg-white dark:bg-[#101622] border border-slate-300 dark:border-[#242F42] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-amber-400/20 focus:border-slate-900 dark:focus:border-amber-400/50 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 resize-none"
           />
         </FormField>
 
         {/* Optional Next Follow-up Commitment */}
-        <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
-          <div className="font-bold text-slate-800 text-xs flex items-center gap-1.5 mb-2">
-            <Calendar className="w-3.5 h-3.5 text-slate-500" />
+        <div className="p-3 bg-slate-50 dark:bg-[#141A24] border border-slate-200 dark:border-[#242F42] rounded-xl">
+          <div className="font-bold text-slate-800 dark:text-slate-200 text-xs flex items-center gap-1.5 mb-2">
+            <Calendar className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
             <span>Tentative Next Follow-up Commitment (Optional)</span>
           </div>
           <Input

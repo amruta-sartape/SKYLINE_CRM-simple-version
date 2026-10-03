@@ -4,13 +4,41 @@ import { AuthService } from '../services/auth.service.js';
 export class AuthController {
   public static async register(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { name, email, phone, password } = req.body;
-      const result = await AuthService.register({ name, email, phone, password });
+      const { name, email, phone, password, role } = req.body;
+      const result = await AuthService.register({ name, email, phone, password, role });
 
       res.status(201).json({
         success: true,
-        message: 'Account successfully registered.',
+        message: result.message || 'Account successfully registered.',
         data: result,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  public static async verifyEmail(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { token } = req.body;
+      const result = await AuthService.verifyEmail(token);
+
+      res.status(200).json({
+        success: true,
+        message: result.message,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  public static async resendVerification(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { email } = req.body;
+      const result = await AuthService.resendVerification(email);
+
+      res.status(200).json({
+        success: true,
+        message: result.message,
       });
     } catch (err) {
       next(err);
@@ -90,7 +118,6 @@ export class AuthController {
 
   public static async logout(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      // Session revocation or audit record
       res.status(200).json({
         success: true,
         message: 'Signed out successfully.',

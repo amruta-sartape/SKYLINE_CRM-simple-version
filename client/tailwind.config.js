@@ -8,6 +8,27 @@ export default {
   theme: {
     extend: {
       colors: {
+        background: 'var(--background)',
+        surface: {
+          DEFAULT: 'var(--surface)',
+          secondary: 'var(--surface-secondary)',
+          muted: 'var(--surface-muted)',
+          hover: 'var(--surface-hover)',
+        },
+        foreground: {
+          DEFAULT: 'var(--foreground)',
+          secondary: 'var(--foreground-secondary)',
+          muted: 'var(--foreground-muted)',
+        },
+        appBorder: {
+          DEFAULT: 'var(--border)',
+          subtle: 'var(--border-subtle)',
+        },
+        accent: {
+          DEFAULT: 'var(--accent)',
+          light: 'var(--accent-light)',
+          foreground: 'var(--accent-foreground)',
+        },
         brand: {
           50: '#F0F5FA',
           100: '#E1ECF5',

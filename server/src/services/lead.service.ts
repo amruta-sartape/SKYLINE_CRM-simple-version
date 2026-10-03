@@ -1,5 +1,15 @@
 import crypto from 'crypto';
-import { db } from '../db/database.js';
+import {
+  LeadModel,
+  UserModel,
+  ProjectModel,
+  UnitModel,
+  PropertyListingModel,
+  LeadActivityModel,
+  FollowUpModel,
+  SiteVisitModel,
+  EnquiryModel,
+} from '../models/index.js';
 import {
   Lead,
   LeadActivity,
@@ -48,130 +58,142 @@ export class LeadService {
   ): Promise<{ leads: Lead[]; total: number; page: number; limit: number }> {
     const page = Math.max(1, filters.page || 1);
     const limit = Math.max(1, Math.min(100, filters.limit || 20));
-    const offset = (page - 1) * limit;
+    const skip = (page - 1) * limit;
 
-    const conditions: string[] = [];
-    const params: any[] = [];
+    const query: any = {};
 
-    // RBAC check:
     const isAdmin = user.roles.includes(UserRole.ADMIN);
     const isEmployee = user.roles.includes(UserRole.EMPLOYEE);
 
     if (!isAdmin && !isEmployee) {
-      // Agent role can only see their own assigned leads
-      conditions.push('l.assigned_to = ?');
-      params.push(user.userId);
+      query.assigned_to = user.userId;
     }
 
     if (filters.search && filters.search.trim()) {
-      const term = `%${filters.search.trim()}%`;
-      conditions.push(
-        '(l.customer_name LIKE ? OR l.phone LIKE ? OR l.email LIKE ? OR l.city LIKE ? OR l.interested_property LIKE ? OR l.preferred_location LIKE ?)'
-      );
-      params.push(term, term, term, term, term, term);
+      const regex = new RegExp(filters.search.trim(), 'i');
+      query.$or = [
+        { customer_name: regex },
+        { phone: regex },
+        { email: regex },
+        { city: regex },
+        { interested_property: regex },
+        { preferred_location: regex },
+      ];
     }
 
-    if (filters.stage) {
-      conditions.push('l.pipeline_stage = ?');
-      params.push(filters.stage);
+    if (filters.stage) query.pipeline_stage = filters.stage;
+    if (filters.qualification_status) query.qualification_status = filters.qualification_status;
+    if (filters.flat_type) query.flat_type = filters.flat_type;
+    if (filters.assigned_to) query.assigned_to = filters.assigned_to;
+    if (filters.priority) query.priority = filters.priority;
+    if (filters.loan_required !== undefined) query.loan_required = filters.loan_required;
+
+    if (filters.minBudget !== undefined || filters.maxBudget !== undefined) {
+      query.budget = {};
+      if (filters.minBudget !== undefined) query.budget.$gte = filters.minBudget;
+      if (filters.maxBudget !== undefined) query.budget.$lte = filters.maxBudget;
     }
 
-    if (filters.qualification_status) {
-      conditions.push('l.qualification_status = ?');
-      params.push(filters.qualification_status);
-    }
+    const sortOrder = filters.sortOrder === 'ASC' ? 1 : -1;
+    const sortField = filters.sortBy || 'created_at';
+    const sortObj: any = { [sortField]: sortOrder };
 
-    if (filters.flat_type) {
-      conditions.push('l.flat_type = ?');
-      params.push(filters.flat_type);
-    }
+    const total = await LeadModel.countDocuments(query);
+    const rows = await LeadModel.find(query).sort(sortObj).skip(skip).limit(limit);
 
-    if (filters.assigned_to) {
-      conditions.push('l.assigned_to = ?');
-      params.push(filters.assigned_to);
-    }
+    const leads: Lead[] = await Promise.all(
+      rows.map(async (l) => {
+        let assigned_name: string | null = null;
+        let assigned_email: string | null = null;
+        if (l.assigned_to) {
+          const assignedUser = await UserModel.findById(l.assigned_to);
+          assigned_name = assignedUser?.name || null;
+          assigned_email = assignedUser?.email || null;
+        }
 
-    if (filters.priority) {
-      conditions.push('l.priority = ?');
-      params.push(filters.priority);
-    }
+        let created_by_name: string | null = null;
+        if (l.created_by) {
+          const creator = await UserModel.findById(l.created_by);
+          created_by_name = creator?.name || null;
+        }
 
-    if (filters.loan_required !== undefined) {
-      conditions.push('l.loan_required = ?');
-      params.push(filters.loan_required);
-    }
+        let project_name: string | null = null;
+        if (l.project_id) {
+          const project = await ProjectModel.findById(l.project_id);
+          project_name = project?.name || null;
+        }
 
-    if (filters.minBudget) {
-      conditions.push('l.budget >= ?');
-      params.push(filters.minBudget);
-    }
+        let unit_number: string | null = null;
+        if (l.unit_id) {
+          const unit = await UnitModel.findById(l.unit_id);
+          unit_number = unit?.unit_number || null;
+        }
 
-    if (filters.maxBudget) {
-      conditions.push('l.budget <= ?');
-      params.push(filters.maxBudget);
-    }
+        let property_code: string | null = null;
+        let property_title: string | null = l.interested_property || null;
+        let property_subtype: string | null = null;
+        let property_price: number | null = null;
+        let property_cover_image: string | null = null;
 
-    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+        if (l.property_id) {
+          const listing = await PropertyListingModel.findById(l.property_id);
+          if (listing) {
+            property_code = listing.code;
+            property_title = listing.title;
+            property_subtype = listing.subtype;
+            property_price = listing.price;
+            property_cover_image = listing.cover_image || null;
+          }
+        }
 
-    // Count
-    const countSql = `SELECT COUNT(*) as total FROM leads l ${whereClause}`;
-    const countResult = await db.get<{ total: number }>(countSql, params);
-    const total = countResult?.total || 0;
+        return {
+          id: l._id,
+          enquiry_id: l.enquiry_id,
+          customer_name: l.customer_name,
+          phone: l.phone,
+          email: l.email,
+          city: l.city,
+          budget: l.budget,
+          preferred_location: l.preferred_location,
+          flat_type: l.flat_type as any,
+          interested_property: l.interested_property,
+          project_id: l.project_id,
+          unit_id: l.unit_id,
+          property_id: l.property_id,
+          loan_required: l.loan_required,
+          purchase_timeline: l.purchase_timeline as any,
+          purpose: l.purpose as any,
+          assigned_to: l.assigned_to,
+          pipeline_stage: l.pipeline_stage as any,
+          qualification_status: l.qualification_status as any,
+          priority: l.priority as any,
+          next_followup_date: typeof l.next_followup_date === 'string' ? l.next_followup_date : (l.next_followup_date as any)?.toISOString(),
+          notes: l.notes,
+          created_by: l.created_by,
+          created_at: typeof l.created_at === 'string' ? l.created_at : l.created_at.toISOString(),
+          updated_at: typeof l.updated_at === 'string' ? l.updated_at : l.updated_at.toISOString(),
+          assigned_name: assigned_name || undefined,
+          assigned_email: assigned_email || undefined,
+          created_by_name: created_by_name || undefined,
+          project_name: project_name || undefined,
+          unit_number: unit_number || undefined,
+          property_code: property_code || undefined,
+          property_title: property_title || undefined,
+          property_subtype: property_subtype || undefined,
+          property_price: property_price !== null ? property_price : undefined,
+          property_cover_image: property_cover_image || undefined,
+        };
+      })
+    );
 
-    // Sort
-    const allowedSortFields: Record<string, string> = {
-      customer_name: 'l.customer_name',
-      created_at: 'l.created_at',
-      budget: 'l.budget',
-      next_followup_date: 'l.next_followup_date',
-      priority: 'l.priority',
-      pipeline_stage: 'l.pipeline_stage',
-    };
-    const sortField = allowedSortFields[filters.sortBy || 'created_at'] || 'l.created_at';
-    const sortOrder = filters.sortOrder === 'ASC' ? 'ASC' : 'DESC';
-
-    const selectSql = `
-      SELECT 
-        l.*,
-        u.name as assigned_name,
-        u.email as assigned_email,
-        cb.name as created_by_name,
-        p.name as project_name,
-        un.unit_number as unit_number,
-        pl.code as property_code,
-        COALESCE(pl.title, l.interested_property) as property_title,
-        pl.subtype as property_subtype,
-        pl.price as property_price,
-        pl.cover_image as property_cover_image
-      FROM leads l
-      LEFT JOIN users u ON l.assigned_to = u.id
-      LEFT JOIN users cb ON l.created_by = cb.id
-      LEFT JOIN property_projects p ON l.project_id = p.id
-      LEFT JOIN property_units un ON l.unit_id = un.id
-      LEFT JOIN property_listings pl ON l.property_id = pl.id OR l.interested_property = pl.id OR l.interested_property = pl.title
-      ${whereClause}
-      ORDER BY ${sortField} ${sortOrder}
-      LIMIT ? OFFSET ?
-    `;
-
-    const leads = await db.all<Lead>(selectSql, [...params, limit, offset]);
-
-    return {
-      leads,
-      total,
-      page,
-      limit,
-    };
+    return { leads, total, page, limit };
   }
 
   /**
-   * Fetch Leads grouped by Pipeline Stage for visual CRM board
+   * Fetch Kanban Pipeline Board Grouped by Stages
    */
-  public static async getPipelineBoard(
-    filters: LeadFilters,
-    user: JWTPayload
-  ): Promise<{ stages: PipelineStageSummary[]; totalLeads: number; totalPipelineValue: number }> {
-    const stagesList: PipelineStage[] = [
+  public static async getPipelineBoard(filters: LeadFilters, user: JWTPayload): Promise<PipelineStageSummary[]> {
+    const stages: PipelineStage[] = [
       'New',
       'Contacted',
       'Follow-up',
@@ -181,685 +203,620 @@ export class LeadService {
       'Lost',
     ];
 
-    const conditions: string[] = [];
-    const params: any[] = [];
+    const { leads } = await this.getLeads({ ...filters, limit: 500 }, user);
+
+    return stages.map((stage) => {
+      const stageLeads = leads.filter((l) => l.pipeline_stage === stage);
+      const totalValue = stageLeads.reduce((acc, l) => acc + (l.budget || 0), 0);
+      return {
+        stage,
+        count: stageLeads.length,
+        totalValue,
+        leads: stageLeads,
+      };
+    });
+  }
+
+  /**
+   * Fetch single lead with Customer 360 Timeline Details
+   */
+  public static async getLeadById(id: string, user: JWTPayload): Promise<any | null> {
+    const l = await LeadModel.findById(id);
+    if (!l) return null;
 
     const isAdmin = user.roles.includes(UserRole.ADMIN);
     const isEmployee = user.roles.includes(UserRole.EMPLOYEE);
 
-    if (!isAdmin && !isEmployee) {
-      conditions.push('l.assigned_to = ?');
-      params.push(user.userId);
+    if (!isAdmin && !isEmployee && l.assigned_to !== user.userId) {
+      return null;
     }
 
-    if (filters.search && filters.search.trim()) {
-      const term = `%${filters.search.trim()}%`;
-      conditions.push(
-        '(l.customer_name LIKE ? OR l.phone LIKE ? OR l.email LIKE ? OR l.interested_property LIKE ? OR l.city LIKE ?)'
-      );
-      params.push(term, term, term, term, term);
+    let assigned_name: string | null = null;
+    let assigned_email: string | null = null;
+    if (l.assigned_to) {
+      const assignedUser = await UserModel.findById(l.assigned_to);
+      assigned_name = assignedUser?.name || null;
+      assigned_email = assignedUser?.email || null;
     }
 
-    if (filters.assigned_to) {
-      conditions.push('l.assigned_to = ?');
-      params.push(filters.assigned_to);
+    let created_by_name: string | null = null;
+    if (l.created_by) {
+      const creator = await UserModel.findById(l.created_by);
+      created_by_name = creator?.name || null;
     }
 
-    if (filters.flat_type) {
-      conditions.push('l.flat_type = ?');
-      params.push(filters.flat_type);
+    let project_name: string | null = null;
+    if (l.project_id) {
+      const project = await ProjectModel.findById(l.project_id);
+      project_name = project?.name || null;
     }
 
-    if (filters.qualification_status) {
-      conditions.push('l.qualification_status = ?');
-      params.push(filters.qualification_status);
+    let unit_number: string | null = null;
+    if (l.unit_id) {
+      const unit = await UnitModel.findById(l.unit_id);
+      unit_number = unit?.unit_number || null;
     }
 
-    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+    let property_code: string | null = null;
+    let property_title: string | null = l.interested_property || null;
+    let property_subtype: string | null = null;
+    let property_price: number | null = null;
+    let property_cover_image: string | null = null;
 
-    const sql = `
-      SELECT 
-        l.*,
-        u.name as assigned_name,
-        u.email as assigned_email,
-        cb.name as created_by_name,
-        p.name as project_name,
-        un.unit_number as unit_number,
-        pl.code as property_code,
-        COALESCE(pl.title, l.interested_property) as property_title,
-        pl.subtype as property_subtype,
-        pl.price as property_price,
-        pl.cover_image as property_cover_image
-      FROM leads l
-      LEFT JOIN users u ON l.assigned_to = u.id
-      LEFT JOIN users cb ON l.created_by = cb.id
-      LEFT JOIN property_projects p ON l.project_id = p.id
-      LEFT JOIN property_units un ON l.unit_id = un.id
-      LEFT JOIN property_listings pl ON l.property_id = pl.id OR l.interested_property = pl.id OR l.interested_property = pl.title
-      ${whereClause}
-      ORDER BY l.created_at DESC
-    `;
+    if (l.property_id) {
+      const listing = await PropertyListingModel.findById(l.property_id);
+      if (listing) {
+        property_code = listing.code;
+        property_title = listing.title;
+        property_subtype = listing.subtype;
+        property_price = listing.price;
+        property_cover_image = listing.cover_image || null;
+      }
+    }
 
-    const allLeads = await db.all<Lead>(sql, params);
+    // Fetch activities, follow-ups, and site visits for 360 View
+    const activities = await LeadActivityModel.find({ lead_id: id }).sort({ created_at: -1 });
+    const activitiesWithPerformer = await Promise.all(
+      activities.map(async (act) => {
+        let performer_name: string | null = null;
+        if (act.performed_by) {
+          const p = await UserModel.findById(act.performed_by);
+          performer_name = p?.name || null;
+        }
+        return {
+          id: act._id,
+          lead_id: act.lead_id,
+          activity_type: act.activity_type,
+          title: act.title,
+          description: act.description,
+          performed_by: act.performed_by,
+          performer_name,
+          metadata: act.metadata,
+          created_at: typeof act.created_at === 'string' ? act.created_at : act.created_at.toISOString(),
+        };
+      })
+    );
 
-    let totalLeads = 0;
-    let totalPipelineValue = 0;
-
-    const stages: PipelineStageSummary[] = stagesList.map((stageName) => {
-      const stageLeads = allLeads.filter((l) => l.pipeline_stage === stageName);
-      const stageValue = stageLeads.reduce((acc, curr) => acc + (Number(curr.budget) || 0), 0);
-
-      totalLeads += stageLeads.length;
-      totalPipelineValue += stageValue;
-
-      return {
-        stage: stageName,
-        count: stageLeads.length,
-        totalValue: stageValue,
-        leads: stageLeads,
-      };
-    });
+    const followUps = await FollowUpModel.find({ lead_id: id }).sort({ scheduled_date: -1 });
+    const siteVisits = await SiteVisitModel.find({ lead_id: id }).sort({ visit_date: -1 });
 
     return {
-      stages,
-      totalLeads,
-      totalPipelineValue,
+      id: l._id,
+      enquiry_id: l.enquiry_id,
+      customer_name: l.customer_name,
+      phone: l.phone,
+      email: l.email,
+      city: l.city,
+      budget: l.budget,
+      preferred_location: l.preferred_location,
+      flat_type: l.flat_type as any,
+      interested_property: l.interested_property,
+      project_id: l.project_id,
+      unit_id: l.unit_id,
+      property_id: l.property_id,
+      loan_required: l.loan_required,
+      purchase_timeline: l.purchase_timeline as any,
+      purpose: l.purpose as any,
+      assigned_to: l.assigned_to,
+      pipeline_stage: l.pipeline_stage as any,
+      qualification_status: l.qualification_status as any,
+      priority: l.priority as any,
+      next_followup_date: typeof l.next_followup_date === 'string' ? l.next_followup_date : (l.next_followup_date as any)?.toISOString(),
+      notes: l.notes,
+      created_by: l.created_by,
+      created_at: typeof l.created_at === 'string' ? l.created_at : l.created_at.toISOString(),
+      updated_at: typeof l.updated_at === 'string' ? l.updated_at : l.updated_at.toISOString(),
+      assigned_name,
+      assigned_email,
+      created_by_name,
+      project_name,
+      unit_number,
+      property_code,
+      property_title,
+      property_subtype,
+      property_price,
+      property_cover_image,
+      activities: activitiesWithPerformer,
+      follow_ups: followUps.map((f) => ({
+        id: f._id,
+        lead_id: f.lead_id,
+        site_visit_id: f.site_visit_id,
+        assigned_user_id: f.assigned_user_id,
+        follow_up_type: f.follow_up_type,
+        scheduled_date: f.scheduled_date,
+        scheduled_time: f.scheduled_time,
+        remarks: f.remarks,
+        status: f.status,
+        outcome: f.outcome,
+        next_follow_up_date: f.next_follow_up_date,
+        created_at: typeof f.created_at === 'string' ? f.created_at : f.created_at.toISOString(),
+      })),
+      site_visits: siteVisits.map((s) => ({
+        id: s._id,
+        lead_id: s.lead_id,
+        project_id: s.project_id,
+        unit_id: s.unit_id,
+        property_id: s.property_id,
+        assigned_user_id: s.assigned_user_id,
+        visit_date: s.visit_date,
+        visit_time: s.visit_time,
+        visit_status: s.visit_status,
+        visit_type: s.visit_type,
+        remarks: s.remarks,
+        outcome: s.outcome,
+        created_at: typeof s.created_at === 'string' ? s.created_at : s.created_at.toISOString(),
+      })),
+      properties: [],
     };
   }
 
   /**
-   * Get single lead by ID with RBAC check
-   */
-  public static async getLeadById(id: string, user: JWTPayload): Promise<Lead | null> {
-    const sql = `
-      SELECT 
-        l.*,
-        u.name as assigned_name,
-        u.email as assigned_email,
-        cb.name as created_by_name,
-        p.name as project_name,
-        un.unit_number as unit_number,
-        pl.code as property_code,
-        COALESCE(pl.title, l.interested_property) as property_title,
-        pl.subtype as property_subtype,
-        pl.price as property_price,
-        pl.cover_image as property_cover_image
-      FROM leads l
-      LEFT JOIN users u ON l.assigned_to = u.id
-      LEFT JOIN users cb ON l.created_by = cb.id
-      LEFT JOIN property_projects p ON l.project_id = p.id
-      LEFT JOIN property_units un ON l.unit_id = un.id
-      LEFT JOIN property_listings pl ON l.property_id = pl.id OR l.interested_property = pl.id OR l.interested_property = pl.title
-      WHERE l.id = ?
-    `;
-
-    const lead = await db.get<Lead>(sql, [id]);
-    if (!lead) return null;
-
-    const isAdmin = user.roles.includes(UserRole.ADMIN);
-    const isEmployee = user.roles.includes(UserRole.EMPLOYEE);
-
-    if (!isAdmin && !isEmployee && lead.assigned_to !== user.userId) {
-      const error: any = new Error('Access denied. You do not have permission to view this lead.');
-      error.statusCode = 403;
-      throw error;
-    }
-
-    return lead;
-  }
-
-  /**
-   * Get complete Lead Activity Timeline + Follow-ups + Site Visits + Customer 360 Property Interests
-   */
-  public static async getLeadTimeline(
-    leadId: string,
-    user: JWTPayload
-  ): Promise<{ activities: LeadActivity[]; followUps: any[]; siteVisits: any[]; propertyInterests: any[] }> {
-    // Verify access first
-    const currentLead = await this.getLeadById(leadId, user);
-    if (!currentLead) {
-      const error: any = new Error('Lead not found.');
-      error.statusCode = 404;
-      throw error;
-    }
-
-    const activitiesSql = `
-      SELECT 
-        la.*,
-        u.name as performer_name,
-        u.email as performer_email
-      FROM lead_activities la
-      LEFT JOIN users u ON la.performed_by = u.id
-      WHERE la.lead_id = ?
-      ORDER BY la.created_at DESC
-    `;
-    const activities = await db.all<LeadActivity>(activitiesSql, [leadId]);
-
-    const followUpsSql = `
-      SELECT 
-        f.id,
-        f.lead_id,
-        f.site_visit_id,
-        COALESCE(f.assigned_user_id, f.executive_id) as executive_id,
-        COALESCE(f.assigned_user_id, f.executive_id) as assigned_user_id,
-        COALESCE(f.follow_up_type, f.type) as type,
-        COALESCE(f.follow_up_type, f.type) as follow_up_type,
-        COALESCE(f.scheduled_date, f.followup_date) as followup_date,
-        COALESCE(f.scheduled_date, f.followup_date) as scheduled_date,
-        COALESCE(f.scheduled_time, f.followup_time) as followup_time,
-        COALESCE(f.scheduled_time, f.followup_time) as scheduled_time,
-        f.remarks,
-        f.status,
-        f.outcome,
-        COALESCE(f.next_follow_up_date, f.next_followup_date) as next_followup_date,
-        COALESCE(f.next_follow_up_date, f.next_followup_date) as next_follow_up_date,
-        f.created_at,
-        u.name as executive_name,
-        u.name as assigned_user_name,
-        pl.code as property_code,
-        COALESCE(pl.title, current_lead.interested_property) as property_title,
-        pl.subtype as property_subtype,
-        pl.cover_image as property_cover_image
-      FROM follow_ups f
-      LEFT JOIN users u ON COALESCE(f.assigned_user_id, f.executive_id) = u.id
-      LEFT JOIN leads current_lead ON f.lead_id = current_lead.id
-      LEFT JOIN property_listings pl ON current_lead.property_id = pl.id OR current_lead.interested_property = pl.id OR current_lead.interested_property = pl.title
-      WHERE f.lead_id = ?
-      ORDER BY COALESCE(f.scheduled_date, f.followup_date) DESC, f.created_at DESC
-    `;
-    const followUps = await db.all<any>(followUpsSql, [leadId]);
-
-    const siteVisitsSql = `
-      SELECT 
-        sv.*,
-        p.name as project_name,
-        p.code as project_code,
-        un.unit_number,
-        un.configuration as unit_configuration,
-        un.price as unit_price,
-        u.name as assigned_user_name,
-        cb.name as created_by_name,
-        pl.code as property_code,
-        COALESCE(pl.title, p.name) as property_title,
-        pl.subtype as property_subtype,
-        pl.cover_image as property_cover_image
-      FROM site_visits sv
-      LEFT JOIN property_projects p ON sv.project_id = p.id
-      LEFT JOIN property_units un ON sv.unit_id = un.id
-      LEFT JOIN users u ON sv.assigned_user_id = u.id
-      LEFT JOIN users cb ON sv.created_by = cb.id
-      LEFT JOIN property_listings pl ON sv.property_id = pl.id OR sv.project_id = pl.id
-      WHERE sv.lead_id = ?
-      ORDER BY sv.visit_date DESC, sv.visit_time DESC
-    `;
-    const siteVisits = await db.all<any>(siteVisitsSql, [leadId]);
-
-    // Aggregate Property Interests for Customer 360
-    const propertyInterestsMap = new Map<string, any>();
-
-    // 1. Primary Lead Property
-    if (currentLead.property_id || currentLead.interested_property) {
-      const propRef = currentLead.property_id || currentLead.interested_property;
-      const dbProp = await db.get<any>(
-        `SELECT * FROM property_listings WHERE id = ? OR code = ? OR title = ?`,
-        [propRef, propRef, propRef]
-      );
-      if (dbProp) {
-        let areaVal = 'Custom Layout';
-        try {
-          const sp = JSON.parse(dbProp.specs_data || '{}');
-          areaVal = sp.residentialSpecs?.builtUpArea ? `${sp.residentialSpecs.builtUpArea} sq.ft` : sp.landSpecs?.plotArea || sp.commercialSpecs?.commercialArea ? `${sp.commercialSpecs.commercialArea} sq.ft` : areaVal;
-        } catch (_) {}
-
-        const priceFormatted = dbProp.price_label || `₹${(dbProp.price / 100000).toFixed(1)} Lakhs`;
-        propertyInterestsMap.set(dbProp.id, {
-          id: dbProp.id,
-          propertyId: dbProp.id,
-          code: dbProp.code,
-          propertyCode: dbProp.code,
-          title: dbProp.title,
-          propertyName: dbProp.title,
-          main_category: dbProp.main_category,
-          subtype: dbProp.subtype,
-          propertyType: dbProp.subtype,
-          project: dbProp.developer || 'Skyline Realty Group',
-          location: dbProp.location,
-          city: dbProp.city,
-          price: dbProp.price,
-          price_formatted: priceFormatted,
-          specs_formatted: areaVal,
-          area: areaVal,
-          availability: dbProp.availability || 'Available',
-          cover_image: dbProp.cover_image || '/images/projects/skyline-marina-towers.jpg',
-          coverImage: dbProp.cover_image || '/images/projects/skyline-marina-towers.jpg',
-          status: dbProp.status || 'Active',
-          source: 'Primary Requirement',
-        });
-      }
-    }
-
-    // 2. Additional Enquiries from this customer (phone or email match)
-    if (currentLead.phone || currentLead.email) {
-      const enquiries = await db.all<any>(
-        `SELECT e.*, pl.id as pl_id, pl.title as pl_title, pl.code as pl_code, pl.subtype as pl_subtype, pl.location as pl_location, pl.city as pl_city, pl.price as pl_price, pl.price_label as pl_price_label, pl.cover_image as pl_cover_image, pl.availability as pl_availability
-         FROM enquiries e
-         LEFT JOIN property_listings pl ON e.property_id = pl.id OR e.interested_property = pl.id OR e.interested_property = pl.title
-         WHERE e.phone = ? OR (e.email IS NOT NULL AND e.email = ?)`,
-        [currentLead.phone, currentLead.email || '']
-      );
-
-      for (const enq of enquiries) {
-        if (enq.pl_id && !propertyInterestsMap.has(enq.pl_id)) {
-          const enqPriceFormatted = enq.pl_price_label || (enq.pl_price ? `₹${(enq.pl_price / 100000).toFixed(1)} Lakhs` : `₹${(enq.budget / 100000).toFixed(1)} Lakhs`);
-          propertyInterestsMap.set(enq.pl_id, {
-            id: enq.pl_id,
-            propertyId: enq.pl_id,
-            code: enq.pl_code,
-            propertyCode: enq.pl_code,
-            title: enq.pl_title,
-            propertyName: enq.pl_title,
-            subtype: enq.pl_subtype || enq.configuration,
-            propertyType: enq.pl_subtype || enq.configuration,
-            project: enq.project_name || 'Skyline Realty Group',
-            location: enq.pl_location || enq.city || 'Pune',
-            city: enq.pl_city || enq.city || 'Pune',
-            price: enq.pl_price || enq.budget,
-            price_formatted: enqPriceFormatted,
-            specs_formatted: enq.configuration || 'Custom Spec',
-            area: enq.configuration || 'Custom Spec',
-            availability: enq.pl_availability || 'Available',
-            cover_image: enq.pl_cover_image || '/images/projects/skyline-marina-towers.jpg',
-            coverImage: enq.pl_cover_image || '/images/projects/skyline-marina-towers.jpg',
-            source: `Enquiry (${enq.lead_source})`,
-            enquiryDate: enq.enquiry_date,
-          });
-        }
-      }
-    }
-
-    const propertyInterests = Array.from(propertyInterestsMap.values());
-
-    return { activities, followUps, siteVisits, propertyInterests };
-  }
-
-  /**
-   * Create a new Lead directly
+   * Create new Lead directly
    */
   public static async createLead(
     data: {
       customer_name: string;
       phone: string;
-      email?: string | null;
-      city?: string | null;
+      email?: string;
+      city?: string;
       budget: number;
-      preferred_location?: string | null;
+      preferred_location?: string;
       flat_type: PropertyConfiguration;
-      interested_property?: string | null;
-      project_id?: string | null;
-      unit_id?: string | null;
-      property_id?: string | null;
+      interested_property?: string;
+      project_id?: string;
+      unit_id?: string;
+      property_id?: string;
       loan_required?: number;
-      purchase_timeline?: PurchaseTimeline | null;
-      purpose?: PurchasePurpose | null;
-      assigned_to?: string | null;
+      purchase_timeline?: PurchaseTimeline;
+      purpose?: PurchasePurpose;
+      assigned_to?: string;
       pipeline_stage?: PipelineStage;
       qualification_status?: QualificationStatus;
       priority?: LeadPriority;
-      next_followup_date?: string | null;
-      notes?: string | null;
+      next_followup_date?: string;
+      notes?: string;
     },
-    user: JWTPayload
+    userId?: string
   ): Promise<Lead> {
-    const id = `lead_${crypto.randomUUID()}`;
-    const now = new Date().toISOString();
-    const stage = data.pipeline_stage || 'New';
-    const qualStatus = data.qualification_status || 'Future Prospect';
-    const priority = data.priority || 'Medium';
+    const leadId = `lead_${crypto.randomUUID()}`;
 
-    await db.run(
-      `INSERT INTO leads (
-        id, customer_name, phone, email, city, budget,
-        preferred_location, flat_type, interested_property, project_id, unit_id, property_id, loan_required,
-        purchase_timeline, purpose, assigned_to, pipeline_stage,
-        qualification_status, priority, next_followup_date, notes, created_by, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        id,
-        data.customer_name.trim(),
-        data.phone.trim(),
-        data.email?.trim() || null,
-        data.city?.trim() || null,
-        data.budget,
-        data.preferred_location?.trim() || null,
-        data.flat_type,
-        data.interested_property?.trim() || null,
-        data.project_id || null,
-        data.unit_id || null,
-        data.property_id || null,
-        data.loan_required || 0,
-        data.purchase_timeline || null,
-        data.purpose || null,
-        data.assigned_to || user.userId,
-        stage,
-        qualStatus,
-        priority,
-        data.next_followup_date || null,
-        data.notes || null,
-        user.userId,
-        now,
-        now,
-      ]
-    );
+    await LeadModel.create({
+      _id: leadId,
+      customer_name: data.customer_name.trim(),
+      phone: data.phone.trim(),
+      email: data.email ? data.email.trim().toLowerCase() : null,
+      city: data.city ? data.city.trim() : null,
+      budget: data.budget,
+      preferred_location: data.preferred_location?.trim() || null,
+      flat_type: data.flat_type,
+      interested_property: data.interested_property?.trim() || null,
+      project_id: data.project_id || null,
+      unit_id: data.unit_id || null,
+      property_id: data.property_id || null,
+      loan_required: data.loan_required || 0,
+      purchase_timeline: data.purchase_timeline || '1-3 Months',
+      purpose: data.purpose || 'Self Use',
+      assigned_to: data.assigned_to || null,
+      pipeline_stage: data.pipeline_stage || 'New',
+      qualification_status: data.qualification_status || 'Future Prospect',
+      priority: data.priority || 'Medium',
+      next_followup_date: data.next_followup_date || null,
+      notes: data.notes?.trim() || null,
+      created_by: userId || null,
+    });
 
-    // Initial activity
-    await db.run(
-      `INSERT INTO lead_activities (id, lead_id, activity_type, title, description, performed_by, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [
-        `act_${crypto.randomUUID()}`,
-        id,
-        'LEAD_CREATED',
-        'Lead Created Directly',
-        `Direct lead profile initialized for ${data.customer_name}. Flat Type: ${data.flat_type}, Budget: ₹${(
-          data.budget / 100000
-        ).toFixed(1)} Lakhs.`,
-        user.userId,
-        now,
-      ]
-    );
+    await LeadActivityModel.create({
+      _id: `act_${crypto.randomUUID()}`,
+      lead_id: leadId,
+      activity_type: 'LEAD_CREATED',
+      title: 'Lead Profile Created',
+      description: `Lead created for ${data.customer_name} with budget ₹${(data.budget / 100000).toFixed(1)} L.`,
+      performed_by: userId || null,
+    });
 
-    const created = await this.getLeadById(id, user);
-    return created!;
+    return (await this.getLeadById(leadId, { userId: userId || '', email: '', roles: [UserRole.ADMIN] }))!;
   }
 
   /**
-   * Update an existing Lead
+   * Update lead details
    */
   public static async updateLead(
     id: string,
     data: Partial<{
       customer_name: string;
       phone: string;
-      email?: string | null;
-      city?: string | null;
-      budget?: number;
-      preferred_location?: string | null;
-      flat_type?: PropertyConfiguration;
-      interested_property?: string | null;
-      project_id?: string | null;
-      unit_id?: string | null;
-      property_id?: string | null;
-      loan_required?: number;
-      purchase_timeline?: PurchaseTimeline | null;
-      purpose?: PurchasePurpose | null;
-      assigned_to?: string | null;
-      pipeline_stage?: PipelineStage;
-      qualification_status?: QualificationStatus;
-      priority?: LeadPriority;
-      next_followup_date?: string | null;
-      notes?: string | null;
+      email: string;
+      city: string;
+      budget: number;
+      preferred_location: string;
+      flat_type: PropertyConfiguration;
+      interested_property: string;
+      project_id: string;
+      unit_id: string;
+      property_id: string;
+      loan_required: number;
+      purchase_timeline: PurchaseTimeline;
+      purpose: PurchasePurpose;
+      assigned_to: string;
+      pipeline_stage: PipelineStage;
+      qualification_status: QualificationStatus;
+      priority: LeadPriority;
+      next_followup_date: string;
+      notes: string;
     }>,
     user: JWTPayload
   ): Promise<Lead> {
-    const existing = await this.getLeadById(id, user);
-    if (!existing) {
-      const error: any = new Error('Lead not found.');
-      error.statusCode = 404;
-      throw error;
-    }
-
-    const updates: string[] = [];
-    const params: any[] = [];
-
-    const fieldMap: Record<string, any> = {
-      customer_name: data.customer_name?.trim(),
-      phone: data.phone?.trim(),
-      email: data.email !== undefined ? data.email?.trim() || null : undefined,
-      city: data.city !== undefined ? data.city?.trim() || null : undefined,
-      budget: data.budget,
-      preferred_location: data.preferred_location !== undefined ? data.preferred_location?.trim() || null : undefined,
-      flat_type: data.flat_type,
-      interested_property: data.interested_property !== undefined ? data.interested_property?.trim() || null : undefined,
-      project_id: data.project_id !== undefined ? data.project_id || null : undefined,
-      unit_id: data.unit_id !== undefined ? data.unit_id || null : undefined,
-      property_id: data.property_id !== undefined ? data.property_id || null : undefined,
-      loan_required: data.loan_required,
-      purchase_timeline: data.purchase_timeline !== undefined ? data.purchase_timeline || null : undefined,
-      purpose: data.purpose !== undefined ? data.purpose || null : undefined,
-      assigned_to: data.assigned_to !== undefined ? data.assigned_to || null : undefined,
-      pipeline_stage: data.pipeline_stage,
-      qualification_status: data.qualification_status,
-      priority: data.priority,
-      next_followup_date: data.next_followup_date !== undefined ? data.next_followup_date || null : undefined,
-      notes: data.notes !== undefined ? data.notes || null : undefined,
-    };
-
-    for (const [key, val] of Object.entries(fieldMap)) {
-      if (val !== undefined) {
-        updates.push(`${key} = ?`);
-        params.push(val);
-      }
-    }
-
-    if (updates.length > 0) {
-      const now = new Date().toISOString();
-      updates.push('updated_at = ?');
-      params.push(now);
-      params.push(id);
-      await db.run(`UPDATE leads SET ${updates.join(', ')} WHERE id = ?`, params);
-    }
-
-    const updated = await this.getLeadById(id, user);
-    return updated!;
-  }
-
-  /**
-   * Qualify a Lead
-   */
-  public static async qualifyLead(
-    leadId: string,
-    data: {
-      qualification_status: QualificationStatus;
-      budget?: number;
-      loan_required?: number;
-      preferred_location?: string;
-      flat_type?: PropertyConfiguration;
-      purchase_timeline?: PurchaseTimeline;
-      purpose?: PurchasePurpose;
-      remarks?: string;
-    },
-    user: JWTPayload
-  ): Promise<Lead> {
-    const existing = await this.getLeadById(leadId, user);
-    if (!existing) {
-      const error: any = new Error('Lead not found.');
-      error.statusCode = 404;
-      throw error;
-    }
-
-    const updates: string[] = ['qualification_status = ?'];
-    const params: any[] = [data.qualification_status];
-
-    if (data.budget !== undefined) {
-      updates.push('budget = ?');
-      params.push(data.budget);
-    }
-    if (data.loan_required !== undefined) {
-      updates.push('loan_required = ?');
-      params.push(data.loan_required);
-    }
-    if (data.preferred_location !== undefined) {
-      updates.push('preferred_location = ?');
-      params.push(data.preferred_location.trim());
-    }
-    if (data.flat_type !== undefined) {
-      updates.push('flat_type = ?');
-      params.push(data.flat_type);
-    }
-    if (data.purchase_timeline !== undefined) {
-      updates.push('purchase_timeline = ?');
-      params.push(data.purchase_timeline);
-    }
-    if (data.purpose !== undefined) {
-      updates.push('purpose = ?');
-      params.push(data.purpose);
-    }
-
-    const now = new Date().toISOString();
-    updates.push('updated_at = ?');
-    params.push(now);
-
-    params.push(leadId);
-
-    await db.run(`UPDATE leads SET ${updates.join(', ')} WHERE id = ?`, params);
-
-    // Record activity
-    await db.run(
-      `INSERT INTO lead_activities (id, lead_id, activity_type, title, description, performed_by, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [
-        `act_${crypto.randomUUID()}`,
-        leadId,
-        'QUALIFICATION_UPDATED',
-        `Lead Qualified as: ${data.qualification_status}`,
-        data.remarks ||
-          `Qualification status updated to "${data.qualification_status}". Flat type: ${
-            data.flat_type || existing.flat_type
-          }, Timeline: ${data.purchase_timeline || existing.purchase_timeline || 'N/A'}.`,
-        user.userId,
-        now,
-      ]
-    );
-
-    const updated = await this.getLeadById(leadId, user);
-    return updated!;
-  }
-
-  /**
-   * Update Lead Pipeline Stage (with backend stage change recording)
-   */
-  public static async updateStage(
-    leadId: string,
-    newStage: PipelineStage,
-    remarks: string | undefined,
-    user: JWTPayload
-  ): Promise<Lead> {
-    const existing = await this.getLeadById(leadId, user);
-    if (!existing) {
-      const error: any = new Error('Lead not found.');
-      error.statusCode = 404;
-      throw error;
-    }
-
-    if (existing.pipeline_stage === newStage) {
-      return existing;
-    }
-
-    const prevStage = existing.pipeline_stage;
-    const now = new Date().toISOString();
-
-    await db.run(
-      'UPDATE leads SET pipeline_stage = ?, updated_at = ? WHERE id = ?',
-      [newStage, now, leadId]
-    );
-
-    // Record Activity
-    await db.run(
-      `INSERT INTO lead_activities (id, lead_id, activity_type, title, description, performed_by, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [
-        `act_${crypto.randomUUID()}`,
-        leadId,
-        'STAGE_CHANGED',
-        `Pipeline Stage: ${prevStage} → ${newStage}`,
-        remarks || `Lead progression transitioned from "${prevStage}" stage to "${newStage}" stage.`,
-        user.userId,
-        now,
-      ]
-    );
-
-    const updated = await this.getLeadById(leadId, user);
-    return updated!;
-  }
-
-  /**
-   * Add Follow-Up Log to Lead
-   */
-  public static async addFollowUp(
-    leadId: string,
-    data: {
-      type: FollowUpType;
-      followup_date: string;
-      followup_time?: string | null;
-      remarks: string;
-      next_followup_date?: string | null;
-      executive_id?: string | null;
-    },
-    user: JWTPayload
-  ): Promise<FollowUp> {
-    const lead = await this.getLeadById(leadId, user);
+    const lead = await LeadModel.findById(id);
     if (!lead) {
       const error: any = new Error('Lead not found.');
       error.statusCode = 404;
       throw error;
     }
 
-    const followUpId = `fol_${crypto.randomUUID()}`;
-    const now = new Date().toISOString();
-    const executiveId = data.executive_id || user.userId;
+    if (data.customer_name !== undefined) lead.customer_name = data.customer_name.trim();
+    if (data.phone !== undefined) lead.phone = data.phone.trim();
+    if (data.email !== undefined) lead.email = data.email.trim().toLowerCase();
+    if (data.city !== undefined) lead.city = data.city.trim();
+    if (data.budget !== undefined) lead.budget = data.budget;
+    if (data.preferred_location !== undefined) lead.preferred_location = data.preferred_location?.trim() || null;
+    if (data.flat_type !== undefined) lead.flat_type = data.flat_type;
+    if (data.interested_property !== undefined) lead.interested_property = data.interested_property?.trim() || null;
+    if (data.project_id !== undefined) lead.project_id = data.project_id;
+    if (data.unit_id !== undefined) lead.unit_id = data.unit_id;
+    if (data.property_id !== undefined) lead.property_id = data.property_id;
+    if (data.loan_required !== undefined) lead.loan_required = data.loan_required;
+    if (data.purchase_timeline !== undefined) lead.purchase_timeline = data.purchase_timeline;
+    if (data.purpose !== undefined) lead.purpose = data.purpose;
+    if (data.assigned_to !== undefined) lead.assigned_to = data.assigned_to;
+    if (data.pipeline_stage !== undefined) lead.pipeline_stage = data.pipeline_stage;
+    if (data.qualification_status !== undefined) lead.qualification_status = data.qualification_status;
+    if (data.priority !== undefined) lead.priority = data.priority;
+    if (data.next_followup_date !== undefined) lead.next_followup_date = data.next_followup_date;
+    if (data.notes !== undefined) lead.notes = data.notes?.trim() || null;
 
-    await db.run(
-      `INSERT INTO follow_ups (
-        id, lead_id, type, followup_date, followup_time, remarks, next_followup_date, executive_id, status, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        followUpId,
-        leadId,
-        data.type,
-        data.followup_date,
-        data.followup_time || null,
-        data.remarks.trim(),
-        data.next_followup_date || null,
-        executiveId,
-        'Completed',
-        now,
-      ]
-    );
+    await lead.save();
+    return (await this.getLeadById(id, user))!;
+  }
 
-    // If next follow-up date provided, update lead's next_followup_date
-    if (data.next_followup_date) {
-      await db.run('UPDATE leads SET next_followup_date = ?, updated_at = ? WHERE id = ?', [
-        data.next_followup_date,
-        now,
-        leadId,
-      ]);
+  /**
+   * Update Pipeline Stage
+   */
+  public static async updatePipelineStage(id: string, stage: PipelineStage, userId?: string): Promise<Lead> {
+    const lead = await LeadModel.findById(id);
+    if (!lead) {
+      const error: any = new Error('Lead not found.');
+      error.statusCode = 404;
+      throw error;
     }
 
-    // Record activity in lead timeline
-    await db.run(
-      `INSERT INTO lead_activities (id, lead_id, activity_type, title, description, performed_by, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [
-        `act_${crypto.randomUUID()}`,
-        leadId,
-        'FOLLOW_UP_LOGGED',
-        `Follow-Up Recorded: ${data.type}`,
-        `Follow-up on ${data.followup_date}: "${data.remarks}"${
-          data.next_followup_date ? ` (Next follow-up: ${data.next_followup_date})` : ''
-        }`,
-        user.userId,
-        now,
-      ]
-    );
+    const oldStage = lead.pipeline_stage;
+    lead.pipeline_stage = stage;
+    await lead.save();
 
-    const followUp = await db.get<FollowUp>(
-      `SELECT f.*, u.name as executive_name
-       FROM follow_ups f
-       LEFT JOIN users u ON f.executive_id = u.id
-       WHERE f.id = ?`,
-      [followUpId]
-    );
+    await LeadActivityModel.create({
+      _id: `act_${crypto.randomUUID()}`,
+      lead_id: id,
+      activity_type: 'STAGE_CHANGED',
+      title: `Stage Advanced to ${stage}`,
+      description: `Pipeline stage changed from ${oldStage} to ${stage}.`,
+      performed_by: userId || null,
+    });
 
-    return followUp!;
+    return (await this.getLeadById(id, { userId: userId || '', email: '', roles: [UserRole.ADMIN] }))!;
+  }
+
+  /**
+   * Assign lead to executive
+   */
+  public static async assignLead(id: string, assignedTo: string | null, userId?: string): Promise<Lead> {
+    const lead = await LeadModel.findById(id);
+    if (!lead) {
+      const error: any = new Error('Lead not found.');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    lead.assigned_to = assignedTo;
+    await lead.save();
+
+    let executiveName = 'Unassigned';
+    if (assignedTo) {
+      const exec = await UserModel.findById(assignedTo);
+      executiveName = exec?.name || 'Executive';
+    }
+
+    await LeadActivityModel.create({
+      _id: `act_${crypto.randomUUID()}`,
+      lead_id: id,
+      activity_type: 'EXECUTIVE_ASSIGNED',
+      title: 'Lead Reassigned',
+      description: `Lead assigned to ${executiveName}.`,
+      performed_by: userId || null,
+    });
+
+    return (await this.getLeadById(id, { userId: userId || '', email: '', roles: [UserRole.ADMIN] }))!;
+  }
+
+  /**
+   * Delete lead
+   */
+  public static async deleteLead(id: string): Promise<boolean> {
+    const res = await LeadModel.findByIdAndDelete(id);
+    if (res) {
+      await LeadActivityModel.deleteMany({ lead_id: id });
+      await FollowUpModel.deleteMany({ lead_id: id });
+      await SiteVisitModel.deleteMany({ lead_id: id });
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Pipeline dashboard metrics
+   */
+  public static async getLeadTimeline(leadId: string, user: JWTPayload): Promise<LeadActivity[]> {
+    return this.getLeadActivities(leadId);
+  }
+
+  public static async qualifyLead(
+    id: string,
+    data: { qualification_status: QualificationStatus; remarks?: string; budget?: number; purchase_timeline?: PurchaseTimeline },
+    user: JWTPayload
+  ): Promise<Lead> {
+    const lead = await LeadModel.findById(id);
+    if (!lead) throw new Error('Lead not found.');
+
+    lead.qualification_status = data.qualification_status;
+    if (data.budget !== undefined) lead.budget = data.budget;
+    if (data.purchase_timeline !== undefined) lead.purchase_timeline = data.purchase_timeline;
+    await lead.save();
+
+    await LeadActivityModel.create({
+      _id: `act_${crypto.randomUUID()}`,
+      lead_id: id,
+      activity_type: 'QUALIFICATION_UPDATED',
+      title: `Qualification Updated to ${data.qualification_status}`,
+      description: data.remarks || `Status updated to ${data.qualification_status}.`,
+      performed_by: user.userId,
+    });
+
+    return (await this.getLeadById(id, user))!;
+  }
+
+  public static async updateStage(
+    id: string,
+    stage: PipelineStage,
+    remarks?: string,
+    user?: JWTPayload
+  ): Promise<Lead> {
+    return this.updatePipelineStage(id, stage, user?.userId);
+  }
+
+  public static async addFollowUp(
+    leadId: string,
+    data: any,
+    user: JWTPayload
+  ): Promise<FollowUp> {
+    return this.createFollowUp(leadId, data, user.userId);
+  }
+
+  public static async getLeadStats(user: JWTPayload): Promise<{
+    totalLeads: number;
+    pipelineValue: number;
+    convertedCount: number;
+    conversionRate: number;
+    stageDistribution: Record<string, number>;
+  }> {
+    const query: any = {};
+    const isAdmin = user.roles.includes(UserRole.ADMIN);
+    const isEmployee = user.roles.includes(UserRole.EMPLOYEE);
+    if (!isAdmin && !isEmployee) {
+      query.assigned_to = user.userId;
+    }
+
+    const leads = await LeadModel.find(query);
+    const totalLeads = leads.length;
+    const pipelineValue = leads.reduce((acc, l) => acc + (l.budget || 0), 0);
+    const convertedCount = leads.filter((l) => l.pipeline_stage === 'Converted').length;
+    const conversionRate = totalLeads > 0 ? Number(((convertedCount / totalLeads) * 100).toFixed(1)) : 0;
+
+    const stageDistribution: Record<string, number> = {};
+    for (const l of leads) {
+      stageDistribution[l.pipeline_stage] = (stageDistribution[l.pipeline_stage] || 0) + 1;
+    }
+
+    return { totalLeads, pipelineValue, convertedCount, conversionRate, stageDistribution };
+  }
+
+  /**
+   * Timeline Activities
+   */
+  public static async getLeadActivities(leadId: string): Promise<LeadActivity[]> {
+    const rows = await LeadActivityModel.find({ lead_id: leadId }).sort({ created_at: -1 });
+    return Promise.all(
+      rows.map(async (act) => {
+        let performer_name: string | null = null;
+        if (act.performed_by) {
+          const u = await UserModel.findById(act.performed_by);
+          performer_name = u?.name || null;
+        }
+        return {
+          id: act._id,
+          lead_id: act.lead_id,
+          activity_type: act.activity_type as any,
+          title: act.title,
+          description: act.description,
+          performed_by: act.performed_by,
+          performer_name,
+          metadata: act.metadata,
+          created_at: typeof act.created_at === 'string' ? act.created_at : act.created_at.toISOString(),
+        };
+      })
+    );
+  }
+
+  public static async createActivity(
+    leadId: string,
+    data: { activity_type: string; title: string; description?: string; metadata?: any },
+    userId?: string
+  ): Promise<LeadActivity> {
+    const actId = `act_${crypto.randomUUID()}`;
+    const doc: any = await LeadActivityModel.create({
+      _id: actId,
+      lead_id: leadId,
+      activity_type: data.activity_type as any,
+      title: data.title,
+      description: data.description || null,
+      metadata: data.metadata || null,
+      performed_by: userId || null,
+    });
+
+    let performer_name: string | null = null;
+    if (userId) {
+      const u = await UserModel.findById(userId);
+      performer_name = u?.name || null;
+    }
+
+    return {
+      id: doc._id,
+      lead_id: doc.lead_id,
+      activity_type: doc.activity_type as any,
+      title: doc.title,
+      description: doc.description,
+      performed_by: doc.performed_by,
+      performer_name,
+      metadata: doc.metadata,
+      created_at: typeof doc.created_at === 'string' ? doc.created_at : doc.created_at.toISOString(),
+    };
+  }
+
+  /**
+   * Follow-ups for a lead
+   */
+  public static async getLeadFollowUps(leadId: string): Promise<FollowUp[]> {
+    const rows = await FollowUpModel.find({ lead_id: leadId }).sort({ scheduled_date: -1 });
+    return rows.map((f) => ({
+      id: f._id,
+      lead_id: f.lead_id,
+      type: f.follow_up_type,
+      followup_date: f.scheduled_date,
+      followup_time: f.scheduled_time || '',
+      remarks: f.remarks,
+      next_followup_date: f.next_follow_up_date || null,
+      executive_id: f.assigned_user_id,
+      status: f.status as any,
+      created_at: typeof f.created_at === 'string' ? f.created_at : f.created_at.toISOString(),
+    }));
+  }
+
+  public static async createFollowUp(
+    leadId: string,
+    data: {
+      type: FollowUpType;
+      followup_date: string;
+      followup_time?: string;
+      remarks: string;
+      next_followup_date?: string;
+      executive_id?: string;
+      status?: string;
+    },
+    userId?: string
+  ): Promise<FollowUp> {
+    const folId = `fol_${crypto.randomUUID()}`;
+    const doc = await FollowUpModel.create({
+      _id: folId,
+      lead_id: leadId,
+      assigned_user_id: data.executive_id || userId || '',
+      follow_up_type: data.type,
+      scheduled_date: data.followup_date,
+      scheduled_time: data.followup_time || null,
+      remarks: data.remarks,
+      status: (data.status as any) || 'Completed',
+      next_follow_up_date: data.next_followup_date || null,
+      created_by: userId || null,
+    });
+
+    if (data.next_followup_date) {
+      await LeadModel.findByIdAndUpdate(leadId, { next_followup_date: data.next_followup_date });
+    }
+
+    await LeadActivityModel.create({
+      _id: `act_${crypto.randomUUID()}`,
+      lead_id: leadId,
+      activity_type: 'FOLLOW_UP_LOGGED',
+      title: `${data.type} Logged`,
+      description: data.remarks,
+      performed_by: userId || null,
+    });
+
+    return {
+      id: doc._id,
+      lead_id: doc.lead_id,
+      type: doc.follow_up_type,
+      followup_date: doc.scheduled_date,
+      followup_time: doc.scheduled_time || '',
+      remarks: doc.remarks,
+      next_followup_date: doc.next_follow_up_date || null,
+      executive_id: doc.assigned_user_id,
+      status: doc.status as any,
+      created_at: typeof doc.created_at === 'string' ? doc.created_at : doc.created_at.toISOString(),
+    };
+  }
+
+  public static async updateFollowUp(
+    id: string,
+    data: Partial<{
+      type: FollowUpType;
+      followup_date: string;
+      followup_time: string;
+      remarks: string;
+      next_followup_date: string;
+      status: string;
+    }>
+  ): Promise<FollowUp> {
+    const fol = await FollowUpModel.findById(id);
+    if (!fol) throw new Error('Follow-up not found.');
+
+    if (data.type !== undefined) fol.follow_up_type = data.type;
+    if (data.followup_date !== undefined) fol.scheduled_date = data.followup_date;
+    if (data.followup_time !== undefined) fol.scheduled_time = data.followup_time;
+    if (data.remarks !== undefined) fol.remarks = data.remarks;
+    if (data.next_followup_date !== undefined) fol.next_follow_up_date = data.next_followup_date;
+    if (data.status !== undefined) fol.status = data.status as any;
+
+    await fol.save();
+
+    return {
+      id: fol._id,
+      lead_id: fol.lead_id,
+      type: fol.follow_up_type,
+      followup_date: fol.scheduled_date,
+      followup_time: fol.scheduled_time || '',
+      remarks: fol.remarks,
+      next_followup_date: fol.next_follow_up_date || null,
+      executive_id: fol.assigned_user_id,
+      status: fol.status as any,
+      created_at: typeof fol.created_at === 'string' ? fol.created_at : fol.created_at.toISOString(),
+    };
   }
 }

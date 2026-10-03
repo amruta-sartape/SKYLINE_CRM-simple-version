@@ -160,36 +160,36 @@ const PROJECT_GALLERY_CATALOG: Record<string, ProjectImageSet> = {
     ],
   },
 
-  // 5. Skyline Pinnacle Towers (Viman Nagar, Pune)
+  // 5. Skyline Pinnacle Luxury Sky Suites (Penthouse & Residences)
   pinnacle: {
     projectId: 'proj_skyline_pinnacle',
-    cover: '/images/projects/project-pinnacle/exterior.jpg',
-    category: 'Iconic Skyscraper Residences',
-    badge: 'Crown Spire Skyscraper',
+    cover: '/images/projects/project-grandeur/interior.jpg',
+    category: 'Luxury Sky Residences & Penthouses',
+    badge: 'Panoramic Sky Residences',
     gallery: [
       {
-        url: '/images/projects/project-pinnacle/exterior.jpg',
-        label: 'Crystalline Skyscraper & Crown Spire',
-        category: 'Exterior',
-        altText: 'Iconic luxury residential tower with illuminated architectural crown at twilight',
-      },
-      {
-        url: '/images/projects/project-pinnacle/interior.jpg',
-        label: 'Sky Observatory Cocktail Lounge',
+        url: '/images/projects/project-grandeur/interior.jpg',
+        label: 'Panoramic Open-Concept Living Room',
         category: 'Interior',
-        altText: 'High-rise residential observatory lounge with panoramic city night view',
+        altText: 'Sunlit living room with natural wood finishes and floor-to-ceiling windows',
       },
       {
-        url: '/images/projects/project-pinnacle/amenities.jpg',
-        label: 'Skyline Terrace Deck',
+        url: '/images/properties/prop_res_bung_01/interior.jpg',
+        label: 'Master Suite & Private Lounge',
+        category: 'Interior',
+        altText: 'Double-height luxury master suite with light marble floors',
+      },
+      {
+        url: '/images/projects/project-grandeur/amenities.jpg',
+        label: 'Skyline Terrace Pergola Deck',
         category: 'Amenities',
-        altText: 'Luxury penthouse rooftop terrace with city views',
+        altText: 'Landscaped rooftop outdoor terrace with pergola and glass railings',
       },
       {
-        url: '/images/projects/project-pinnacle/entrance.jpg',
-        label: 'Grand Architectural Arrival Porte-Cochère',
+        url: '/images/projects/project-heights/entrance.jpg',
+        label: 'Grand Double-Height Arrival Court',
         category: 'Entrance',
-        altText: 'Double-height grand entrance with water feature and evening lights',
+        altText: 'Modern entrance courtyard with ambient daylight and water fountain',
       },
     ],
   },
@@ -227,9 +227,43 @@ const PROJECT_GALLERY_CATALOG: Record<string, ProjectImageSet> = {
       },
     ],
   },
+
+  // 7. Skyline Aurora Luxury Penthouse Suites
+  aurora: {
+    projectId: 'prop_skyline_aurora',
+    cover: '/images/property-penthouse.jpg',
+    category: 'Dual-Level Penthouse Suites',
+    badge: 'Sky Villa Penthouse',
+    gallery: [
+      {
+        url: '/images/property-penthouse.jpg',
+        label: 'Dual-Level Living Room Suite',
+        category: 'Interior',
+        altText: 'Luxury staged living room with double height ceiling and panoramic windows',
+      },
+      {
+        url: '/images/projects/project-grandeur/exterior.jpg',
+        label: 'Contemporary Residential Facade',
+        category: 'Exterior',
+        altText: 'Modern glass residential tower with private terrace decks',
+      },
+      {
+        url: '/images/projects/project-grandeur/amenities.jpg',
+        label: 'Private Rooftop Sunset Lounge',
+        category: 'Amenities',
+        altText: 'Rooftop private infinity pool deck with pergola',
+      },
+      {
+        url: '/images/projects/project-grandeur/entrance.jpg',
+        label: 'Concierge Arrival Lobby',
+        category: 'Entrance',
+        altText: 'Grand illuminated arrival courtyard',
+      },
+    ],
+  },
 };
 
-const PROJECT_KEYS = ['bayview', 'heights', 'grandeur', 'oasis', 'pinnacle', 'commercial'];
+const PROJECT_KEYS = ['bayview', 'heights', 'grandeur', 'oasis', 'pinnacle', 'commercial', 'aurora'];
 
 /**
  * Reusable Property Image Classification Library
@@ -265,10 +299,10 @@ export const PROPERTY_IMAGE_LIBRARY = {
   },
   penthouses: {
     title: 'Iconic Sky Villas & Penthouse Lounges',
-    cover: '/images/projects/project-pinnacle/exterior.jpg',
-    interior: '/images/projects/project-pinnacle/interior.jpg',
-    amenities: '/images/projects/project-pinnacle/amenities.jpg',
-    entrance: '/images/projects/project-pinnacle/entrance.jpg',
+    cover: '/images/property-penthouse.jpg',
+    interior: '/images/property-penthouse.jpg',
+    amenities: '/images/projects/project-grandeur/amenities.jpg',
+    entrance: '/images/projects/project-grandeur/entrance.jpg',
   },
   commercial: {
     title: 'Grade-A Commercial & Office Parks',
@@ -294,6 +328,9 @@ export function getProjectImageSet(project?: Partial<PropertyProject> | null, fa
   const id = (project.id || '').toLowerCase();
 
   // 1. Direct Name / Key Matching
+  if (name.includes('aurora') || name.includes('penthouse')) {
+    return PROJECT_GALLERY_CATALOG.aurora;
+  }
   if (name.includes('commercial') || name.includes('office') || name.includes('tech') || code === 'skc') {
     return PROJECT_GALLERY_CATALOG.commercial;
   }

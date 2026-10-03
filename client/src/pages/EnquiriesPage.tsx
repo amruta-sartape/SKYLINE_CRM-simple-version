@@ -140,14 +140,14 @@ export const EnquiriesPage: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold tracking-tight text-slate-900 font-sans">
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 font-sans">
                 Client Enquiries
               </h1>
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[#1A2230] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#242F42]">
                 {total} Total
               </span>
             </div>
-            <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
               Capture, qualify, and convert marketing inquiries from digital channels into CRM leads.
             </p>
           </div>
@@ -176,7 +176,7 @@ export const EnquiriesPage: React.FC = () => {
         )}
 
         {/* Filter Bar & Search */}
-        <div className="bg-white rounded-xl border border-slate-200/90 p-4 shadow-subtle space-y-3">
+        <div className="bg-white dark:bg-[#141A24] rounded-xl border border-slate-200/90 dark:border-[#242F42] p-4 shadow-subtle space-y-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2.5">
             {/* Search Input */}
             <div className="lg:col-span-2">
@@ -199,7 +199,7 @@ export const EnquiriesPage: React.FC = () => {
                   setSelectedSource(e.target.value);
                   setPage(1);
                 }}
-                className="w-full h-10 px-3 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-800"
+                className="w-full h-10 px-3 text-xs bg-slate-50 dark:bg-[#101622] border border-slate-200 dark:border-[#242F42] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-800 dark:text-slate-100"
               >
                 <option value="">All Sources</option>
                 <option value="Website">Website</option>
@@ -221,7 +221,7 @@ export const EnquiriesPage: React.FC = () => {
                   setSelectedConfig(e.target.value);
                   setPage(1);
                 }}
-                className="w-full h-10 px-3 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-800"
+                className="w-full h-10 px-3 text-xs bg-slate-50 dark:bg-[#101622] border border-slate-200 dark:border-[#242F42] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-800 dark:text-slate-100"
               >
                 <option value="">All Flat Types</option>
                 <option value="1 BHK">1 BHK</option>
@@ -239,7 +239,7 @@ export const EnquiriesPage: React.FC = () => {
                   setSelectedStatus(e.target.value);
                   setPage(1);
                 }}
-                className="w-full h-10 px-3 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-800"
+                className="w-full h-10 px-3 text-xs bg-slate-50 dark:bg-[#101622] border border-slate-200 dark:border-[#242F42] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-800 dark:text-slate-100"
               >
                 <option value="">All Statuses</option>
                 <option value="New Lead">New Lead</option>
@@ -265,19 +265,19 @@ export const EnquiriesPage: React.FC = () => {
         </div>
 
         {/* Enquiries Table Card */}
-        <div className="bg-white rounded-xl border border-slate-200/90 shadow-subtle overflow-hidden">
+        <div className="bg-white dark:bg-[#141A24] rounded-xl border border-slate-200/90 dark:border-[#242F42] shadow-subtle overflow-hidden">
           {isLoading ? (
             <div className="py-20 flex flex-col items-center justify-center gap-3">
               <Spinner size="lg" variant="primary" />
-              <span className="text-xs text-slate-500 font-medium">Loading enquiries...</span>
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Loading enquiries...</span>
             </div>
           ) : enquiries.length === 0 ? (
             <div className="py-16 px-4 text-center space-y-3">
-              <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+              <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-[#1A2230] text-slate-400 dark:text-slate-500 flex items-center justify-center mx-auto">
                 <Building className="w-6 h-6" />
               </div>
-              <h3 className="text-sm font-bold text-slate-800">No Enquiries Found</h3>
-              <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
+              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">No Enquiries Found</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto leading-relaxed">
                 {searchTerm || selectedSource || selectedConfig || selectedStatus
                   ? 'No enquiries match your active filter criteria. Try adjusting or resetting your search filters.'
                   : 'Start capturing prospective property buyers by adding your first client enquiry.'}
@@ -298,7 +298,7 @@ export const EnquiriesPage: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[11px]">
+                  <tr className="bg-slate-50/80 dark:bg-[#101622]/90 border-b border-slate-200 dark:border-[#242F42] text-slate-600 dark:text-slate-400 font-bold uppercase tracking-wider text-[11px]">
                     <th className="py-3 px-4">Customer</th>
                     <th className="py-3 px-4">Interested Property</th>
                     <th className="py-3 px-4">Config</th>
@@ -310,55 +310,55 @@ export const EnquiriesPage: React.FC = () => {
                     <th className="py-3 px-4 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-slate-100 dark:divide-[#242F42]">
                   {enquiries.map((enq) => {
                     const isConverted =
-                      enq.status === 'Converted' || Boolean(enq.converted_lead_id);
+                       enq.status === 'Converted' || Boolean(enq.converted_lead_id);
 
                     return (
                       <tr
                         key={enq.id}
-                        className="hover:bg-slate-50/70 transition-colors group"
+                        className="hover:bg-slate-50/70 dark:hover:bg-[#1A2230]/50 transition-colors group"
                       >
                         {/* Customer */}
                         <td className="py-3 px-4">
-                          <div className="font-bold text-slate-900">{enq.customer_name}</div>
-                          <div className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
-                            <Phone className="w-3 h-3 text-slate-400" />
+                          <div className="font-bold text-slate-900 dark:text-slate-100">{enq.customer_name}</div>
+                          <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5">
+                            <Phone className="w-3 h-3 text-slate-400 dark:text-slate-500" />
                             <span>{enq.phone}</span>
                             {enq.city && <span>• {enq.city}</span>}
                           </div>
                         </td>
 
                         {/* Interested Property */}
-                        <td className="py-3 px-4 font-semibold text-slate-800">
+                        <td className="py-3 px-4 font-semibold text-slate-800 dark:text-slate-200">
                           {enq.interested_property}
                         </td>
 
                         {/* Config */}
                         <td className="py-3 px-4">
-                          <span className="inline-block px-2 py-0.5 font-bold text-[10px] bg-slate-100 text-slate-800 rounded border border-slate-200">
+                          <span className="inline-block px-2 py-0.5 font-bold text-[10px] bg-slate-100 dark:bg-[#101622] text-slate-800 dark:text-slate-300 rounded border border-slate-200 dark:border-[#242F42]">
                             {enq.configuration}
                           </span>
                         </td>
 
                         {/* Budget */}
-                        <td className="py-3 px-4 font-bold text-slate-900">
+                        <td className="py-3 px-4 font-bold text-slate-900 dark:text-slate-100">
                           ₹{(enq.budget / 100000).toFixed(1)} L
                         </td>
 
                         {/* Source */}
                         <td className="py-3 px-4">
-                          <span className="text-[11px] font-medium text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200 shadow-2xs">
+                          <span className="text-[11px] font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-[#101622] px-2 py-0.5 rounded border border-slate-200 dark:border-[#242F42] shadow-2xs">
                             {enq.lead_source}
                           </span>
                         </td>
 
                         {/* Assigned Executive */}
                         <td className="py-3 px-4">
-                          <span className="text-slate-700 font-medium">
+                          <span className="text-slate-700 dark:text-slate-300 font-medium">
                             {enq.assigned_name || (
-                              <span className="text-slate-400 italic">Unassigned</span>
+                              <span className="text-slate-400 dark:text-slate-500 italic">Unassigned</span>
                             )}
                           </span>
                         </td>
@@ -369,7 +369,7 @@ export const EnquiriesPage: React.FC = () => {
                         </td>
 
                         {/* Enquiry Date */}
-                        <td className="py-3 px-4 text-[11px] text-slate-500">
+                        <td className="py-3 px-4 text-[11px] text-slate-500 dark:text-slate-400">
                           {enq.enquiry_date ? enq.enquiry_date.split('T')[0] : 'N/A'}
                         </td>
 
@@ -383,7 +383,7 @@ export const EnquiriesPage: React.FC = () => {
                                 setActiveEnquiry(enq);
                                 setIsViewModalOpen(true);
                               }}
-                              className="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors"
+                              className="p-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors"
                               title="View details"
                             >
                               <Eye className="w-4 h-4" />
@@ -396,7 +396,7 @@ export const EnquiriesPage: React.FC = () => {
                                 setActiveEnquiry(enq);
                                 setIsFormModalOpen(true);
                               }}
-                              className="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors"
+                              className="p-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors"
                               title="Edit enquiry"
                             >
                               <Edit2 className="w-3.5 h-3.5" />
@@ -416,8 +416,8 @@ export const EnquiriesPage: React.FC = () => {
                                 Convert
                               </Button>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
-                                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800/60">
+                                <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                                 <span>Converted</span>
                               </span>
                             )}
@@ -433,7 +433,7 @@ export const EnquiriesPage: React.FC = () => {
 
           {/* Pagination Footer */}
           {!isLoading && enquiries.length > 0 && (
-            <div className="p-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+            <div className="p-4 border-t border-slate-100 dark:border-[#242F42] flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
               <div>
                 Showing {(page - 1) * limit + 1} to{' '}
                 {Math.min(page * limit, total)} of {total} enquiries
@@ -448,7 +448,7 @@ export const EnquiriesPage: React.FC = () => {
                 >
                   Previous
                 </Button>
-                <span className="font-semibold text-slate-700">
+                <span className="font-semibold text-slate-700 dark:text-slate-300">
                   Page {page} of {totalPages}
                 </span>
                 <Button

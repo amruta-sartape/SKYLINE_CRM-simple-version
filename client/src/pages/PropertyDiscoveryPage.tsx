@@ -17,11 +17,14 @@ import {
   getPropertyArea,
 } from '../utils/discoveryData';
 import { AppShell } from '../components/layout/AppShell';
-import { PropertyTypeSelector } from '../components/discovery/PropertyTypeSelector';
-import { PropertyFilterPanel } from '../components/discovery/PropertyFilterPanel';
+import { PropertyDiscoveryHero } from '../components/discovery/PropertyDiscoveryHero';
+import { PropertyQuickFilterBar } from '../components/discovery/PropertyQuickFilterBar';
+import { PropertyCategoryPills } from '../components/discovery/PropertyCategoryPills';
+import { PropertyFilterSidebar } from '../components/discovery/PropertyFilterSidebar';
 import { PropertyDiscoveryCard } from '../components/discovery/PropertyDiscoveryCard';
 import { PropertyDiscoveryDetailModal } from '../components/discovery/PropertyDiscoveryDetailModal';
 import { PropertyEmptyState } from '../components/discovery/PropertyEmptyState';
+import { X, ChevronDown } from 'lucide-react';
 
 export const PropertyDiscoveryPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -60,6 +63,9 @@ export const PropertyDiscoveryPage: React.FC = () => {
     facing: 'All',
     sortBy: initialSort,
   });
+
+  // Sidebar toggle state (Default open on wide screens)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   // Data fetching state
   const [dbProjects, setDbProjects] = useState<PropertyProject[]>([]);
@@ -115,6 +121,25 @@ export const PropertyDiscoveryPage: React.FC = () => {
     });
     return Array.from(citiesSet).sort();
   }, [fullCatalog]);
+
+  // Calculate active filter count
+  const activeFilterCount = useMemo(() => {
+    return (
+      (filters.query ? 1 : 0) +
+      (filters.category !== 'All' ? 1 : 0) +
+      (filters.subtype ? 1 : 0) +
+      (filters.city !== 'All' ? 1 : 0) +
+      (filters.pricePreset !== 'all' || filters.minPrice !== null || filters.maxPrice !== null ? 1 : 0) +
+      (filters.areaPreset !== 'all' || filters.minArea !== null || filters.maxArea !== null ? 1 : 0) +
+      (filters.availability !== 'All' ? 1 : 0) +
+      (filters.bhk.length > 0 ? 1 : 0) +
+      (filters.parking !== 'All' ? 1 : 0) +
+      (filters.furnishing !== 'All' ? 1 : 0) +
+      (filters.zoning !== 'All' ? 1 : 0) +
+      (filters.facing !== 'All' ? 1 : 0) +
+      (filters.sortBy !== 'featured' ? 1 : 0)
+    );
+  }, [filters]);
 
   // Sync state changes with URL Search Params
   const updateFiltersAndUrl = (updated: Partial<DiscoveryFilters>) => {
@@ -356,8 +381,28 @@ export const PropertyDiscoveryPage: React.FC = () => {
   return (
     <AppShell>
       <div className="space-y-6 text-left">
-        {/* 1. "WHAT ARE YOU LOOKING FOR?" Hero Property Type Selector (Step 2 Intact) */}
-        <PropertyTypeSelector
+        {/* ========================================================================= */}
+        {/* 1. HERO BANNER: "Discover Your Dream Property" */}
+        {/* ========================================================================= */}
+        <PropertyDiscoveryHero totalCount={fullCatalog.length} />
+
+        {/* ========================================================================= */}
+        {/* 2. QUICK SEARCH & TOOLBAR */}
+        {/* ========================================================================= */}
+        <PropertyQuickFilterBar
+          filters={filters}
+          onChangeFilters={updateFiltersAndUrl}
+          onResetFilters={handleResetFilters}
+          availableCities={availableCities}
+          isSidebarOpen={isSidebarOpen}
+          onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
+          activeFilterCount={activeFilterCount}
+        />
+
+        {/* ========================================================================= */}
+        {/* 3. PROPERTY CATEGORY NAVIGATION PILLS */}
+        {/* ========================================================================= */}
+        <PropertyCategoryPills
           selectedCategory={filters.category}
           onSelectCategory={handleSelectCategory}
           selectedSubtype={filters.subtype}
@@ -366,54 +411,165 @@ export const PropertyDiscoveryPage: React.FC = () => {
           totalCount={fullCatalog.length}
         />
 
-        {/* 2. Step 3 Smart Property Listing, Search & Adaptive Filter Panel */}
-        <PropertyFilterPanel
-          filters={filters}
-          onChangeFilters={updateFiltersAndUrl}
-          onResetFilters={handleResetFilters}
-          availableCities={availableCities}
-          totalResults={filteredProperties.length}
-          catalogTotal={fullCatalog.length}
-        />
+        {/* ========================================================================= */}
+        {/* 4. MAIN CONTENT AREA: 4-COLUMN PROPERTY GRID + RIGHT FILTER SIDEBAR */}
+        {/* ========================================================================= */}
+        <div className="flex flex-col lg:flex-row gap-6 items-start">
+          {/* A. Property Grid Column */}
+          <div className="flex-1 min-w-0 space-y-4 w-full">
+            {/* Header: Result Count + Active Filter Tags + Sort */}
+            <div className="bg-white dark:bg-[#141A24] px-4 py-3 rounded-xl border border-slate-200/90 dark:border-[#242F42] shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                  Showing <span className="text-blue-600 dark:text-sky-400 font-extrabold">{filteredProperties.length}</span> properties
+                </span>
 
-        {/* 3. Results Grid & Skeletons */}
-        {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div
-                key={i}
-                className="h-96 bg-white rounded-2xl border border-stone-200/90 overflow-hidden"
-              >
-                <div className="h-48 bg-stone-100" />
-                <div className="p-4 space-y-3">
-                  <div className="h-4 bg-stone-100 rounded w-3/4" />
-                  <div className="h-3 bg-stone-100/60 rounded w-1/2" />
-                  <div className="h-16 bg-stone-50 rounded w-full mt-4" />
+                {/* Active Filter Chips */}
+                {filters.subtype && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 dark:bg-sky-950/60 text-blue-800 dark:text-sky-300 text-[11px] font-semibold border border-blue-200 dark:border-sky-800/60">
+                    {filters.subtype}
+                    <button
+                      type="button"
+                      onClick={() => updateFiltersAndUrl({ subtype: null })}
+                      className="hover:text-blue-950 dark:hover:text-white cursor-pointer"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                )}
+
+                {filters.city !== 'All' && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-[11px] font-semibold border border-slate-200 dark:border-slate-700">
+                    {filters.city}
+                    <button
+                      type="button"
+                      onClick={() => updateFiltersAndUrl({ city: 'All' })}
+                      className="hover:text-slate-950 dark:hover:text-white cursor-pointer"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                )}
+
+                {filters.pricePreset !== 'all' && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 text-[11px] font-semibold border border-amber-200 dark:border-amber-800/60">
+                    {PRICE_PRESETS.find((p) => p.id === filters.pricePreset)?.label}
+                    <button
+                      type="button"
+                      onClick={() => updateFiltersAndUrl({ pricePreset: 'all', minPrice: null, maxPrice: null })}
+                      className="hover:text-amber-950 dark:hover:text-white cursor-pointer"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                )}
+
+                {filters.bhk.map((b) => (
+                  <span
+                    key={b}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 dark:bg-sky-950/60 text-blue-800 dark:text-sky-300 text-[11px] font-semibold border border-blue-200 dark:border-sky-800/60"
+                  >
+                    {b}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        updateFiltersAndUrl({
+                          bhk: filters.bhk.filter((x) => x !== b),
+                        })
+                      }
+                      className="hover:text-blue-950 dark:hover:text-white cursor-pointer"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+
+              {/* Quick Sort */}
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 hidden sm:inline">Sort:</span>
+                <div className="relative">
+                  <select
+                    value={filters.sortBy}
+                    onChange={(e) => updateFiltersAndUrl({ sortBy: e.target.value as any })}
+                    className="px-2.5 py-1.5 text-xs font-semibold bg-slate-50 dark:bg-[#101622] text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-[#242F42] rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 appearance-none cursor-pointer pr-7"
+                  >
+                    <option value="featured">Recommended</option>
+                    <option value="price-asc">Price: Low to High</option>
+                    <option value="price-desc">Price: High to Low</option>
+                    <option value="area-asc">Area: Low to High</option>
+                    <option value="area-desc">Area: High to Low</option>
+                  </select>
+                  <ChevronDown className="w-3 h-3 text-slate-400 dark:text-slate-500 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
                 </div>
               </div>
-            ))}
-          </div>
-        ) : filteredProperties.length === 0 ? (
-          <PropertyEmptyState
-            onReset={handleResetFilters}
-            searchTerm={filters.query}
-            selectedSubtype={filters.subtype}
-            selectedCategory={filters.category}
-          />
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProperties.map((property) => (
-              <PropertyDiscoveryCard
-                key={property.id}
-                property={property}
-                onViewDetails={(p) => navigate(`/discovery/${p.id}`)}
-                onInquire={(p) => navigate(`/discovery/${p.id}`)}
-              />
-            ))}
-          </div>
-        )}
+            </div>
 
-        {/* 4. Property Detail Inspection Modal */}
+            {/* B. Property Cards Grid */}
+            {isLoading ? (
+              <div
+                className={`grid gap-5 animate-pulse ${
+                  isSidebarOpen
+                    ? 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4'
+                    : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
+                }`}
+              >
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                  <div
+                    key={i}
+                    className="h-96 bg-white dark:bg-[#141A24] rounded-2xl border border-slate-200/90 dark:border-[#242F42] overflow-hidden"
+                  >
+                    <div className="h-48 bg-slate-100 dark:bg-slate-800" />
+                    <div className="p-4 space-y-3">
+                      <div className="h-4 bg-slate-100 dark:bg-slate-800 rounded w-3/4" />
+                      <div className="h-3 bg-slate-100/60 dark:bg-slate-800/60 rounded w-1/2" />
+                      <div className="h-14 bg-slate-50 dark:bg-slate-800/40 rounded w-full mt-4" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : filteredProperties.length === 0 ? (
+              <PropertyEmptyState
+                onReset={handleResetFilters}
+                searchTerm={filters.query}
+                selectedSubtype={filters.subtype}
+                selectedCategory={filters.category}
+              />
+            ) : (
+              <div
+                className={`grid gap-5 ${
+                  isSidebarOpen
+                    ? 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4'
+                    : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
+                }`}
+              >
+                {filteredProperties.map((property) => (
+                  <PropertyDiscoveryCard
+                    key={property.id}
+                    property={property}
+                    onViewDetails={(p) => navigate(`/discovery/${p.id}`)}
+                    onInquire={(p) => navigate(`/discovery/${p.id}`)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* C. Right-Side Filter Sidebar Panel (Desktop sticky / Mobile collapsible) */}
+          {isSidebarOpen && (
+            <div className="w-full lg:w-80 shrink-0 lg:sticky lg:top-4">
+              <PropertyFilterSidebar
+                filters={filters}
+                onChangeFilters={updateFiltersAndUrl}
+                onResetFilters={handleResetFilters}
+                availableCities={availableCities}
+                activeFilterCount={activeFilterCount}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* 5. Inspection Modal Fallback */}
         <PropertyDiscoveryDetailModal
           isOpen={Boolean(selectedProperty)}
           onClose={() => setSelectedProperty(null)}

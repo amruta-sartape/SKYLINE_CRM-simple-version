@@ -103,15 +103,15 @@ export const ConvertToLeadModal: React.FC<ConvertToLeadModalProps> = ({
         )}
 
         {/* Enquiry Summary Pill */}
-        <div className="p-3 bg-brand-50/70 border border-brand-200/80 rounded-lg flex items-center justify-between">
+        <div className="p-3 bg-brand-50/70 dark:bg-amber-950/30 border border-brand-200/80 dark:border-amber-800/40 rounded-lg flex items-center justify-between">
           <div>
-            <div className="font-bold text-brand-950 text-sm">{enquiry.customer_name}</div>
-            <div className="text-[11px] text-brand-800">
+            <div className="font-bold text-brand-950 dark:text-amber-200 text-sm">{enquiry.customer_name}</div>
+            <div className="text-[11px] text-brand-800 dark:text-amber-300/80">
               {enquiry.configuration} • {enquiry.interested_property} • ₹
               {(enquiry.budget / 100000).toFixed(1)} Lakhs
             </div>
           </div>
-          <span className="text-[10px] font-bold uppercase tracking-wider bg-white px-2 py-1 rounded border border-brand-200 text-brand-700">
+          <span className="text-[10px] font-bold uppercase tracking-wider bg-white dark:bg-[#101622] px-2 py-1 rounded border border-brand-200 dark:border-amber-800/40 text-brand-700 dark:text-amber-300">
             Source: {enquiry.lead_source}
           </span>
         </div>
@@ -134,7 +134,7 @@ export const ConvertToLeadModal: React.FC<ConvertToLeadModalProps> = ({
               value={formData.assigned_to || ''}
               onChange={handleChange}
               disabled={isSubmitting}
-              className="w-full h-10 px-3 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-900"
+              className="w-full h-10 px-3 text-xs bg-white dark:bg-[#101622] border border-slate-300 dark:border-[#242F42] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-amber-400/20 focus:border-slate-900 dark:focus:border-amber-400/50 text-slate-900 dark:text-slate-100"
             >
               <option value="">-- Unassigned --</option>
               {executives.map((exec) => (
@@ -153,7 +153,7 @@ export const ConvertToLeadModal: React.FC<ConvertToLeadModalProps> = ({
               value={formData.purchase_timeline || '1-3 Months'}
               onChange={handleChange}
               disabled={isSubmitting}
-              className="w-full h-10 px-3 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-900"
+              className="w-full h-10 px-3 text-xs bg-white dark:bg-[#101622] border border-slate-300 dark:border-[#242F42] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-amber-400/20 focus:border-slate-900 dark:focus:border-amber-400/50 text-slate-900 dark:text-slate-100"
             >
               <option value="Immediate">Immediate (0-30 days)</option>
               <option value="1-3 Months">1-3 Months</option>
@@ -168,7 +168,7 @@ export const ConvertToLeadModal: React.FC<ConvertToLeadModalProps> = ({
               value={formData.purpose || 'Self Use'}
               onChange={handleChange}
               disabled={isSubmitting}
-              className="w-full h-10 px-3 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-900"
+              className="w-full h-10 px-3 text-xs bg-white dark:bg-[#101622] border border-slate-300 dark:border-[#242F42] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-amber-400/20 focus:border-slate-900 dark:focus:border-amber-400/50 text-slate-900 dark:text-slate-100"
             >
               <option value="Self Use">Self Use (End User)</option>
               <option value="Investment">Investment (Rental/Capital)</option>
@@ -181,7 +181,7 @@ export const ConvertToLeadModal: React.FC<ConvertToLeadModalProps> = ({
               value={formData.priority || 'Medium'}
               onChange={handleChange}
               disabled={isSubmitting}
-              className="w-full h-10 px-3 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-900"
+              className="w-full h-10 px-3 text-xs bg-white dark:bg-[#101622] border border-slate-300 dark:border-[#242F42] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-amber-400/20 focus:border-slate-900 dark:focus:border-amber-400/50 text-slate-900 dark:text-slate-100"
             >
               <option value="Low">Low</option>
               <option value="Medium">Medium</option>
@@ -192,12 +192,12 @@ export const ConvertToLeadModal: React.FC<ConvertToLeadModalProps> = ({
         </div>
 
         {/* Loan Requirement Checkbox */}
-        <div className="p-3 bg-slate-50 border border-slate-200/80 rounded-lg flex items-center justify-between">
+        <div className="p-3 bg-slate-50 dark:bg-[#141A24] border border-slate-200/80 dark:border-[#242F42] rounded-lg flex items-center justify-between">
           <div>
-            <label htmlFor="loan_required" className="font-bold text-slate-800 cursor-pointer">
+            <label htmlFor="loan_required" className="font-bold text-slate-800 dark:text-slate-200 cursor-pointer">
               Home Loan Assistance Required?
             </label>
-            <p className="text-[11px] text-slate-500 mt-0.5">
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
               Flag lead for bank verification & loan processing desk
             </p>
           </div>
@@ -208,7 +208,7 @@ export const ConvertToLeadModal: React.FC<ConvertToLeadModalProps> = ({
             checked={Boolean(formData.loan_required)}
             onChange={handleChange}
             disabled={isSubmitting}
-            className="w-4 h-4 text-brand-600 rounded border-slate-300 focus:ring-brand-500 cursor-pointer"
+            className="w-4 h-4 text-brand-600 rounded border-slate-300 dark:border-slate-600 focus:ring-brand-500 cursor-pointer"
           />
         </div>
 
@@ -220,7 +220,7 @@ export const ConvertToLeadModal: React.FC<ConvertToLeadModalProps> = ({
             value={formData.notes || ''}
             onChange={handleChange}
             disabled={isSubmitting}
-            className="w-full p-2.5 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-900 resize-none"
+            className="w-full p-2.5 text-xs bg-white dark:bg-[#101622] border border-slate-300 dark:border-[#242F42] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-amber-400/20 focus:border-slate-900 dark:focus:border-amber-400/50 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 resize-none"
             placeholder="Key preferences, customer availability for site visits..."
           />
         </FormField>

@@ -4,8 +4,44 @@
 
 @layer base {
   :root {
+    --background: #F8F7F4;
+    --surface: #FFFFFF;
+    --surface-secondary: #F4F3EF;
+    --surface-muted: #EBE8E1;
+    --surface-hover: #F1EFEA;
+    --foreground: #1C1917;
+    --foreground-secondary: #57534E;
+    --foreground-muted: #78716C;
+    --border: #E7E5E4;
+    --border-subtle: #F0EEE9;
+    --border-focus: #1C1917;
+    --accent: #B45309;
+    --accent-light: #FEF3C7;
+    --accent-foreground: #92400E;
+
     --color-brand-primary: #0F172A;
     --color-brand-accent: #2563EB;
+    --color-brand-gold: #D4AF37;
+  }
+
+  .dark {
+    --background: #0C1017;
+    --surface: #141A24;
+    --surface-secondary: #1A2230;
+    --surface-muted: #212C3D;
+    --surface-hover: #1E2737;
+    --foreground: #F1F5F9;
+    --foreground-secondary: #94A3B8;
+    --foreground-muted: #64748B;
+    --border: #242F42;
+    --border-subtle: #1C2433;
+    --border-focus: #D4AF37;
+    --accent: #D4AF37;
+    --accent-light: rgba(212, 175, 55, 0.15);
+    --accent-foreground: #FDE047;
+
+    --color-brand-primary: #F1F5F9;
+    --color-brand-accent: #3B82F6;
     --color-brand-gold: #D4AF37;
   }
 
@@ -14,17 +50,22 @@
     color-scheme: light;
   }
 
+  html.dark {
+    color-scheme: dark;
+  }
+
   body {
     margin: 0;
     padding: 0;
     min-height: 100vh;
-    background-color: #F8FAFC;
-    color: #0F172A;
+    background-color: var(--background);
+    color: var(--foreground);
     overflow-x: hidden;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 }
 
-/* Custom modern scrollbar */
+/* Custom modern scrollbar - Light Mode */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -34,13 +75,25 @@
   background: #F1F5F9;
 }
 
+.dark ::-webkit-scrollbar-track {
+  background: #101622;
+}
+
 ::-webkit-scrollbar-thumb {
   background: #CBD5E1;
   border-radius: 9999px;
 }
 
+.dark ::-webkit-scrollbar-thumb {
+  background: #2A364C;
+}
+
 ::-webkit-scrollbar-thumb:hover {
   background: #94A3B8;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #3B4B66;
 }
 
 /* Luxury glassmorphism */
@@ -49,6 +102,13 @@
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.dark .glass-panel {
+  background: rgba(20, 26, 36, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(36, 47, 66, 0.8);
 }
 
 .glass-dark {
@@ -91,4 +151,12 @@
   background-repeat: no-repeat;
 }
 
-
+.dark .bg-grid-pattern {
+  background-color: #0C1017;
+  background-image: 
+    linear-gradient(180deg, rgba(12, 16, 23, 0.90) 0%, rgba(16, 22, 34, 0.95) 100%),
+    url('/skyline-realestate-bg.svg');
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+}

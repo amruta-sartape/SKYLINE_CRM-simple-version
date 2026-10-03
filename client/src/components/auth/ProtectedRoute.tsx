@@ -32,8 +32,14 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   if (!isAuthenticated || !user) {
-    // Redirect unauthenticated visitor to login page, preserving return target
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    const isCustomerTarget = Boolean(
+      (allowedRoles && allowedRoles.some((r) => String(r).toUpperCase().trim() === 'CUSTOMER')) ||
+      location.pathname.startsWith('/customer') ||
+      ['/wishlist', '/my-enquiries', '/my-site-visits'].includes(location.pathname)
+    );
+    const loginTarget = isCustomerTarget ? '/customer/login' : '/login';
+    // Redirect unauthenticated visitor to appropriate login page, preserving return target
+    return <Navigate to={loginTarget} state={{ from: location }} replace />;
   }
 
   // Check role authorization if specified

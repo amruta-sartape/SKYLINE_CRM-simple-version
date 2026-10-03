@@ -4,6 +4,7 @@ import { FormField } from '../ui/FormField';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
 import { Alert } from '../ui/Alert';
+import { useAuth } from '../../context/AuthContext';
 import type {
   Enquiry,
   EnquiryFormData,
@@ -39,13 +40,18 @@ export const EnquiryFormModal: React.FC<EnquiryFormModalProps> = ({
   initialPropertyContext,
   executives,
 }) => {
+  const { user } = useAuth();
   const isEdit = Boolean(initialData);
+  const isCustomer = Boolean(
+    user?.roles?.some((r: string) => String(r).toUpperCase().trim() === 'CUSTOMER') ||
+    String((user as any)?.role || '').toUpperCase().trim() === 'CUSTOMER'
+  );
 
   const [formData, setFormData] = useState<EnquiryFormData>({
-    customer_name: '',
-    phone: '',
-    email: '',
-    city: '',
+    customer_name: user?.name || '',
+    phone: user?.phone || '+1 (555) 0100',
+    email: user?.email || '',
+    city: 'Mumbai',
     budget: 10000000,
     interested_property: '',
     property_id: undefined,
@@ -89,38 +95,38 @@ export const EnquiryFormModal: React.FC<EnquiryFormModalProps> = ({
       }
 
       setFormData({
-        customer_name: '',
-        phone: '',
-        email: '',
-        city: initialPropertyContext.city || '',
+        customer_name: user?.name || '',
+        phone: user?.phone || '+1 (555) 0100',
+        email: user?.email || '',
+        city: initialPropertyContext.city || 'Mumbai',
         budget: budgetVal,
         interested_property: initialPropertyContext.title,
         property_id: initialPropertyContext.id,
         configuration: '2 BHK',
         lead_source: 'Website',
-        assigned_to: '',
+        assigned_to: executives[0]?.id || '',
         status: 'New Lead',
         enquiry_date: new Date().toISOString().split('T')[0],
       });
     } else {
       setFormData({
-        customer_name: '',
-        phone: '',
-        email: '',
-        city: '',
+        customer_name: user?.name || '',
+        phone: user?.phone || '+1 (555) 0100',
+        email: user?.email || '',
+        city: 'Mumbai',
         budget: 10000000,
         interested_property: '',
         property_id: undefined,
         configuration: '2 BHK',
         lead_source: 'Website',
-        assigned_to: '',
+        assigned_to: executives[0]?.id || '',
         status: 'New Lead',
         enquiry_date: new Date().toISOString().split('T')[0],
       });
     }
     setErrors({});
     setServerError(null);
-  }, [initialData, initialPropertyContext, isOpen]);
+  }, [initialData, initialPropertyContext, isOpen, user, executives]);
 
   const validate = () => {
     const errs: Record<string, string> = {};
@@ -192,7 +198,7 @@ export const EnquiryFormModal: React.FC<EnquiryFormModalProps> = ({
             onClick={handleSubmit}
             isLoading={isSubmitting}
           >
-            {isEdit ? 'Save Changes' : 'Record Enquiry'}
+            {isEdit ? 'Save Changes' : 'Submit Enquiry'}
           </Button>
         </div>
       }
@@ -243,7 +249,7 @@ export const EnquiryFormModal: React.FC<EnquiryFormModalProps> = ({
 
         {/* Section 1: Customer Information */}
         <div className="space-y-3">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-1 flex items-center gap-1.5">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-[#242F42] pb-1 flex items-center gap-1.5">
             <User className="w-3.5 h-3.5 text-slate-400" />
             <span>Customer Information</span>
           </h4>
@@ -305,7 +311,7 @@ export const EnquiryFormModal: React.FC<EnquiryFormModalProps> = ({
 
         {/* Section 2: Property Interest */}
         <div className="space-y-3">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-1 flex items-center gap-1.5">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-[#242F42] pb-1 flex items-center gap-1.5">
             <Building className="w-3.5 h-3.5 text-slate-400" />
             <span>Property Interest & Budget</span>
           </h4>
@@ -325,7 +331,7 @@ export const EnquiryFormModal: React.FC<EnquiryFormModalProps> = ({
                         }));
                       }
                     }}
-                    className="w-full text-[11px] px-2 py-1 bg-slate-50 border border-slate-200 rounded text-slate-600 mb-1"
+                    className="w-full text-[11px] px-2 py-1 bg-slate-50 dark:bg-[#101622] border border-slate-200 dark:border-[#242F42] rounded text-slate-600 dark:text-slate-300 mb-1"
                   >
                     <option value="">-- Quick Pick from Project Master --</option>
                     {projects.map((p) => (
@@ -353,7 +359,7 @@ export const EnquiryFormModal: React.FC<EnquiryFormModalProps> = ({
                 value={formData.configuration}
                 onChange={handleChange}
                 disabled={isSubmitting}
-                className="w-full h-10 px-3 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-900"
+                className="w-full h-10 px-3 text-xs bg-white dark:bg-[#101622] border border-slate-300 dark:border-[#242F42] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-amber-400/20 focus:border-slate-900 dark:focus:border-amber-400/50 text-slate-900 dark:text-slate-100"
               >
                 <option value="1 BHK">1 BHK Apartment</option>
                 <option value="2 BHK">2 BHK Apartment</option>
@@ -390,7 +396,7 @@ export const EnquiryFormModal: React.FC<EnquiryFormModalProps> = ({
                 value={formData.lead_source}
                 onChange={handleChange}
                 disabled={isSubmitting}
-                className="w-full h-10 px-3 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-900"
+                className="w-full h-10 px-3 text-xs bg-white dark:bg-[#101622] border border-slate-300 dark:border-[#242F42] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-amber-400/20 focus:border-slate-900 dark:focus:border-amber-400/50 text-slate-900 dark:text-slate-100"
               >
                 <option value="Website">Website</option>
                 <option value="Facebook / Instagram">Facebook / Instagram</option>
@@ -404,59 +410,61 @@ export const EnquiryFormModal: React.FC<EnquiryFormModalProps> = ({
             </FormField>
           </div>
         </div>
+        {/* Section 3: Assignment & Status (Staff Only) */}
+        {!isCustomer && (
+          <div className="space-y-3">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-[#242F42] pb-1 flex items-center gap-1.5">
+              <Calendar className="w-3.5 h-3.5 text-slate-400" />
+              <span>Assignment & Status</span>
+            </h4>
 
-        {/* Section 3: Assignment & Status */}
-        <div className="space-y-3">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-1 flex items-center gap-1.5">
-            <Calendar className="w-3.5 h-3.5 text-slate-400" />
-            <span>Assignment & Status</span>
-          </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <FormField label="Assigned Sales Executive">
+                <select
+                  name="assigned_to"
+                  value={formData.assigned_to || ''}
+                  onChange={handleChange}
+                  disabled={isSubmitting}
+                  className="w-full h-10 px-3 text-xs bg-white dark:bg-[#101622] border border-slate-300 dark:border-[#242F42] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-amber-400/20 focus:border-slate-900 dark:focus:border-amber-400/50 text-slate-900 dark:text-slate-100"
+                >
+                  <option value="">-- Unassigned --</option>
+                  {executives.map((exec) => (
+                    <option key={exec.id} value={exec.id}>
+                      {exec.name} ({exec.role || 'Staff'})
+                    </option>
+                  ))}
+                </select>
+              </FormField>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <FormField label="Assigned Sales Executive">
-              <select
-                name="assigned_to"
-                value={formData.assigned_to || ''}
-                onChange={handleChange}
-                disabled={isSubmitting}
-                className="w-full h-10 px-3 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-900"
-              >
-                <option value="">-- Unassigned --</option>
-                {executives.map((exec) => (
-                  <option key={exec.id} value={exec.id}>
-                    {exec.name} ({exec.role || 'Staff'})
-                  </option>
-                ))}
-              </select>
-            </FormField>
+              <FormField label="Enquiry Status">
+                <select
+                  name="status"
+                  value={formData.status || 'New Lead'}
+                  onChange={handleChange}
+                  disabled={isSubmitting}
+                  className="w-full h-10 px-3 text-xs bg-white dark:bg-[#101622] border border-slate-300 dark:border-[#242F42] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-amber-400/20 focus:border-slate-900 dark:focus:border-amber-400/50 text-slate-900 dark:text-slate-100"
+                >
+                  <option value="New Lead">New Lead</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Converted">Converted</option>
+                  <option value="Dropped">Dropped</option>
+                </select>
+              </FormField>
 
-            <FormField label="Enquiry Status">
-              <select
-                name="status"
-                value={formData.status || 'New Lead'}
-                onChange={handleChange}
-                disabled={isSubmitting}
-                className="w-full h-10 px-3 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 text-slate-900"
-              >
-                <option value="New Lead">New Lead</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Converted">Converted</option>
-                <option value="Dropped">Dropped</option>
-              </select>
-            </FormField>
-
-            <FormField label="Enquiry Date">
-              <Input
-                name="enquiry_date"
-                type="date"
-                value={formData.enquiry_date || ''}
-                onChange={handleChange}
-                disabled={isSubmitting}
-              />
-            </FormField>
+              <FormField label="Enquiry Date">
+                <Input
+                  name="enquiry_date"
+                  type="date"
+                  value={formData.enquiry_date || ''}
+                  onChange={handleChange}
+                  disabled={isSubmitting}
+                />
+              </FormField>
+            </div>
           </div>
-        </div>
+        )}
       </form>
     </Modal>
   );
 };
+

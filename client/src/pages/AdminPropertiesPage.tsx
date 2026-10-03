@@ -178,33 +178,33 @@ export const AdminPropertiesPage: React.FC = () => {
   const getCategoryBadgeClass = (category: string) => {
     switch (category) {
       case 'Residential':
-        return 'bg-amber-50 text-amber-900 border-amber-200';
+        return 'bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 border-amber-200 dark:border-amber-800/40';
       case 'Commercial':
-        return 'bg-stone-100 text-stone-800 border-stone-200';
+        return 'bg-stone-100 dark:bg-slate-800 text-stone-800 dark:text-slate-200 border-stone-200 dark:border-[#242F42]';
       case 'Land':
-        return 'bg-emerald-50 text-emerald-800 border-emerald-200';
+        return 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/40';
       case 'Projects':
-        return 'bg-amber-100 text-amber-950 border-amber-300';
+        return 'bg-amber-100 dark:bg-amber-950/60 text-amber-950 dark:text-amber-200 border-amber-300 dark:border-amber-800/60';
       default:
-        return 'bg-stone-100 text-stone-700 border-stone-200';
+        return 'bg-stone-100 dark:bg-slate-800 text-stone-700 dark:text-slate-300 border-stone-200 dark:border-[#242F42]';
     }
   };
 
   return (
     <AppShell>
-      <div className="space-y-6 max-w-7xl mx-auto pb-16 animate-fade-in text-stone-900">
+      <div className="space-y-6 max-w-7xl mx-auto pb-16 animate-fade-in text-stone-900 dark:text-slate-100">
         {/* Top Header Banner */}
-        <div className="bg-white p-6 md:p-8 rounded-2xl border border-stone-200/90 shadow-xs relative overflow-hidden text-left">
+        <div className="bg-white dark:bg-[#141A24] p-6 md:p-8 rounded-2xl border border-stone-200/90 dark:border-[#242F42] shadow-xs relative overflow-hidden text-left">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
             <div>
-              <div className="flex items-center gap-2 text-amber-800 text-xs font-bold uppercase tracking-wider mb-2">
+              <div className="flex items-center gap-2 text-amber-800 dark:text-amber-400 text-xs font-bold uppercase tracking-wider mb-2">
                 <ShieldCheck className="w-4 h-4" />
                 <span>Admin Real Estate Governance</span>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-stone-900 tracking-tight flex items-center gap-3">
+              <h1 className="text-2xl sm:text-3xl font-bold text-stone-900 dark:text-slate-100 tracking-tight flex items-center gap-3">
                 Property Portfolio Master
               </h1>
-              <p className="text-stone-500 text-sm mt-1 max-w-2xl leading-relaxed">
+              <p className="text-stone-500 dark:text-slate-400 text-sm mt-1 max-w-2xl leading-relaxed">
                 Add, edit, categorize, and upload high-resolution photo galleries across all 19 real-estate classifications. All updates synchronize instantly with Customer Discovery.
               </p>
             </div>
@@ -215,7 +215,7 @@ export const AdminPropertiesPage: React.FC = () => {
                 size="md"
                 onClick={() => navigate('/discovery')}
                 leftIcon={<ExternalLink className="w-4 h-4" />}
-                className="border-stone-300 bg-white hover:bg-stone-50 text-stone-700"
+                className="border-stone-300 dark:border-[#242F42] bg-white dark:bg-[#101622] hover:bg-stone-50 dark:hover:bg-[#1A2230] text-stone-700 dark:text-slate-200"
               >
                 Customer Discovery
               </Button>
@@ -224,7 +224,7 @@ export const AdminPropertiesPage: React.FC = () => {
                 size="md"
                 onClick={handleCreateNew}
                 leftIcon={<Plus className="w-4 h-4" />}
-                className="bg-stone-900 hover:bg-stone-800 text-white font-semibold shadow-xs border-0"
+                className="bg-stone-900 dark:bg-amber-500 hover:bg-stone-800 dark:hover:bg-amber-600 text-white dark:text-stone-950 font-semibold shadow-xs border-0"
               >
                 Add New Property
               </Button>
@@ -234,73 +234,73 @@ export const AdminPropertiesPage: React.FC = () => {
 
         {/* Portfolio Stats Counters */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 text-left">
-          <div className="p-4 rounded-2xl bg-white border border-stone-200/90 shadow-xs hover:border-stone-300 transition-all">
-            <div className="flex items-center justify-between text-stone-500 text-xs font-medium">
+          <div className="p-4 rounded-2xl bg-white dark:bg-[#141A24] border border-stone-200/90 dark:border-[#242F42] shadow-xs hover:border-stone-300 dark:hover:border-slate-600 transition-all">
+            <div className="flex items-center justify-between text-stone-500 dark:text-slate-400 text-xs font-medium">
               <span>Total Listings</span>
-              <Layers className="w-4 h-4 text-stone-400" />
+              <Layers className="w-4 h-4 text-stone-400 dark:text-slate-500" />
             </div>
-            <div className="text-2xl font-bold text-stone-900 mt-2">{metrics.total}</div>
-            <div className="text-[11px] text-stone-400 mt-0.5">{metrics.active} Active Portfolio</div>
+            <div className="text-2xl font-bold text-stone-900 dark:text-slate-100 mt-2">{metrics.total}</div>
+            <div className="text-[11px] text-stone-400 dark:text-slate-500 mt-0.5">{metrics.active} Active Portfolio</div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-white border border-stone-200/90 shadow-xs hover:border-stone-300 transition-all">
-            <div className="flex items-center justify-between text-stone-500 text-xs font-medium">
+          <div className="p-4 rounded-2xl bg-white dark:bg-[#141A24] border border-stone-200/90 dark:border-[#242F42] shadow-xs hover:border-stone-300 dark:hover:border-slate-600 transition-all">
+            <div className="flex items-center justify-between text-stone-500 dark:text-slate-400 text-xs font-medium">
               <span>Residential</span>
-              <Home className="w-4 h-4 text-amber-700" />
+              <Home className="w-4 h-4 text-amber-700 dark:text-amber-400" />
             </div>
-            <div className="text-2xl font-bold text-stone-900 mt-2">{metrics.residential}</div>
-            <div className="text-[11px] text-stone-400 mt-0.5">Villas, Apts, Flats</div>
+            <div className="text-2xl font-bold text-stone-900 dark:text-slate-100 mt-2">{metrics.residential}</div>
+            <div className="text-[11px] text-stone-400 dark:text-slate-500 mt-0.5">Villas, Apts, Flats</div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-white border border-stone-200/90 shadow-xs hover:border-stone-300 transition-all">
-            <div className="flex items-center justify-between text-stone-500 text-xs font-medium">
+          <div className="p-4 rounded-2xl bg-white dark:bg-[#141A24] border border-stone-200/90 dark:border-[#242F42] shadow-xs hover:border-stone-300 dark:hover:border-slate-600 transition-all">
+            <div className="flex items-center justify-between text-stone-500 dark:text-slate-400 text-xs font-medium">
               <span>Commercial</span>
-              <Briefcase className="w-4 h-4 text-stone-500" />
+              <Briefcase className="w-4 h-4 text-stone-500 dark:text-slate-400" />
             </div>
-            <div className="text-2xl font-bold text-stone-900 mt-2">{metrics.commercial}</div>
-            <div className="text-[11px] text-stone-400 mt-0.5">Offices, Retail, Malls</div>
+            <div className="text-2xl font-bold text-stone-900 dark:text-slate-100 mt-2">{metrics.commercial}</div>
+            <div className="text-[11px] text-stone-400 dark:text-slate-500 mt-0.5">Offices, Retail, Malls</div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-white border border-stone-200/90 shadow-xs hover:border-stone-300 transition-all">
-            <div className="flex items-center justify-between text-stone-500 text-xs font-medium">
+          <div className="p-4 rounded-2xl bg-white dark:bg-[#141A24] border border-stone-200/90 dark:border-[#242F42] shadow-xs hover:border-stone-300 dark:hover:border-slate-600 transition-all">
+            <div className="flex items-center justify-between text-stone-500 dark:text-slate-400 text-xs font-medium">
               <span>Land & Plots</span>
-              <TrendingUp className="w-4 h-4 text-emerald-700" />
+              <TrendingUp className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
             </div>
-            <div className="text-2xl font-bold text-stone-900 mt-2">{metrics.land}</div>
-            <div className="text-[11px] text-stone-400 mt-0.5">Commercial & Farmland</div>
+            <div className="text-2xl font-bold text-stone-900 dark:text-slate-100 mt-2">{metrics.land}</div>
+            <div className="text-[11px] text-stone-400 dark:text-slate-500 mt-0.5">Commercial & Farmland</div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-white border border-stone-200/90 shadow-xs hover:border-stone-300 transition-all">
-            <div className="flex items-center justify-between text-stone-500 text-xs font-medium">
+          <div className="p-4 rounded-2xl bg-white dark:bg-[#141A24] border border-stone-200/90 dark:border-[#242F42] shadow-xs hover:border-stone-300 dark:hover:border-slate-600 transition-all">
+            <div className="flex items-center justify-between text-stone-500 dark:text-slate-400 text-xs font-medium">
               <span>Mega Projects</span>
-              <Building2 className="w-4 h-4 text-amber-700" />
+              <Building2 className="w-4 h-4 text-amber-700 dark:text-amber-400" />
             </div>
-            <div className="text-2xl font-bold text-stone-900 mt-2">{metrics.projects}</div>
-            <div className="text-[11px] text-stone-400 mt-0.5">Townships & Communities</div>
+            <div className="text-2xl font-bold text-stone-900 dark:text-slate-100 mt-2">{metrics.projects}</div>
+            <div className="text-[11px] text-stone-400 dark:text-slate-500 mt-0.5">Townships & Communities</div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-white border border-stone-200/90 shadow-xs hover:border-stone-300 transition-all">
-            <div className="flex items-center justify-between text-stone-500 text-xs font-medium">
+          <div className="p-4 rounded-2xl bg-white dark:bg-[#141A24] border border-stone-200/90 dark:border-[#242F42] shadow-xs hover:border-stone-300 dark:hover:border-slate-600 transition-all">
+            <div className="flex items-center justify-between text-stone-500 dark:text-slate-400 text-xs font-medium">
               <span>Archived</span>
-              <Archive className="w-4 h-4 text-stone-400" />
+              <Archive className="w-4 h-4 text-stone-400 dark:text-slate-500" />
             </div>
-            <div className="text-2xl font-bold text-stone-700 mt-2">{metrics.archived}</div>
-            <div className="text-[11px] text-stone-400 mt-0.5">Safely preserved</div>
+            <div className="text-2xl font-bold text-stone-700 dark:text-slate-300 mt-2">{metrics.archived}</div>
+            <div className="text-[11px] text-stone-400 dark:text-slate-500 mt-0.5">Safely preserved</div>
           </div>
         </div>
 
         {/* Search, Filter & Control Toolbar */}
-        <div className="bg-white rounded-2xl border border-stone-200/90 p-4 shadow-xs space-y-4 text-left">
+        <div className="bg-white dark:bg-[#141A24] rounded-2xl border border-stone-200/90 dark:border-[#242F42] p-4 shadow-xs space-y-4 text-left">
           <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
             {/* Search Input */}
             <div className="relative flex-1">
-              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
+              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 dark:text-slate-500" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search by title, code, city, locality..."
-                className="w-full pl-10 pr-4 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs sm:text-sm text-stone-900 placeholder-stone-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-amber-800/20 focus:border-amber-700"
+                className="w-full pl-10 pr-4 py-2 bg-stone-50 dark:bg-[#101622] border border-stone-200 dark:border-[#242F42] rounded-xl text-xs sm:text-sm text-stone-900 dark:text-slate-100 placeholder-stone-400 dark:placeholder-slate-500 focus:outline-none focus:bg-white dark:focus:bg-[#141A24] focus:ring-2 focus:ring-amber-800/20 focus:border-amber-700"
               />
             </div>
 
@@ -311,7 +311,7 @@ export const AdminPropertiesPage: React.FC = () => {
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="appearance-none bg-stone-50 border border-stone-200 rounded-xl pl-3.5 pr-8 py-2 text-xs font-semibold text-stone-800 focus:outline-none focus:bg-white focus:ring-2 focus:ring-amber-800/20 focus:border-amber-700 cursor-pointer"
+                  className="appearance-none bg-stone-50 dark:bg-[#101622] border border-stone-200 dark:border-[#242F42] rounded-xl pl-3.5 pr-8 py-2 text-xs font-semibold text-stone-800 dark:text-slate-200 focus:outline-none focus:bg-white dark:focus:bg-[#141A24] focus:ring-2 focus:ring-amber-800/20 focus:border-amber-700 cursor-pointer"
                 >
                   <option value="all">All Categories</option>
                   <option value="Residential">Residential</option>
@@ -319,7 +319,7 @@ export const AdminPropertiesPage: React.FC = () => {
                   <option value="Land">Land & Plots</option>
                   <option value="Projects">Master Projects</option>
                 </select>
-                <ChevronDown className="w-3.5 h-3.5 text-stone-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <ChevronDown className="w-3.5 h-3.5 text-stone-400 dark:text-slate-500 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
 
               {/* Status Filter */}
@@ -327,13 +327,13 @@ export const AdminPropertiesPage: React.FC = () => {
                 <select
                   value={selectedStatus}
                   onChange={(e) => setSelectedStatus(e.target.value as any)}
-                  className="appearance-none bg-stone-50 border border-stone-200 rounded-xl pl-3.5 pr-8 py-2 text-xs font-semibold text-stone-800 focus:outline-none focus:bg-white focus:ring-2 focus:ring-amber-800/20 focus:border-amber-700 cursor-pointer"
+                  className="appearance-none bg-stone-50 dark:bg-[#101622] border border-stone-200 dark:border-[#242F42] rounded-xl pl-3.5 pr-8 py-2 text-xs font-semibold text-stone-800 dark:text-slate-200 focus:outline-none focus:bg-white dark:focus:bg-[#141A24] focus:ring-2 focus:ring-amber-800/20 focus:border-amber-700 cursor-pointer"
                 >
                   <option value="active">Active Only</option>
                   <option value="archived">Archived Only</option>
                   <option value="all">All Status</option>
                 </select>
-                <ChevronDown className="w-3.5 h-3.5 text-stone-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <ChevronDown className="w-3.5 h-3.5 text-stone-400 dark:text-slate-500 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
 
               {/* Sort By */}
@@ -341,33 +341,33 @@ export const AdminPropertiesPage: React.FC = () => {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as any)}
-                  className="appearance-none bg-stone-50 border border-stone-200 rounded-xl pl-3.5 pr-8 py-2 text-xs font-semibold text-stone-800 focus:outline-none focus:bg-white focus:ring-2 focus:ring-amber-800/20 focus:border-amber-700 cursor-pointer"
+                  className="appearance-none bg-stone-50 dark:bg-[#101622] border border-stone-200 dark:border-[#242F42] rounded-xl pl-3.5 pr-8 py-2 text-xs font-semibold text-stone-800 dark:text-slate-200 focus:outline-none focus:bg-white dark:focus:bg-[#141A24] focus:ring-2 focus:ring-amber-800/20 focus:border-amber-700 cursor-pointer"
                 >
                   <option value="newest">Newest First</option>
                   <option value="price_asc">Price: Low to High</option>
                   <option value="price_desc">Price: High to Low</option>
                   <option value="title">Alphabetical (A-Z)</option>
                 </select>
-                <ChevronDown className="w-3.5 h-3.5 text-stone-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <ChevronDown className="w-3.5 h-3.5 text-stone-400 dark:text-slate-500 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
 
               {/* Refresh */}
               <button
                 type="button"
                 onClick={fetchProperties}
-                className="p-2 rounded-xl bg-stone-50 border border-stone-200 text-stone-600 hover:text-stone-900 hover:bg-stone-100 transition-colors cursor-pointer"
+                className="p-2 rounded-xl bg-stone-50 dark:bg-[#101622] border border-stone-200 dark:border-[#242F42] text-stone-600 dark:text-slate-400 hover:text-stone-900 dark:hover:text-slate-100 hover:bg-stone-100 dark:hover:bg-[#1A2230] transition-colors cursor-pointer"
                 title="Refresh listings"
               >
-                <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin text-amber-700' : ''}`} />
+                <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin text-amber-700 dark:text-amber-400' : ''}`} />
               </button>
 
               {/* View Mode Toggle */}
-              <div className="flex items-center rounded-xl bg-stone-100 border border-stone-200 p-0.5">
+              <div className="flex items-center rounded-xl bg-stone-100 dark:bg-[#101622] border border-stone-200 dark:border-[#242F42] p-0.5">
                 <button
                   type="button"
                   onClick={() => setViewMode('table')}
                   className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                    viewMode === 'table' ? 'bg-white text-stone-900 shadow-xs' : 'text-stone-500 hover:text-stone-900'
+                    viewMode === 'table' ? 'bg-white dark:bg-[#1E293B] text-stone-900 dark:text-amber-400 shadow-xs' : 'text-stone-500 dark:text-slate-400 hover:text-stone-900 dark:hover:text-slate-100'
                   }`}
                   title="Table View"
                 >
@@ -377,7 +377,7 @@ export const AdminPropertiesPage: React.FC = () => {
                   type="button"
                   onClick={() => setViewMode('grid')}
                   className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                    viewMode === 'grid' ? 'bg-white text-stone-900 shadow-xs' : 'text-stone-500 hover:text-stone-900'
+                    viewMode === 'grid' ? 'bg-white dark:bg-[#1E293B] text-stone-900 dark:text-amber-400 shadow-xs' : 'text-stone-500 dark:text-slate-400 hover:text-stone-900 dark:hover:text-slate-100'
                   }`}
                   title="Grid View"
                 >
@@ -390,25 +390,25 @@ export const AdminPropertiesPage: React.FC = () => {
 
         {/* Content Area */}
         {isLoading && properties.length === 0 ? (
-          <div className="p-16 text-center rounded-2xl bg-white border border-stone-200/90">
-            <RefreshCw className="w-8 h-8 text-amber-700 animate-spin mx-auto mb-3" />
-            <p className="text-sm font-semibold text-stone-700">Loading property portfolio...</p>
+          <div className="p-16 text-center rounded-2xl bg-white dark:bg-[#141A24] border border-stone-200/90 dark:border-[#242F42]">
+            <RefreshCw className="w-8 h-8 text-amber-700 dark:text-amber-400 animate-spin mx-auto mb-3" />
+            <p className="text-sm font-semibold text-stone-700 dark:text-slate-300">Loading property portfolio...</p>
           </div>
         ) : error ? (
-          <div className="p-8 text-center rounded-2xl bg-red-50 border border-red-200 text-red-800">
+          <div className="p-8 text-center rounded-2xl bg-red-50 dark:bg-rose-950/40 border border-red-200 dark:border-rose-800/40 text-red-800 dark:text-rose-300">
             <p className="font-semibold text-sm">{error}</p>
             <Button variant="outline" size="sm" onClick={fetchProperties} className="mt-3">
               Try Again
             </Button>
           </div>
         ) : properties.length === 0 ? (
-          <div className="p-16 text-center rounded-2xl bg-white border border-stone-200/90 shadow-xs space-y-4">
-            <div className="w-16 h-16 rounded-2xl bg-amber-50 border border-amber-200/60 flex items-center justify-center mx-auto text-amber-800">
+          <div className="p-16 text-center rounded-2xl bg-white dark:bg-[#141A24] border border-stone-200/90 dark:border-[#242F42] shadow-xs space-y-4">
+            <div className="w-16 h-16 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-800/40 flex items-center justify-center mx-auto text-amber-800 dark:text-amber-400">
               <Building2 className="w-8 h-8" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-stone-900">No properties found</h3>
-              <p className="text-xs text-stone-500 mt-1 max-w-md mx-auto">
+              <h3 className="text-base font-bold text-stone-900 dark:text-slate-100">No properties found</h3>
+              <p className="text-xs text-stone-500 dark:text-slate-400 mt-1 max-w-md mx-auto">
                 No real-estate listings match your current filters. Add a new property or adjust your search.
               </p>
             </div>
@@ -417,18 +417,18 @@ export const AdminPropertiesPage: React.FC = () => {
               size="sm"
               onClick={handleCreateNew}
               leftIcon={<Plus className="w-4 h-4" />}
-              className="bg-stone-900 hover:bg-stone-800 text-white font-semibold border-0 shadow-xs"
+              className="bg-stone-900 dark:bg-amber-500 hover:bg-stone-800 dark:hover:bg-amber-600 text-white dark:text-stone-950 font-semibold border-0 shadow-xs"
             >
               Add New Property
             </Button>
           </div>
         ) : viewMode === 'table' ? (
           /* Table View */
-          <div className="bg-white rounded-2xl border border-stone-200/90 shadow-xs overflow-hidden text-left">
+          <div className="bg-white dark:bg-[#141A24] rounded-2xl border border-stone-200/90 dark:border-[#242F42] shadow-xs overflow-hidden text-left">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-stone-200 bg-stone-50/80 text-[11px] font-bold text-stone-600 uppercase tracking-wider">
+                  <tr className="border-b border-stone-200 dark:border-[#242F42] bg-stone-50/80 dark:bg-[#101622] text-[11px] font-bold text-stone-600 dark:text-slate-400 uppercase tracking-wider">
                     <th className="py-3.5 px-4">Property & Code</th>
                     <th className="py-3.5 px-4">Category / Subtype</th>
                     <th className="py-3.5 px-4">Location</th>
@@ -438,7 +438,7 @@ export const AdminPropertiesPage: React.FC = () => {
                     <th className="py-3.5 px-4 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-stone-100 text-xs">
+                <tbody className="divide-y divide-stone-100 dark:divide-[#242F42] text-xs">
                   {properties.map((prop) => {
                     const coverUrl = prop.images?.find((img: PropertyImageRecord) => img.is_cover === 1)?.url || prop.cover_image || prop.images?.[0]?.url || '/images/projects/skyline-marina-towers.jpg';
                     const galleryCount = prop.images?.length || 0;
@@ -448,14 +448,14 @@ export const AdminPropertiesPage: React.FC = () => {
                     return (
                       <tr
                         key={prop.id}
-                        className={`hover:bg-stone-50/70 transition-colors ${
-                          isArchived ? 'opacity-60 bg-stone-50/40' : ''
+                        className={`hover:bg-stone-50/70 dark:hover:bg-[#1A2230] transition-colors ${
+                          isArchived ? 'opacity-60 bg-stone-50/40 dark:bg-stone-900/20' : ''
                         }`}
                       >
                         {/* Property & Thumbnail */}
                         <td className="py-3.5 px-4">
                           <div className="flex items-center gap-3">
-                            <div className="relative w-14 h-11 rounded-lg overflow-hidden bg-stone-100 border border-stone-200 shrink-0 group">
+                            <div className="relative w-14 h-11 rounded-lg overflow-hidden bg-stone-100 dark:bg-[#101622] border border-stone-200 dark:border-[#242F42] shrink-0 group">
                               <img
                                 src={coverUrl}
                                 alt={prop.title}
@@ -466,10 +466,10 @@ export const AdminPropertiesPage: React.FC = () => {
                               />
                             </div>
                             <div>
-                              <div className="font-bold text-stone-900 leading-snug line-clamp-1 max-w-[220px]">
+                              <div className="font-bold text-stone-900 dark:text-slate-100 leading-snug line-clamp-1 max-w-[220px]">
                                 {prop.title}
                               </div>
-                              <div className="text-[11px] font-mono text-amber-900 font-semibold mt-0.5">
+                              <div className="text-[11px] font-mono text-amber-900 dark:text-amber-400 font-semibold mt-0.5">
                                 {prop.code}
                               </div>
                             </div>
@@ -486,7 +486,7 @@ export const AdminPropertiesPage: React.FC = () => {
                             >
                               {prop.main_category}
                             </span>
-                            <div className="text-[11px] text-stone-600 capitalize">
+                            <div className="text-[11px] text-stone-600 dark:text-slate-400 capitalize">
                               {prop.subtype}
                             </div>
                           </div>
@@ -494,11 +494,11 @@ export const AdminPropertiesPage: React.FC = () => {
 
                         {/* Location */}
                         <td className="py-3.5 px-4">
-                          <div className="flex items-start gap-1.5 text-stone-600">
-                            <MapPin className="w-3.5 h-3.5 text-stone-400 shrink-0 mt-0.5" />
+                          <div className="flex items-start gap-1.5 text-stone-600 dark:text-slate-400">
+                            <MapPin className="w-3.5 h-3.5 text-stone-400 dark:text-slate-500 shrink-0 mt-0.5" />
                             <div>
-                              <div className="font-medium text-stone-900 line-clamp-1">{prop.location}</div>
-                              <div className="text-[11px] text-stone-500">
+                              <div className="font-medium text-stone-900 dark:text-slate-100 line-clamp-1">{prop.location}</div>
+                              <div className="text-[11px] text-stone-500 dark:text-slate-400">
                                 {prop.city}{prop.state ? `, ${prop.state}` : ''}
                               </div>
                             </div>
@@ -507,11 +507,11 @@ export const AdminPropertiesPage: React.FC = () => {
 
                         {/* Pricing */}
                         <td className="py-3.5 px-4">
-                          <div className="font-bold text-stone-900 text-sm">
+                          <div className="font-bold text-stone-900 dark:text-slate-100 text-sm">
                             {formatDisplayPrice(prop.price)}
                           </div>
                           {prop.price_per_sqft && (
-                            <div className="text-[10px] text-stone-500 font-mono">
+                            <div className="text-[10px] text-stone-500 dark:text-slate-400 font-mono">
                               ₹{prop.price_per_sqft.toLocaleString('en-IN')}/sq.ft
                             </div>
                           )}
@@ -520,13 +520,13 @@ export const AdminPropertiesPage: React.FC = () => {
                         {/* Specs & Media */}
                         <td className="py-3.5 px-4">
                           <div className="space-y-1">
-                            <div className="text-[11px] text-stone-700 font-medium">
+                            <div className="text-[11px] text-stone-700 dark:text-slate-300 font-medium">
                               {specs.builtUpArea ? `${specs.builtUpArea} sq.ft` : specs.plotArea ? `${specs.plotArea}` : specs.commercialArea ? `${specs.commercialArea} sq.ft` : specs.landParcel ? `${specs.landParcel}` : 'Custom Specifications'}
                             </div>
                             <button
                               type="button"
                               onClick={() => handleManageImages(prop)}
-                              className="inline-flex items-center gap-1 text-[11px] text-amber-800 hover:text-amber-950 font-medium transition-colors cursor-pointer"
+                              className="inline-flex items-center gap-1 text-[11px] text-amber-800 dark:text-amber-400 hover:text-amber-950 dark:hover:text-amber-300 font-medium transition-colors cursor-pointer"
                             >
                               <ImageIcon className="w-3.5 h-3.5" />
                               <span>{galleryCount} Photos</span>
@@ -537,11 +537,11 @@ export const AdminPropertiesPage: React.FC = () => {
                         {/* Status */}
                         <td className="py-3.5 px-4">
                           {isArchived ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-stone-100 text-stone-600 border border-stone-200">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-stone-100 dark:bg-slate-800 text-stone-600 dark:text-slate-300 border border-stone-200 dark:border-[#242F42]">
                               Archived
                             </span>
                           ) : (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/40">
                               {prop.availability || 'Active'}
                             </span>
                           )}
@@ -553,7 +553,7 @@ export const AdminPropertiesPage: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => navigate(`/discovery/${prop.id}`)}
-                              className="p-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-600 hover:text-stone-900 transition-colors cursor-pointer"
+                              className="p-1.5 rounded-lg bg-stone-100 dark:bg-[#101622] hover:bg-stone-200 dark:hover:bg-[#1A2230] text-stone-600 dark:text-slate-400 hover:text-stone-900 dark:hover:text-slate-100 transition-colors cursor-pointer"
                               title="View in Customer Discovery"
                             >
                               <ExternalLink className="w-3.5 h-3.5" />
@@ -561,7 +561,7 @@ export const AdminPropertiesPage: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => handleManageImages(prop)}
-                              className="p-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 hover:text-stone-950 transition-colors cursor-pointer"
+                              className="p-1.5 rounded-lg bg-stone-100 dark:bg-[#101622] hover:bg-stone-200 dark:hover:bg-[#1A2230] text-stone-700 dark:text-slate-300 hover:text-stone-950 dark:hover:text-slate-100 transition-colors cursor-pointer"
                               title="Manage Property Images"
                             >
                               <ImageIcon className="w-3.5 h-3.5" />
@@ -569,7 +569,7 @@ export const AdminPropertiesPage: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => handleEdit(prop)}
-                              className="p-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 hover:text-stone-950 transition-colors cursor-pointer"
+                              className="p-1.5 rounded-lg bg-stone-100 dark:bg-[#101622] hover:bg-stone-200 dark:hover:bg-[#1A2230] text-stone-700 dark:text-slate-300 hover:text-stone-950 dark:hover:text-slate-100 transition-colors cursor-pointer"
                               title="Edit Specifications"
                             >
                               <Edit className="w-3.5 h-3.5" />
@@ -577,10 +577,10 @@ export const AdminPropertiesPage: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => handleToggleArchive(prop)}
-                              className={`p-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 transition-colors cursor-pointer ${
+                              className={`p-1.5 rounded-lg bg-stone-100 dark:bg-[#101622] hover:bg-stone-200 dark:hover:bg-[#1A2230] transition-colors cursor-pointer ${
                                 isArchived
-                                  ? 'text-emerald-700 hover:text-emerald-900'
-                                  : 'text-stone-500 hover:text-rose-700'
+                                  ? 'text-emerald-700 dark:text-emerald-400 hover:text-emerald-900'
+                                  : 'text-stone-500 dark:text-slate-400 hover:text-rose-700'
                               }`}
                               title={isArchived ? 'Restore Listing' : 'Archive Listing'}
                             >
@@ -607,12 +607,12 @@ export const AdminPropertiesPage: React.FC = () => {
               return (
                 <div
                   key={prop.id}
-                  className={`bg-white rounded-2xl border border-stone-200/90 hover:border-stone-400/80 overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col ${
-                    isArchived ? 'opacity-60 bg-stone-50/40' : ''
+                  className={`bg-white dark:bg-[#141A24] rounded-2xl border border-stone-200/90 dark:border-[#242F42] hover:border-stone-400/80 dark:hover:border-slate-500 overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col ${
+                    isArchived ? 'opacity-60 bg-stone-50/40 dark:bg-stone-900/20' : ''
                   }`}
                 >
                   {/* Card Image Cover */}
-                  <div className="relative aspect-video w-full bg-stone-100 overflow-hidden group">
+                  <div className="relative aspect-video w-full bg-stone-100 dark:bg-[#101622] overflow-hidden group">
                     <img
                       src={coverUrl}
                       alt={prop.title}
@@ -651,35 +651,35 @@ export const AdminPropertiesPage: React.FC = () => {
                   {/* Card Body */}
                   <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
                     <div>
-                      <h4 className="font-bold text-stone-900 text-base leading-snug line-clamp-1">
+                      <h4 className="font-bold text-stone-900 dark:text-slate-100 text-base leading-snug line-clamp-1">
                         {prop.title}
                       </h4>
-                      <p className="text-xs text-stone-500 mt-1 flex items-center gap-1">
-                        <MapPin className="w-3 h-3 shrink-0 text-stone-400" />
+                      <p className="text-xs text-stone-500 dark:text-slate-400 mt-1 flex items-center gap-1">
+                        <MapPin className="w-3 h-3 shrink-0 text-stone-400 dark:text-slate-500" />
                         <span className="truncate">{prop.location}, {prop.city}</span>
                       </p>
                     </div>
 
                     {/* Quick Specs */}
-                    <div className="pt-2 border-t border-stone-100 grid grid-cols-2 gap-2 text-[11px] text-stone-700">
+                    <div className="pt-2 border-t border-stone-100 dark:border-[#242F42] grid grid-cols-2 gap-2 text-[11px] text-stone-700 dark:text-slate-300">
                       <div>
-                        <span className="text-stone-400 block text-[10px]">Type</span>
+                        <span className="text-stone-400 dark:text-slate-500 block text-[10px]">Type</span>
                         <span className="font-medium capitalize">{prop.subtype}</span>
                       </div>
                       <div>
-                        <span className="text-stone-400 block text-[10px]">Specs / Area</span>
+                        <span className="text-stone-400 dark:text-slate-500 block text-[10px]">Specs / Area</span>
                         <span className="font-medium">{specs.builtUpArea ? `${specs.builtUpArea} sq.ft` : specs.plotArea ? `${specs.plotArea}` : specs.commercialArea ? `${specs.commercialArea} sq.ft` : specs.landParcel ? `${specs.landParcel}` : 'Custom'}</span>
                       </div>
                     </div>
 
                     {/* Card Actions Footer */}
-                    <div className="pt-2 border-t border-stone-100 flex items-center justify-between gap-1.5">
+                    <div className="pt-2 border-t border-stone-100 dark:border-[#242F42] flex items-center justify-between gap-1.5">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => navigate(`/discovery/${prop.id}`)}
                         leftIcon={<ExternalLink className="w-3 h-3" />}
-                        className="text-[11px] border-stone-200 bg-white hover:bg-stone-50 text-stone-700"
+                        className="text-[11px] border-stone-200 dark:border-[#242F42] bg-white dark:bg-[#101622] hover:bg-stone-50 dark:hover:bg-[#1A2230] text-stone-700 dark:text-slate-200"
                       >
                         Explore
                       </Button>
@@ -687,7 +687,7 @@ export const AdminPropertiesPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => handleManageImages(prop)}
-                          className="p-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 transition-colors cursor-pointer"
+                          className="p-1.5 rounded-lg bg-stone-100 dark:bg-[#101622] hover:bg-stone-200 dark:hover:bg-[#1A2230] text-stone-700 dark:text-slate-300 transition-colors cursor-pointer"
                           title="Images"
                         >
                           <ImageIcon className="w-4 h-4" />
@@ -695,7 +695,7 @@ export const AdminPropertiesPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => handleEdit(prop)}
-                          className="p-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 transition-colors cursor-pointer"
+                          className="p-1.5 rounded-lg bg-stone-100 dark:bg-[#101622] hover:bg-stone-200 dark:hover:bg-[#1A2230] text-stone-700 dark:text-slate-300 transition-colors cursor-pointer"
                           title="Edit"
                         >
                           <Edit className="w-4 h-4" />
@@ -703,8 +703,8 @@ export const AdminPropertiesPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => handleToggleArchive(prop)}
-                          className={`p-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 transition-colors cursor-pointer ${
-                            isArchived ? 'text-emerald-700' : 'text-stone-500 hover:text-rose-700'
+                          className={`p-1.5 rounded-lg bg-stone-100 dark:bg-[#101622] hover:bg-stone-200 dark:hover:bg-[#1A2230] transition-colors cursor-pointer ${
+                            isArchived ? 'text-emerald-700 dark:text-emerald-400' : 'text-stone-500 dark:text-slate-400 hover:text-rose-700'
                           }`}
                           title={isArchived ? 'Restore' : 'Archive'}
                         >

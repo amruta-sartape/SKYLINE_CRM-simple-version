@@ -13,8 +13,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
-  login: (credentials: LoginCredentials) => Promise<void>;
-  register: (data: RegisterFormData) => Promise<void>;
+  login: (credentials: LoginCredentials) => Promise<User>;
+  register: (data: RegisterFormData) => Promise<User>;
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   hasRole: (roles: UserRole | UserRole[]) => boolean;
@@ -86,8 +86,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     initializeAuth();
   }, []);
 
-  const login = async (credentials: LoginCredentials) => {
-    setIsLoading(true);
+  const login = async (credentials: LoginCredentials): Promise<User> => {
     setError(null);
     try {
       const response = await authService.login(credentials);
@@ -109,32 +108,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // 2. Update reactive React state
       setUser(authedUser);
       setToken(authToken);
+      return authedUser;
     } catch (err: any) {
       setError(err.message || 'Login failed. Please check your credentials.');
       throw err;
-    } finally {
-      setIsLoading(false);
     }
   };
 
-  const register = async (data: RegisterFormData) => {
-    setIsLoading(true);
+  const register = async (data: RegisterFormData): Promise<User> => {
     setError(null);
     try {
       const response = await authService.register(data);
       const { user: newUser, token: authToken } = response;
 
-      setUser(newUser);
-      setToken(authToken);
+      if (authToken && newUser) {
+        setUser(newUser);
+        setToken(authToken);
 
-      // Store in session storage by default on registration
-      sessionStorage.setItem(TOKEN_KEY, authToken);
-      sessionStorage.setItem(USER_KEY, JSON.stringify(newUser));
+        // Store in session storage by default on registration
+        sessionStorage.setItem(TOKEN_KEY, authToken);
+        sessionStorage.setItem(USER_KEY, JSON.stringify(newUser));
+      }
+      return newUser || ({} as User);
     } catch (err: any) {
       setError(err.message || 'Registration failed. Please review your details.');
       throw err;
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -171,9 +169,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const hasRole = useCallback(
     (roles: UserRole | UserRole[]): boolean => {
-      if (!user || !user.roles) return false;
-      const requiredRoles = Array.isArray(roles) ? roles : [roles];
-      return user.roles.some((r) => requiredRoles.includes(r));
+      if (!user) return false;
+      const rawRoles = user.roles || ((user as any).role ? [(user as any).role] : []);
+      if (!Array.isArray(rawRoles)) return false;
+      const userRoles = rawRoles.map((r: any) => String(r).toUpperCase().trim());
+      const requiredRoles = (Array.isArray(roles) ? roles : [roles]).map((r) => String(r).toUpperCase().trim());
+      return userRoles.some((r: string) => requiredRoles.includes(r));
     },
     [user]
   );

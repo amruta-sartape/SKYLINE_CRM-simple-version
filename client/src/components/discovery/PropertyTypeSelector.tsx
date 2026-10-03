@@ -34,27 +34,27 @@ export const PropertyTypeSelector: React.FC<PropertyTypeSelectorProps> = ({
   return (
     <div className="space-y-6 text-left">
       {/* 1. "WHAT ARE YOU LOOKING FOR?" Hero Header */}
-      <div className="bg-white rounded-2xl p-6 sm:p-7 border border-stone-200/90 shadow-xs relative overflow-hidden text-stone-900">
+      <div className="bg-white dark:bg-[#141A24] rounded-2xl p-6 sm:p-7 border border-stone-200/90 dark:border-[#242F42] shadow-xs relative overflow-hidden text-stone-900 dark:text-slate-100">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div className="space-y-1.5">
-            <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-stone-100 border border-stone-200 text-xs font-semibold text-stone-700">
+            <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-stone-100 dark:bg-[#1A2230] border border-stone-200 dark:border-[#242F42] text-xs font-semibold text-stone-700 dark:text-slate-300">
               <span className="w-2 h-2 rounded-full bg-amber-600" />
               <span>Property Discovery</span>
-              <span className="text-stone-300">•</span>
-              <span className="text-stone-600">{totalCount} Properties Available</span>
+              <span className="text-stone-300 dark:text-slate-600">•</span>
+              <span className="text-stone-600 dark:text-slate-400">{totalCount} Properties Available</span>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-stone-900 font-sans">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-stone-900 dark:text-slate-100 font-sans">
               What are you looking for?
             </h1>
 
-            <p className="text-xs sm:text-sm text-stone-500 max-w-2xl leading-relaxed">
+            <p className="text-xs sm:text-sm text-stone-500 dark:text-slate-400 max-w-2xl leading-relaxed">
               Explore residential residences, villas, commercial office spaces, and freehold plots tailored to your exact investment preferences.
             </p>
           </div>
 
           {/* Main Category Filter Tabs */}
-          <div className="shrink-0 flex flex-wrap gap-1 p-1 bg-stone-100 rounded-xl border border-stone-200/60">
+          <div className="shrink-0 flex flex-wrap gap-1 p-1 bg-stone-100 dark:bg-[#101622] rounded-xl border border-stone-200/60 dark:border-[#242F42]">
             {MAIN_CATEGORIES.map((cat) => {
               const isActive = selectedCategory === cat.id;
               return (
@@ -67,8 +67,8 @@ export const PropertyTypeSelector: React.FC<PropertyTypeSelectorProps> = ({
                   }}
                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-stone-900 text-white shadow-xs'
-                      : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/60'
+                      ? 'bg-stone-900 dark:bg-amber-500 text-white dark:text-slate-950 shadow-xs'
+                      : 'text-stone-600 dark:text-slate-400 hover:text-stone-900 dark:hover:text-slate-100 hover:bg-stone-200/60 dark:hover:bg-[#1A2230]'
                   }`}
                 >
                   {cat.label}
@@ -82,8 +82,8 @@ export const PropertyTypeSelector: React.FC<PropertyTypeSelectorProps> = ({
       {/* 2. Interactive Property Type Category Pills Grid */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-stone-500">
-            <Search className="w-3.5 h-3.5 text-stone-500" />
+          <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-slate-400">
+            <Search className="w-3.5 h-3.5 text-stone-500 dark:text-slate-400" />
             <span>Select Property Classification:</span>
           </div>
 
@@ -91,7 +91,7 @@ export const PropertyTypeSelector: React.FC<PropertyTypeSelectorProps> = ({
             <button
               type="button"
               onClick={() => onSelectSubtype(null)}
-              className="text-xs font-medium text-stone-700 hover:text-stone-950 underline underline-offset-4 cursor-pointer"
+              className="text-xs font-medium text-stone-700 dark:text-amber-400 hover:text-stone-950 dark:hover:text-amber-300 underline underline-offset-4 cursor-pointer"
             >
               Reset Type Filter (Show All {selectedCategory === 'All' ? '' : selectedCategory})
             </button>
@@ -110,8 +110,8 @@ export const PropertyTypeSelector: React.FC<PropertyTypeSelectorProps> = ({
                 onClick={() => onSelectSubtype(isSelected ? null : typeMeta.id)}
                 className={`h-32 sm:h-34 rounded-2xl border transition-all duration-200 flex flex-col justify-between p-3 text-left group relative overflow-hidden shadow-xs cursor-pointer ${
                   isSelected
-                    ? 'border-stone-900 ring-2 ring-stone-900/40 shadow-md scale-[1.02]'
-                    : 'border-stone-200/90 hover:border-stone-400/80 hover:shadow-sm'
+                    ? 'border-stone-900 dark:border-amber-400 ring-2 ring-stone-900/40 dark:ring-amber-400/40 shadow-md scale-[1.02]'
+                    : 'border-stone-200/90 dark:border-[#242F42] hover:border-stone-400/80 dark:hover:border-slate-500 hover:shadow-sm'
                 }`}
               >
                 {/* 1. Real Property Image Background */}

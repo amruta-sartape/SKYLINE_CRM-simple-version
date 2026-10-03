@@ -53,7 +53,7 @@ export const Modal: React.FC<ModalProps> = ({
     <div className="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-slate-950/75 backdrop-blur-xs transition-opacity animate-fade-in"
+        className="fixed inset-0 bg-slate-950/75 dark:bg-black/85 backdrop-blur-xs transition-opacity animate-fade-in"
         onClick={onClose}
       />
 
@@ -61,22 +61,22 @@ export const Modal: React.FC<ModalProps> = ({
       <div className="flex min-h-full items-center justify-center p-3 sm:p-4 text-center">
         <div
           className={clsx(
-            'w-full max-h-[90vh] flex flex-col transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-2xl transition-all border border-slate-200 animate-slide-up',
+            'w-full max-h-[90vh] flex flex-col transform overflow-hidden rounded-2xl bg-white dark:bg-[#141A24] text-left align-middle shadow-2xl transition-all border border-slate-200 dark:border-[#242F42] animate-slide-up text-slate-900 dark:text-slate-100',
             maxWidthClasses[maxWidth] || 'max-w-md'
           )}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
           {(title || description) && (
-            <div className="shrink-0 px-5 sm:px-6 pt-5 pb-4 border-b border-slate-100 flex items-start justify-between">
+            <div className="shrink-0 px-5 sm:px-6 pt-5 pb-4 border-b border-slate-100 dark:border-[#1C2433] flex items-start justify-between">
               <div>
-                {title && <h3 className="text-base sm:text-lg font-bold text-slate-900">{title}</h3>}
-                {description && <p className="text-xs text-slate-500 mt-1">{description}</p>}
+                {title && <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100">{title}</h3>}
+                {description && <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{description}</p>}
               </div>
               <button
                 type="button"
                 onClick={onClose}
-                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors shrink-0 ml-2 cursor-pointer"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-[#1A2230] transition-colors shrink-0 ml-2 cursor-pointer"
                 aria-label="Close dialog"
               >
                 <X className="w-5 h-5" />
@@ -89,7 +89,7 @@ export const Modal: React.FC<ModalProps> = ({
 
           {/* Footer */}
           {footer && (
-            <div className="shrink-0 bg-slate-50 px-5 sm:px-6 py-3.5 border-t border-slate-100 flex items-center justify-end gap-2.5">
+            <div className="shrink-0 bg-slate-50 dark:bg-[#101520] px-5 sm:px-6 py-3.5 border-t border-slate-100 dark:border-[#1C2433] flex items-center justify-end gap-2.5">
               {footer}
             </div>
           )}

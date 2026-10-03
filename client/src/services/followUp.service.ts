@@ -54,9 +54,16 @@ export const followUpService = {
   /**
    * Get single follow-up by ID
    */
-  async getById(id: string): Promise<FollowUpItem> {
+  async getById(id: string): Promise<FollowUpItem & { activities?: any[] }> {
     const response = await api.get(`/follow-ups/${id}`);
-    return response.data.data;
+    const data = response.data?.data;
+    if (data && data.followUp) {
+      return {
+        ...data.followUp,
+        activities: data.activities || [],
+      };
+    }
+    return data;
   },
 
   /**

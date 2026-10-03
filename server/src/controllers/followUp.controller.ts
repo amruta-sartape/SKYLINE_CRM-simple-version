@@ -65,7 +65,7 @@ export class FollowUpController {
 
   public static async create(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const followUp = await FollowUpService.create(req.body, req.user!);
+      const followUp = await FollowUpService.create(req.body, req.user!.userId);
       res.status(201).json({
         success: true,
         message: 'Follow-up logged successfully.',

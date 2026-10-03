@@ -15,6 +15,7 @@ import { amenityRoutes } from './routes/amenity.routes.js';
 import siteVisitRoutes from './routes/siteVisit.routes.js';
 import followUpRoutes from './routes/followUp.routes.js';
 import propertyListingRoutes from './routes/propertyListing.routes.js';
+import wishlistRoutes from './routes/wishlist.routes.js';
 import { errorHandler } from './middleware/error.middleware.js';
 
 const app = express();
@@ -74,6 +75,7 @@ app.use('/api/amenities', amenityRoutes);
 app.use('/api/site-visits', siteVisitRoutes);
 app.use('/api/follow-ups', followUpRoutes);
 app.use('/api/property-listings', propertyListingRoutes);
+app.use('/api/wishlist', wishlistRoutes);
 
 
 // Catch 404

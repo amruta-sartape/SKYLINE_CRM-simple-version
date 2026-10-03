@@ -284,13 +284,13 @@ export const LeadDetailPage: React.FC = () => {
         </div>
 
         {/* Customer 360 Header Banner */}
-        <div className="bg-slate-900 text-white rounded-2xl p-6 sm:p-8 shadow-card border border-slate-800 relative overflow-hidden">
+        <div className="bg-slate-900 dark:bg-[#141A24] text-white rounded-2xl p-6 sm:p-8 shadow-card border border-slate-800 dark:border-[#242F42] relative overflow-hidden">
           <div className="absolute top-0 right-0 w-80 h-80 bg-brand-500/10 rounded-full blur-3xl pointer-events-none" />
 
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-brand-300">
+                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-800 dark:bg-[#101622] border border-slate-700 dark:border-[#242F42] text-brand-300 dark:text-amber-400">
                   Lead Ref: {lead.id}
                 </span>
                 <Badge priority={lead.priority} size="sm" />
@@ -322,7 +322,7 @@ export const LeadDetailPage: React.FC = () => {
             </div>
 
             {/* Right Financial & Executive Snapshot */}
-            <div className="shrink-0 bg-slate-950/80 p-4 rounded-xl border border-slate-800 space-y-2 text-right">
+            <div className="shrink-0 bg-slate-950/80 dark:bg-[#101622] p-4 rounded-xl border border-slate-800 dark:border-[#242F42] space-y-2 text-right">
               <div>
                 <span className="text-[10px] text-slate-400 uppercase tracking-wider block">
                   Budget Capacity
@@ -331,7 +331,7 @@ export const LeadDetailPage: React.FC = () => {
                   ₹{(lead.budget / 100000).toFixed(1)} Lakhs
                 </span>
               </div>
-              <div className="pt-2 border-t border-slate-800 text-[11px] text-slate-300">
+              <div className="pt-2 border-t border-slate-800 dark:border-[#242F42] text-[11px] text-slate-300">
                 <span>Assigned to: </span>
                 <strong className="text-white font-semibold">
                   {lead.assigned_name || 'Unassigned'}
@@ -341,10 +341,10 @@ export const LeadDetailPage: React.FC = () => {
           </div>
 
           {/* Interactive Pipeline Progression Stepper */}
-          <div className="mt-6 pt-6 border-t border-slate-800/80">
+          <div className="mt-6 pt-6 border-t border-slate-800/80 dark:border-[#242F42]">
             <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center justify-between">
               <span>Pipeline Stage Progression</span>
-              <span className="text-brand-300 font-medium">Current: {lead.pipeline_stage}</span>
+              <span className="text-brand-300 dark:text-amber-400 font-medium">Current: {lead.pipeline_stage}</span>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-6 gap-2">
@@ -359,10 +359,10 @@ export const LeadDetailPage: React.FC = () => {
                     onClick={() => handleStageTransition(lead.id, stg)}
                     className={`p-2 rounded-lg text-xs font-semibold text-center transition-all border ${
                       isCurrent
-                        ? 'bg-brand-600 text-white border-brand-500 shadow-md ring-2 ring-brand-400/30'
+                        ? 'bg-brand-600 dark:bg-amber-500 dark:text-slate-950 text-white border-brand-500 dark:border-amber-400 shadow-md ring-2 ring-brand-400/30'
                         : isPassed
-                        ? 'bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700'
-                        : 'bg-slate-950/60 text-slate-500 border-slate-800 hover:text-slate-300'
+                        ? 'bg-slate-800 dark:bg-[#101622] text-slate-200 border-slate-700 dark:border-[#242F42] hover:bg-slate-700 dark:hover:bg-slate-800'
+                        : 'bg-slate-950/60 dark:bg-[#101622]/40 text-slate-500 border-slate-800 dark:border-[#242F42] hover:text-slate-300'
                     }`}
                   >
                     <div className="text-[10px] uppercase font-bold opacity-75">Step {idx + 1}</div>
@@ -379,10 +379,10 @@ export const LeadDetailPage: React.FC = () => {
           {/* Left Column: Requirements & Buyer Criteria (5 cols) */}
           <div className="lg:col-span-5 space-y-6">
             {/* Property Interest & Requirements Card */}
-            <div className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-subtle space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
-                  <Building className="w-4 h-4 text-brand-600" />
+            <div className="bg-white dark:bg-[#141A24] rounded-xl border border-slate-200/90 dark:border-[#242F42] p-5 shadow-subtle space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#242F42] pb-3">
+                <div className="flex items-center gap-2 text-slate-900 dark:text-slate-100 font-bold text-sm">
+                  <Building className="w-4 h-4 text-brand-600 dark:text-amber-400" />
                   <h3>Primary Property Interest</h3>
                 </div>
                 <Badge stage={lead.pipeline_stage} size="xs" />
@@ -390,16 +390,16 @@ export const LeadDetailPage: React.FC = () => {
 
               {/* Property Image & Metadata preview if linked */}
               {(lead.property_cover_image || lead.property_code || lead.property_title) && (
-                <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 text-white flex gap-3 items-center">
+                <div className="p-3 bg-slate-900 dark:bg-[#101622] rounded-xl border border-slate-800 dark:border-[#242F42] text-white flex gap-3 items-center">
                   {lead.property_cover_image ? (
                     <img
                       src={lead.property_cover_image}
                       alt={lead.property_title || 'Property Cover'}
-                      className="w-16 h-16 rounded-lg object-cover border border-white/10 shrink-0"
+                      className="w-16 h-16 rounded-lg object-cover border border-white/10 dark:border-[#242F42] shrink-0"
                     />
                   ) : (
-                    <div className="w-16 h-16 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0">
-                      <Building className="w-6 h-6 text-brand-400" />
+                    <div className="w-16 h-16 rounded-lg bg-slate-800 dark:bg-[#1A2230] border border-slate-700 dark:border-[#242F42] flex items-center justify-center shrink-0">
+                      <Building className="w-6 h-6 text-brand-400 dark:text-amber-400" />
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
@@ -427,7 +427,7 @@ export const LeadDetailPage: React.FC = () => {
                   {lead.property_id && (
                     <Link
                       to={`/discovery/${lead.property_id}`}
-                      className="shrink-0 p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
+                      className="shrink-0 p-2 rounded-lg bg-white/10 dark:bg-[#1A2230] hover:bg-white/20 dark:hover:bg-slate-800 text-white transition-colors"
                       title="View Property Profile"
                     >
                       <Eye className="w-4 h-4" />
@@ -437,44 +437,44 @@ export const LeadDetailPage: React.FC = () => {
               )}
 
               <div className="space-y-3 text-xs">
-                <div className="flex items-start justify-between py-1 border-b border-slate-100">
-                  <span className="text-slate-500">Interested Project:</span>
-                  <span className="font-bold text-slate-900">
+                <div className="flex items-start justify-between py-1 border-b border-slate-100 dark:border-[#242F42]">
+                  <span className="text-slate-500 dark:text-slate-400">Interested Project:</span>
+                  <span className="font-bold text-slate-900 dark:text-slate-100">
                     {lead.property_title || lead.interested_property || 'General Requirements'}
                   </span>
                 </div>
 
-                <div className="flex items-start justify-between py-1 border-b border-slate-100">
-                  <span className="text-slate-500">Configuration:</span>
-                  <span className="font-bold text-brand-700 bg-brand-50 px-2 py-0.5 rounded border border-brand-200">
+                <div className="flex items-start justify-between py-1 border-b border-slate-100 dark:border-[#242F42]">
+                  <span className="text-slate-500 dark:text-slate-400">Configuration:</span>
+                  <span className="font-bold text-brand-700 dark:text-amber-400 bg-brand-50 dark:bg-amber-950/40 px-2 py-0.5 rounded border border-brand-200 dark:border-amber-800/60">
                     {lead.flat_type}
                   </span>
                 </div>
 
-                <div className="flex items-start justify-between py-1 border-b border-slate-100">
-                  <span className="text-slate-500">Preferred Location:</span>
-                  <span className="font-medium text-slate-900">
+                <div className="flex items-start justify-between py-1 border-b border-slate-100 dark:border-[#242F42]">
+                  <span className="text-slate-500 dark:text-slate-400">Preferred Location:</span>
+                  <span className="font-medium text-slate-900 dark:text-slate-100">
                     {lead.preferred_location || 'Not specified'}
                   </span>
                 </div>
 
-                <div className="flex items-start justify-between py-1 border-b border-slate-100">
-                  <span className="text-slate-500">Purchase Timeline:</span>
-                  <span className="font-medium text-slate-900">
+                <div className="flex items-start justify-between py-1 border-b border-slate-100 dark:border-[#242F42]">
+                  <span className="text-slate-500 dark:text-slate-400">Purchase Timeline:</span>
+                  <span className="font-medium text-slate-900 dark:text-slate-100">
                     {lead.purchase_timeline || 'N/A'}
                   </span>
                 </div>
 
-                <div className="flex items-start justify-between py-1 border-b border-slate-100">
-                  <span className="text-slate-500">Purpose of Purchase:</span>
-                  <span className="font-medium text-slate-900">{lead.purpose || 'Self Use'}</span>
+                <div className="flex items-start justify-between py-1 border-b border-slate-100 dark:border-[#242F42]">
+                  <span className="text-slate-500 dark:text-slate-400">Purpose of Purchase:</span>
+                  <span className="font-medium text-slate-900 dark:text-slate-100">{lead.purpose || 'Self Use'}</span>
                 </div>
 
                 <div className="flex items-start justify-between py-1">
-                  <span className="text-slate-500">Home Loan Required:</span>
+                  <span className="text-slate-500 dark:text-slate-400">Home Loan Required:</span>
                   <span
                     className={`font-semibold ${
-                      lead.loan_required === 1 ? 'text-amber-700' : 'text-slate-700'
+                      lead.loan_required === 1 ? 'text-amber-700 dark:text-amber-400' : 'text-slate-700 dark:text-slate-300'
                     }`}
                   >
                     {lead.loan_required === 1 ? 'Yes (Bank Loan Assistance)' : 'No (Self Funded)'}
@@ -483,10 +483,10 @@ export const LeadDetailPage: React.FC = () => {
               </div>
 
               {lead.property_id && (
-                <div className="pt-2 border-t border-slate-100 flex items-center gap-2">
+                <div className="pt-2 border-t border-slate-100 dark:border-[#242F42] flex items-center gap-2">
                   <Link
                     to={`/discovery/${lead.property_id}`}
-                    className="flex-1 py-1.5 px-2.5 rounded-lg bg-brand-50 hover:bg-brand-100 text-brand-700 font-semibold text-center text-xs transition-colors flex items-center justify-center gap-1.5"
+                    className="flex-1 py-1.5 px-2.5 rounded-lg bg-brand-50 dark:bg-amber-950/40 hover:bg-brand-100 dark:hover:bg-amber-900/50 text-brand-700 dark:text-amber-300 font-semibold text-center text-xs transition-colors flex items-center justify-center gap-1.5"
                   >
                     <Compass className="w-3.5 h-3.5" />
                     <span>Explore in Property Discovery</span>
@@ -497,51 +497,51 @@ export const LeadDetailPage: React.FC = () => {
 
             {/* Customer 360: All Property Interests & Touchpoints */}
             {propertyInterests.length > 0 && (
-              <div className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-subtle space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                  <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
-                    <Compass className="w-4 h-4 text-brand-600" />
+              <div className="bg-white dark:bg-[#141A24] rounded-xl border border-slate-200/90 dark:border-[#242F42] p-5 shadow-subtle space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#242F42] pb-3">
+                  <div className="flex items-center gap-2 text-slate-900 dark:text-slate-100 font-bold text-sm">
+                    <Compass className="w-4 h-4 text-brand-600 dark:text-amber-400" />
                     <h3>Customer Property History ({propertyInterests.length})</h3>
                   </div>
-                  <span className="text-[10px] font-bold uppercase text-slate-400">360 View</span>
+                  <span className="text-[10px] font-bold uppercase text-slate-400 dark:text-slate-500">360 View</span>
                 </div>
 
                 <div className="space-y-3">
                   {propertyInterests.map((prop) => (
                     <div
                       key={`${prop.id}-${prop.source}`}
-                      className="p-3 bg-slate-50 border border-slate-200/80 rounded-xl flex items-center gap-3"
+                      className="p-3 bg-slate-50 dark:bg-[#101622] border border-slate-200/80 dark:border-[#242F42] rounded-xl flex items-center gap-3"
                     >
                       {prop.cover_image ? (
                         <img
                           src={prop.cover_image}
                           alt={prop.title}
-                          className="w-12 h-12 rounded-lg object-cover border border-slate-200 shrink-0"
+                          className="w-12 h-12 rounded-lg object-cover border border-slate-200 dark:border-[#242F42] shrink-0"
                         />
                       ) : (
-                        <div className="w-12 h-12 rounded-lg bg-slate-200 flex items-center justify-center shrink-0">
+                        <div className="w-12 h-12 rounded-lg bg-slate-200 dark:bg-slate-800 flex items-center justify-center shrink-0">
                           <Building className="w-5 h-5 text-slate-500" />
                         </div>
                       )}
                       <div className="flex-1 min-w-0 text-xs">
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-[9px] uppercase font-bold px-1.5 py-0.2 rounded bg-brand-100 text-brand-700">
+                          <span className="text-[9px] uppercase font-bold px-1.5 py-0.2 rounded bg-brand-100 dark:bg-amber-950/60 text-brand-700 dark:text-amber-300">
                             {prop.source}
                           </span>
-                          <span className="text-[10px] font-mono text-slate-500">
+                          <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400">
                             {prop.code}
                           </span>
                         </div>
-                        <div className="font-bold text-slate-900 truncate mt-0.5">
+                        <div className="font-bold text-slate-900 dark:text-slate-100 truncate mt-0.5">
                           {prop.title}
                         </div>
-                        <div className="text-[11px] text-emerald-700 font-semibold">
-                          {prop.price_formatted} • <span className="text-slate-500 font-normal">{prop.city}</span>
+                        <div className="text-[11px] text-emerald-700 dark:text-emerald-400 font-semibold">
+                          {prop.price_formatted} • <span className="text-slate-500 dark:text-slate-400 font-normal">{prop.city}</span>
                         </div>
                       </div>
                       <Link
                         to={`/discovery/${prop.id}`}
-                        className="p-1.5 text-brand-600 hover:text-brand-800 hover:bg-brand-50 rounded-lg transition-colors shrink-0"
+                        className="p-1.5 text-brand-600 dark:text-amber-400 hover:text-brand-800 dark:hover:text-amber-300 hover:bg-brand-50 dark:hover:bg-[#1A2230] rounded-lg transition-colors shrink-0"
                         title="View Property"
                       >
                         <ExternalLink className="w-4 h-4" />
@@ -553,10 +553,10 @@ export const LeadDetailPage: React.FC = () => {
             )}
 
             {/* Buyer Qualification Card */}
-            <div className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-subtle space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
+            <div className="bg-white dark:bg-[#141A24] rounded-xl border border-slate-200/90 dark:border-[#242F42] p-5 shadow-subtle space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#242F42] pb-3">
+                <div className="flex items-center gap-2 text-slate-900 dark:text-slate-100 font-bold text-sm">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                   <h3>Qualification Status</h3>
                 </div>
                 <Button
@@ -568,15 +568,15 @@ export const LeadDetailPage: React.FC = () => {
                 </Button>
               </div>
 
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200/80 flex items-center justify-between">
+              <div className="p-3 bg-slate-50 dark:bg-[#101622] rounded-lg border border-slate-200/80 dark:border-[#242F42] flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-bold block">
                     Verified Status
                   </span>
                   <Badge qualification={lead.qualification_status} size="md" className="mt-1" />
                 </div>
                 <div className="text-right">
-                  <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-bold block">
                     Priority Tier
                   </span>
                   <Badge priority={lead.priority} size="md" className="mt-1" />
@@ -584,20 +584,20 @@ export const LeadDetailPage: React.FC = () => {
               </div>
 
               {lead.notes && (
-                <div className="p-3 bg-amber-50/60 border border-amber-200/60 rounded-lg text-xs space-y-1">
-                  <span className="font-bold text-amber-950 text-[11px] block">
+                <div className="p-3 bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-800/50 rounded-lg text-xs space-y-1">
+                  <span className="font-bold text-amber-950 dark:text-amber-300 text-[11px] block">
                     Lead Notes & Strategy:
                   </span>
-                  <p className="text-amber-900 leading-relaxed">{lead.notes}</p>
+                  <p className="text-amber-900 dark:text-amber-200 leading-relaxed">{lead.notes}</p>
                 </div>
               )}
             </div>
 
             {/* Site Visits Section (Phase 4) */}
-            <div className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-subtle space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
-                  <Calendar className="w-4 h-4 text-blue-600" />
+            <div className="bg-white dark:bg-[#141A24] rounded-xl border border-slate-200/90 dark:border-[#242F42] p-5 shadow-subtle space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#242F42] pb-3">
+                <div className="flex items-center gap-2 text-slate-900 dark:text-slate-100 font-bold text-sm">
+                  <Calendar className="w-4 h-4 text-blue-600 dark:text-sky-400" />
                   <h3>Site Visits ({siteVisits.length})</h3>
                 </div>
                 <Button
@@ -614,7 +614,7 @@ export const LeadDetailPage: React.FC = () => {
               </div>
 
               {siteVisits.length === 0 ? (
-                <div className="py-6 text-center text-slate-400 text-xs border border-dashed border-slate-200 rounded-lg">
+                <div className="py-6 text-center text-slate-400 dark:text-slate-500 text-xs border border-dashed border-slate-200 dark:border-[#242F42] rounded-lg">
                   No site visits scheduled for this customer yet.
                 </div>
               ) : (
@@ -622,29 +622,29 @@ export const LeadDetailPage: React.FC = () => {
                   {siteVisits.map((v) => (
                     <div
                       key={v.id}
-                      className="p-3.5 bg-slate-50 border border-slate-200/80 rounded-xl space-y-2 text-xs"
+                      className="p-3.5 bg-slate-50 dark:bg-[#101622] border border-slate-200/80 dark:border-[#242F42] rounded-xl space-y-2 text-xs"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-slate-900">{v.visit_date}</span>
-                          <span className="text-slate-500 font-medium">at {v.visit_time}</span>
+                          <span className="font-bold text-slate-900 dark:text-slate-100">{v.visit_date}</span>
+                          <span className="text-slate-500 dark:text-slate-400 font-medium">at {v.visit_time}</span>
                         </div>
                         <Badge siteVisitStatus={v.visit_status} size="xs" />
                       </div>
 
-                      <div className="text-[11px] text-slate-600">
-                        Project: <span className="font-semibold text-slate-800">{v.project_name}</span>
+                      <div className="text-[11px] text-slate-600 dark:text-slate-400">
+                        Project: <span className="font-semibold text-slate-800 dark:text-slate-200">{v.project_name}</span>
                         {v.unit_number && <span> • Unit {v.unit_number}</span>}
                       </div>
 
                       {v.outcome && (
-                        <div className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 w-fit">
+                        <div className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800/60 w-fit">
                           Outcome: {v.outcome}
                         </div>
                       )}
 
-                      <div className="flex items-center justify-between pt-1 border-t border-slate-200/60 text-[10px] text-slate-500">
-                        <span>Host: <strong>{v.assigned_user_name || 'Staff'}</strong></span>
+                      <div className="flex items-center justify-between pt-1 border-t border-slate-200/60 dark:border-[#242F42] text-[10px] text-slate-500 dark:text-slate-400">
+                        <span>Host: <strong className="text-slate-700 dark:text-slate-300">{v.assigned_user_name || 'Staff'}</strong></span>
                         <div className="flex items-center gap-2">
                           {v.visit_status === 'Scheduled' && (
                             <>
@@ -654,7 +654,7 @@ export const LeadDetailPage: React.FC = () => {
                                   setSelectedVisit(v);
                                   setIsVisitRescheduleOpen(true);
                                 }}
-                                className="text-amber-700 hover:underline font-semibold"
+                                className="text-amber-700 dark:text-amber-400 hover:underline font-semibold"
                               >
                                 Reschedule
                               </button>
@@ -664,13 +664,13 @@ export const LeadDetailPage: React.FC = () => {
                                   setSelectedVisit(v);
                                   setIsVisitStatusOpen(true);
                                 }}
-                                className="text-emerald-700 hover:underline font-semibold"
+                                className="text-emerald-700 dark:text-emerald-400 hover:underline font-semibold"
                               >
                                 Outcome
                               </button>
                             </>
                           )}
-                          <Link to={`/site-visits/${v.id}`} className="text-brand-600 hover:underline font-semibold flex items-center gap-0.5">
+                          <Link to={`/site-visits/${v.id}`} className="text-brand-600 dark:text-amber-400 hover:underline font-semibold flex items-center gap-0.5">
                             Details <ExternalLink className="w-2.5 h-2.5" />
                           </Link>
                         </div>
@@ -685,10 +685,10 @@ export const LeadDetailPage: React.FC = () => {
           {/* Right Column: Follow-Ups & Timeline (7 cols) */}
           <div className="lg:col-span-7 space-y-6">
             {/* Follow-Up Logs Section */}
-            <div className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-subtle space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
-                  <PhoneCall className="w-4 h-4 text-brand-600" />
+            <div className="bg-white dark:bg-[#141A24] rounded-xl border border-slate-200/90 dark:border-[#242F42] p-5 shadow-subtle space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#242F42] pb-3">
+                <div className="flex items-center gap-2 text-slate-900 dark:text-slate-100 font-bold text-sm">
+                  <PhoneCall className="w-4 h-4 text-brand-600 dark:text-amber-400" />
                   <h3>Follow-Up Interaction Log ({followUps.length})</h3>
                 </div>
                 <Button
@@ -705,7 +705,7 @@ export const LeadDetailPage: React.FC = () => {
               </div>
 
               {followUps.length === 0 ? (
-                <div className="py-8 text-center text-slate-400 text-xs border border-dashed border-slate-200 rounded-lg">
+                <div className="py-8 text-center text-slate-400 dark:text-slate-500 text-xs border border-dashed border-slate-200 dark:border-[#242F42] rounded-lg">
                   No follow-up interactions recorded yet. Log your first client phone call or meeting.
                 </div>
               ) : (
@@ -713,19 +713,19 @@ export const LeadDetailPage: React.FC = () => {
                   {followUps.map((fol) => (
                     <div
                       key={fol.id}
-                      className="p-3.5 bg-slate-50 border border-slate-200/80 rounded-xl space-y-2 text-xs"
+                      className="p-3.5 bg-slate-50 dark:bg-[#101622] border border-slate-200/80 dark:border-[#242F42] rounded-xl space-y-2 text-xs"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="flex items-center gap-1 font-bold text-slate-900 bg-white px-2 py-0.5 rounded border border-slate-200 shadow-2xs">
+                          <span className="flex items-center gap-1 font-bold text-slate-900 dark:text-slate-100 bg-white dark:bg-[#141A24] px-2 py-0.5 rounded border border-slate-200 dark:border-[#242F42] shadow-2xs">
                             {getTypeIcon(fol.follow_up_type)}
                             <span>{fol.follow_up_type}</span>
                           </span>
-                          <span className="text-[11px] text-slate-500">
+                          <span className="text-[11px] text-slate-500 dark:text-slate-400">
                             {fol.scheduled_date} {fol.scheduled_time ? `at ${fol.scheduled_time}` : ''}
                           </span>
                           {fol.is_overdue && (
-                            <span className="px-1.5 py-0.2 text-[9px] rounded bg-rose-100 text-rose-700 font-bold uppercase">
+                            <span className="px-1.5 py-0.2 text-[9px] rounded bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 font-bold uppercase">
                               Overdue
                             </span>
                           )}
@@ -734,18 +734,18 @@ export const LeadDetailPage: React.FC = () => {
                         <Badge followUpStatus={fol.status} size="xs" />
                       </div>
 
-                      <p className="text-slate-700 leading-relaxed bg-white p-2.5 rounded-lg border border-slate-100">
+                      <p className="text-slate-700 dark:text-slate-300 leading-relaxed bg-white dark:bg-[#141A24] p-2.5 rounded-lg border border-slate-100 dark:border-[#242F42]">
                         {fol.remarks}
                       </p>
 
                       {fol.outcome && (
-                        <div className="text-[11px] font-semibold text-emerald-800 bg-emerald-50/80 px-2.5 py-1 rounded border border-emerald-200">
+                        <div className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50/80 dark:bg-emerald-950/40 px-2.5 py-1 rounded border border-emerald-200 dark:border-emerald-800/60">
                           Outcome: {fol.outcome}
                         </div>
                       )}
 
-                      <div className="flex items-center justify-between pt-1 border-t border-slate-200/60 text-[10px] text-slate-500">
-                        <span>Executive: <strong>{fol.assigned_user_name || 'Staff'}</strong></span>
+                      <div className="flex items-center justify-between pt-1 border-t border-slate-200/60 dark:border-[#242F42] text-[10px] text-slate-500 dark:text-slate-400">
+                        <span>Executive: <strong className="text-slate-700 dark:text-slate-300">{fol.assigned_user_name || 'Staff'}</strong></span>
                         <div className="flex items-center gap-2">
                           {(fol.status === 'Scheduled' || fol.status === 'Rescheduled') && (
                             <>
@@ -755,7 +755,7 @@ export const LeadDetailPage: React.FC = () => {
                                   setSelectedFollowUp(fol);
                                   setIsRescheduleFollowUpOpen(true);
                                 }}
-                                className="text-amber-700 hover:underline font-semibold"
+                                className="text-amber-700 dark:text-amber-400 hover:underline font-semibold"
                               >
                                 Reschedule
                               </button>
@@ -765,13 +765,13 @@ export const LeadDetailPage: React.FC = () => {
                                   setSelectedFollowUp(fol);
                                   setIsCompleteFollowUpOpen(true);
                                 }}
-                                className="text-emerald-700 hover:underline font-semibold"
+                                className="text-emerald-700 dark:text-emerald-400 hover:underline font-semibold"
                               >
                                 Complete
                               </button>
                             </>
                           )}
-                          <Link to={`/follow-ups/${fol.id}`} className="text-brand-600 hover:underline font-semibold flex items-center gap-0.5">
+                          <Link to={`/follow-ups/${fol.id}`} className="text-brand-600 dark:text-amber-400 hover:underline font-semibold flex items-center gap-0.5">
                             Details <ExternalLink className="w-2.5 h-2.5" />
                           </Link>
                         </div>
@@ -783,43 +783,43 @@ export const LeadDetailPage: React.FC = () => {
             </div>
 
             {/* Complete Activity Timeline (Customer 360 View) */}
-            <div className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-subtle space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
-                  <Layers className="w-4 h-4 text-brand-600" />
+            <div className="bg-white dark:bg-[#141A24] rounded-xl border border-slate-200/90 dark:border-[#242F42] p-5 shadow-subtle space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#242F42] pb-3">
+                <div className="flex items-center gap-2 text-slate-900 dark:text-slate-100 font-bold text-sm">
+                  <Layers className="w-4 h-4 text-brand-600 dark:text-amber-400" />
                   <h3>Customer 360 Audit & Activity Timeline</h3>
                 </div>
-                <span className="text-[11px] text-slate-400 font-medium">
+                <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
                   {activities.length} Recorded Events
                 </span>
               </div>
 
               {activities.length === 0 ? (
-                <div className="py-8 text-center text-slate-400 text-xs">
+                <div className="py-8 text-center text-slate-400 dark:text-slate-500 text-xs">
                   No activities recorded yet.
                 </div>
               ) : (
-                <div className="relative pl-6 space-y-6 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
+                <div className="relative pl-6 space-y-6 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200 dark:before:bg-[#242F42]">
                   {activities.map((act) => (
                     <div key={act.id} className="relative group">
                       {/* Timeline dot */}
-                      <div className="absolute -left-6 mt-1 w-2.5 h-2.5 rounded-full bg-slate-900 ring-4 ring-white" />
+                      <div className="absolute -left-6 mt-1 w-2.5 h-2.5 rounded-full bg-slate-900 dark:bg-amber-400 ring-4 ring-white dark:ring-[#141A24]" />
 
                       <div className="space-y-1">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="font-bold text-xs text-slate-900">{act.title}</span>
-                          <span className="text-[10px] text-slate-400">
+                          <span className="font-bold text-xs text-slate-900 dark:text-slate-100">{act.title}</span>
+                          <span className="text-[10px] text-slate-400 dark:text-slate-500">
                             {act.created_at ? act.created_at.split('T')[0] : 'Recently'}
                           </span>
                         </div>
 
                         {act.description && (
-                          <p className="text-xs text-slate-600 leading-relaxed bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                          <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-[#101622] p-2.5 rounded-lg border border-slate-100 dark:border-[#242F42]">
                             {act.description}
                           </p>
                         )}
 
-                        <div className="text-[10px] text-slate-400">
+                        <div className="text-[10px] text-slate-400 dark:text-slate-500">
                           Action by: {act.performer_name || 'System Auto'}
                         </div>
                       </div>

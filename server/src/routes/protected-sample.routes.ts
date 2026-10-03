@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { authenticateToken, requireRole } from '../middleware/auth.middleware.js';
 import { UserRole } from '../types/index.js';
-import { db } from '../db/database.js';
+import { UserModel, AuditLogModel } from '../models/index.js';
 
 const router = Router();
 
@@ -12,16 +12,16 @@ router.use(authenticateToken);
  * Endpoint accessible only by ADMIN
  */
 router.get('/admin-only', requireRole(UserRole.ADMIN), async (req: Request, res: Response) => {
-  const usersCount = await db.get<{ count: number }>('SELECT COUNT(*) as count FROM users');
-  const auditLogsCount = await db.get<{ count: number }>('SELECT COUNT(*) as count FROM audit_logs');
+  const totalRegisteredUsers = await UserModel.countDocuments();
+  const totalAuditLogs = await AuditLogModel.countDocuments();
 
   res.json({
     success: true,
     message: 'Welcome Alexander Wright. You have full Administrator access to SKYLINE CRM.',
     role: UserRole.ADMIN,
     stats: {
-      totalRegisteredUsers: usersCount?.count || 0,
-      totalAuditLogs: auditLogsCount?.count || 0,
+      totalRegisteredUsers: totalRegisteredUsers || 0,
+      totalAuditLogs: totalAuditLogs || 0,
       systemStatus: 'Operational',
       securityLevel: 'Enterprise Max',
     },

@@ -48,7 +48,7 @@ export class EnquiryController {
 
   public static async createEnquiry(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const enquiry = await EnquiryService.createEnquiry(req.body, req.user!);
+      const enquiry = await EnquiryService.createEnquiry(req.body, req.user!.userId);
       res.status(201).json({
         success: true,
         message: 'Client enquiry successfully logged.',
@@ -76,7 +76,7 @@ export class EnquiryController {
   public static async convertToLead(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const id = req.params.id as string;
-      const result = await EnquiryService.convertToLead(id, req.body, req.user!);
+      const result = await EnquiryService.convertToLead(id, req.body, req.user!.userId);
       res.status(200).json({
         success: true,
         message: 'Enquiry successfully converted to CRM Lead.',

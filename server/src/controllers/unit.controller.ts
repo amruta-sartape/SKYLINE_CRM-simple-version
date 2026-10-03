@@ -192,7 +192,7 @@ export class UnitController {
       const id = req.params.id as string;
       const actorId = req.user!.userId;
       const userRole = req.user!.roles[0];
-      const unit = await UnitService.updateAvailability(id, req.body, actorId, userRole);
+      const unit = await UnitService.updateAvailability(id, req.body, actorId);
 
       res.status(200).json({
         success: true,

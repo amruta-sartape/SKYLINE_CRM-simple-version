@@ -28,12 +28,12 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
             <div
               className={clsx(
                 'w-4 h-4 rounded border transition-all duration-150 flex items-center justify-center cursor-pointer',
-                'peer-focus:ring-2 peer-focus:ring-offset-1 peer-focus:ring-slate-900/30',
+                'peer-focus:ring-2 peer-focus:ring-offset-1 peer-focus:ring-slate-900/30 dark:peer-focus:ring-amber-500/30',
                 checked
-                  ? 'bg-slate-900 border-slate-900 text-white'
-                  : 'bg-white border-slate-300 hover:border-slate-400',
+                  ? 'bg-slate-900 dark:bg-amber-600 border-slate-900 dark:border-amber-600 text-white'
+                  : 'bg-white dark:bg-[#101622] border-slate-300 dark:border-[#2A364C] hover:border-slate-400 dark:hover:border-[#3B4B66]',
                 error && !checked ? 'border-rose-400 ring-1 ring-rose-400/30' : '',
-                disabled && 'bg-slate-100 border-slate-200 cursor-not-allowed opacity-60'
+                disabled && 'bg-slate-100 dark:bg-[#1A2230] border-slate-200 dark:border-[#242F42] cursor-not-allowed opacity-60'
               )}
               onClick={() => {
                 const el = document.getElementById(inputId) as HTMLInputElement;
@@ -51,16 +51,16 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
               <label
                 htmlFor={inputId}
                 className={clsx(
-                  'cursor-pointer text-slate-700 font-normal',
+                  'cursor-pointer text-slate-700 dark:text-slate-200 font-normal',
                   disabled && 'cursor-not-allowed opacity-60'
                 )}
               >
                 {label}
               </label>
             )}
-            {helperText && <p className="text-slate-500 mt-0.5">{helperText}</p>}
+            {helperText && <p className="text-slate-500 dark:text-slate-400 mt-0.5">{helperText}</p>}
             {error && typeof error === 'string' && (
-              <p className="text-rose-600 font-medium mt-0.5">{error}</p>
+              <p className="text-rose-600 dark:text-rose-400 font-medium mt-0.5">{error}</p>
             )}
           </div>
         )}

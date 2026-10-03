@@ -1,5 +1,14 @@
 import crypto from 'crypto';
-import { db } from '../db/database.js';
+import {
+  SiteVisitModel,
+  LeadModel,
+  ProjectModel,
+  UnitModel,
+  PropertyListingModel,
+  UserModel,
+  LeadActivityModel,
+  FollowUpModel,
+} from '../models/index.js';
 import {
   SiteVisit,
   SiteVisitStatus,
@@ -7,6 +16,7 @@ import {
   SiteVisitOutcome,
   SiteVisitSummary,
   UserRole,
+  UserStatus,
   JWTPayload,
   LeadActivity,
 } from '../types/index.js';
@@ -36,704 +46,448 @@ export class SiteVisitService {
   ): Promise<{ visits: SiteVisit[]; total: number; page: number; limit: number }> {
     const page = Math.max(1, filters.page || 1);
     const limit = Math.max(1, Math.min(100, filters.limit || 20));
-    const offset = (page - 1) * limit;
+    const skip = (page - 1) * limit;
 
-    const conditions: string[] = [];
-    const params: any[] = [];
+    const query: any = {};
 
-    // RBAC: Agent can only view site visits assigned to them or their leads
     const isAdmin = user.roles.includes(UserRole.ADMIN);
     const isEmployee = user.roles.includes(UserRole.EMPLOYEE);
+    const isCustomer = user.roles.includes(UserRole.CUSTOMER);
 
-    if (!isAdmin && !isEmployee) {
-      conditions.push('(sv.assigned_user_id = ? OR l.assigned_to = ?)');
-      params.push(user.userId, user.userId);
+    if (isCustomer) {
+      const customerLeads = await LeadModel.find({
+        $or: [{ created_by: user.userId }, { email: user.email.toLowerCase() }],
+      });
+      const leadIds = customerLeads.map((l) => l._id);
+      query.$or = [{ created_by: user.userId }, { lead_id: { $in: leadIds } }];
+    } else if (!isAdmin && !isEmployee) {
+      query.assigned_user_id = user.userId;
     }
 
-    if (filters.search && filters.search.trim()) {
-      const term = `%${filters.search.trim()}%`;
-      conditions.push(
-        '(l.customer_name LIKE ? OR l.phone LIKE ? OR p.name LIKE ? OR un.unit_number LIKE ? OR sv.remarks LIKE ?)'
-      );
-      params.push(term, term, term, term, term);
+    if (filters.leadId) query.lead_id = filters.leadId;
+    if (filters.projectId) query.project_id = filters.projectId;
+    if (filters.unitId) query.unit_id = filters.unitId;
+    if (filters.assignedUserId) query.assigned_user_id = filters.assignedUserId;
+    if (filters.status) query.visit_status = filters.status;
+
+    if (filters.fromDate || filters.toDate) {
+      query.visit_date = {};
+      if (filters.fromDate) query.visit_date.$gte = filters.fromDate;
+      if (filters.toDate) query.visit_date.$lte = filters.toDate;
     }
 
-    if (filters.leadId) {
-      conditions.push('sv.lead_id = ?');
-      params.push(filters.leadId);
+    const sortOrder = filters.sortOrder === 'ASC' ? 1 : -1;
+    const sortField = filters.sortBy === 'customer_name' ? 'visit_date' : filters.sortBy || 'visit_date';
+    const sortObj: any = { [sortField]: sortOrder, visit_time: sortOrder };
+
+    const total = await SiteVisitModel.countDocuments(query);
+    const rows = await SiteVisitModel.find(query).sort(sortObj).skip(skip).limit(limit);
+
+    const visits: SiteVisit[] = await Promise.all(
+      rows.map(async (sv) => {
+        const lead = await LeadModel.findById(sv.lead_id);
+        const project = sv.project_id ? await ProjectModel.findById(sv.project_id) : null;
+        const unit = sv.unit_id ? await UnitModel.findById(sv.unit_id) : null;
+        const assignedUser = await UserModel.findById(sv.assigned_user_id);
+        const creator = sv.created_by ? await UserModel.findById(sv.created_by) : null;
+
+        let property_code: string | null = null;
+        let property_title: string | null = project?.name || null;
+        let property_subtype: string | null = null;
+        let property_price: number | null = null;
+        let property_cover_image: string | null = null;
+
+        const propId = sv.property_id || sv.project_id;
+        if (propId) {
+          const listing = await PropertyListingModel.findById(propId);
+          if (listing) {
+            property_code = listing.code;
+            property_title = listing.title;
+            property_subtype = listing.subtype;
+            property_price = listing.price;
+            property_cover_image = listing.cover_image || null;
+          }
+        }
+
+        return {
+          id: sv._id,
+          lead_id: sv.lead_id,
+          project_id: sv.project_id || '',
+          unit_id: sv.unit_id || null,
+          assigned_user_id: sv.assigned_user_id,
+          visit_date: sv.visit_date,
+          visit_time: sv.visit_time,
+          visit_status: sv.visit_status as any,
+          visit_type: sv.visit_type as any,
+          remarks: sv.remarks,
+          outcome: sv.outcome as any,
+          created_by: sv.created_by,
+          created_at: typeof sv.created_at === 'string' ? sv.created_at : sv.created_at.toISOString(),
+          updated_at: typeof sv.updated_at === 'string' ? sv.updated_at : sv.updated_at.toISOString(),
+          customer_name: lead?.customer_name || 'Client',
+          customer_phone: lead?.phone || '',
+          customer_email: lead?.email || '',
+          lead_status: lead?.qualification_status,
+          lead_budget: lead?.budget,
+          lead_flat_type: lead?.flat_type,
+          lead_pipeline_stage: lead?.pipeline_stage,
+          project_name: project?.name,
+          project_code: project?.code,
+          project_city: project?.city,
+          project_location: project?.location,
+          unit_number: unit?.unit_number,
+          unit_configuration: unit?.configuration,
+          unit_price: unit?.price,
+          unit_availability: unit?.availability_status,
+          assigned_user_name: assignedUser?.name || 'Executive',
+          assigned_user_email: assignedUser?.email || '',
+          created_by_name: creator?.name || undefined,
+          property_id: sv.property_id || undefined,
+          property_code: property_code || undefined,
+          property_title: property_title || undefined,
+          property_subtype: property_subtype || undefined,
+          property_cover_image: property_cover_image || undefined,
+        };
+      })
+    );
+
+    return { visits, total, page, limit };
+  }
+
+  /**
+   * Fetch single visit by ID
+   */
+  public static async getById(id: string, user: JWTPayload): Promise<SiteVisit | null> {
+    const sv = await SiteVisitModel.findById(id);
+    if (!sv) return null;
+
+    const lead = await LeadModel.findById(sv.lead_id);
+    const project = sv.project_id ? await ProjectModel.findById(sv.project_id) : null;
+    const unit = sv.unit_id ? await UnitModel.findById(sv.unit_id) : null;
+    const assignedUser = await UserModel.findById(sv.assigned_user_id);
+    const creator = sv.created_by ? await UserModel.findById(sv.created_by) : null;
+
+    let property_code: string | null = null;
+    let property_title: string | null = project?.name || null;
+    let property_subtype: string | null = null;
+    let property_price: number | null = null;
+    let property_cover_image: string | null = null;
+
+    const propId = sv.property_id || sv.project_id;
+    if (propId) {
+      const listing = await PropertyListingModel.findById(propId);
+      if (listing) {
+        property_code = listing.code;
+        property_title = listing.title;
+        property_subtype = listing.subtype;
+        property_price = listing.price;
+        property_cover_image = listing.cover_image || null;
+      }
     }
-
-    if (filters.projectId) {
-      conditions.push('sv.project_id = ?');
-      params.push(filters.projectId);
-    }
-
-    if (filters.unitId) {
-      conditions.push('sv.unit_id = ?');
-      params.push(filters.unitId);
-    }
-
-    if (filters.assignedUserId) {
-      conditions.push('sv.assigned_user_id = ?');
-      params.push(filters.assignedUserId);
-    }
-
-    if (filters.status) {
-      conditions.push('sv.visit_status = ?');
-      params.push(filters.status);
-    }
-
-    if (filters.fromDate) {
-      conditions.push('sv.visit_date >= ?');
-      params.push(filters.fromDate);
-    }
-
-    if (filters.toDate) {
-      conditions.push('sv.visit_date <= ?');
-      params.push(filters.toDate);
-    }
-
-    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
-
-    // Count
-    const countSql = `
-      SELECT COUNT(*) as total
-      FROM site_visits sv
-      LEFT JOIN leads l ON sv.lead_id = l.id
-      LEFT JOIN property_projects p ON sv.project_id = p.id
-      LEFT JOIN property_units un ON sv.unit_id = un.id
-      ${whereClause}
-    `;
-    const countRes = await db.get<{ total: number }>(countSql, params);
-    const total = countRes?.total || 0;
-
-    // Sort mapping
-    const sortFieldMap: Record<string, string> = {
-      visit_date: 'sv.visit_date',
-      visit_time: 'sv.visit_time',
-      created_at: 'sv.created_at',
-      status: 'sv.visit_status',
-      customer_name: 'l.customer_name',
-      project_name: 'p.name',
-    };
-    const sortField = sortFieldMap[filters.sortBy || 'visit_date'] || 'sv.visit_date';
-    const sortOrder = filters.sortOrder === 'ASC' ? 'ASC' : 'DESC';
-
-    const selectSql = `
-      SELECT 
-        sv.*,
-        l.customer_name,
-        l.phone as customer_phone,
-        l.email as customer_email,
-        l.qualification_status as lead_status,
-        l.budget as lead_budget,
-        l.flat_type as lead_flat_type,
-        l.pipeline_stage as lead_pipeline_stage,
-        p.name as project_name,
-        p.code as project_code,
-        p.city as project_city,
-        p.location as project_location,
-        un.unit_number,
-        un.configuration as unit_configuration,
-        un.price as unit_price,
-        un.availability_status as unit_availability,
-        u.name as assigned_user_name,
-        u.email as assigned_user_email,
-        cb.name as created_by_name,
-        pl.id as property_id,
-        pl.code as property_code,
-        COALESCE(pl.title, p.name) as property_title,
-        pl.subtype as property_subtype,
-        pl.cover_image as property_cover_image,
-        COALESCE(pl.price_label, CAST(pl.price AS TEXT)) as property_price
-      FROM site_visits sv
-      LEFT JOIN leads l ON sv.lead_id = l.id
-      LEFT JOIN property_projects p ON sv.project_id = p.id
-      LEFT JOIN property_units un ON sv.unit_id = un.id
-      LEFT JOIN property_listings pl ON sv.property_id = pl.id OR sv.project_id = pl.id OR sv.project_id = pl.code
-      LEFT JOIN users u ON sv.assigned_user_id = u.id
-      LEFT JOIN users cb ON sv.created_by = cb.id
-      ${whereClause}
-      ORDER BY ${sortField} ${sortOrder}, sv.visit_time ${sortOrder}
-      LIMIT ? OFFSET ?
-    `;
-
-    const visits = await db.all<SiteVisit>(selectSql, [...params, limit, offset]);
 
     return {
-      visits,
-      total,
-      page,
-      limit,
+      id: sv._id,
+      lead_id: sv.lead_id,
+      project_id: sv.project_id || '',
+      unit_id: sv.unit_id || null,
+      assigned_user_id: sv.assigned_user_id,
+      visit_date: sv.visit_date,
+      visit_time: sv.visit_time,
+      visit_status: sv.visit_status as any,
+      visit_type: sv.visit_type as any,
+      remarks: sv.remarks,
+      outcome: sv.outcome as any,
+      created_by: sv.created_by,
+      created_at: typeof sv.created_at === 'string' ? sv.created_at : sv.created_at.toISOString(),
+      updated_at: typeof sv.updated_at === 'string' ? sv.updated_at : sv.updated_at.toISOString(),
+      customer_name: lead?.customer_name || 'Client',
+      customer_phone: lead?.phone || '',
+      customer_email: lead?.email || '',
+      lead_status: lead?.qualification_status,
+      lead_budget: lead?.budget,
+      lead_flat_type: lead?.flat_type,
+      lead_pipeline_stage: lead?.pipeline_stage,
+      project_name: project?.name,
+      project_code: project?.code,
+      project_city: project?.city,
+      project_location: project?.location,
+      unit_number: unit?.unit_number,
+      unit_configuration: unit?.configuration,
+      unit_price: unit?.price,
+      unit_availability: unit?.availability_status,
+      assigned_user_name: assignedUser?.name || 'Executive',
+      assigned_user_email: assignedUser?.email || '',
+      created_by_name: creator?.name || undefined,
+      property_id: sv.property_id || undefined,
+      property_code: property_code || undefined,
+      property_title: property_title || undefined,
+      property_subtype: property_subtype || undefined,
+      property_cover_image: property_cover_image || undefined,
     };
   }
 
   /**
-   * Get aggregate metrics for site visits
-   */
-  public static async getSummary(user: JWTPayload): Promise<SiteVisitSummary> {
-    const isAdmin = user.roles.includes(UserRole.ADMIN);
-    const isEmployee = user.roles.includes(UserRole.EMPLOYEE);
-
-    let whereClause = '';
-    const params: any[] = [];
-
-    if (!isAdmin && !isEmployee) {
-      whereClause = 'WHERE assigned_user_id = ?';
-      params.push(user.userId);
-    }
-
-    const todayStr = new Date().toISOString().split('T')[0];
-
-    const sql = `
-      SELECT
-        COUNT(*) as total_visits,
-        SUM(CASE WHEN visit_status = 'Scheduled' THEN 1 ELSE 0 END) as scheduled_visits,
-        SUM(CASE WHEN visit_status = 'Completed' THEN 1 ELSE 0 END) as completed_visits,
-        SUM(CASE WHEN visit_status = 'Rescheduled' THEN 1 ELSE 0 END) as rescheduled_visits,
-        SUM(CASE WHEN visit_status = 'Cancelled' THEN 1 ELSE 0 END) as cancelled_visits,
-        SUM(CASE WHEN visit_status = 'No Show' THEN 1 ELSE 0 END) as no_show_visits,
-        SUM(CASE WHEN visit_date = '${todayStr}' AND visit_status = 'Scheduled' THEN 1 ELSE 0 END) as today_visits,
-        SUM(CASE WHEN visit_date > '${todayStr}' AND visit_status = 'Scheduled' THEN 1 ELSE 0 END) as upcoming_visits
-      FROM site_visits
-      ${whereClause}
-    `;
-
-    const row = await db.get<any>(sql, params);
-
-    return {
-      total_visits: row?.total_visits || 0,
-      scheduled_visits: row?.scheduled_visits || 0,
-      completed_visits: row?.completed_visits || 0,
-      rescheduled_visits: row?.rescheduled_visits || 0,
-      cancelled_visits: row?.cancelled_visits || 0,
-      no_show_visits: row?.no_show_visits || 0,
-      today_visits: row?.today_visits || 0,
-      upcoming_visits: row?.upcoming_visits || 0,
-    };
-  }
-
-  /**
-   * Get a single site visit by ID with joined details and audit activities
-   */
-  public static async getById(
-    id: string,
-    user: JWTPayload
-  ): Promise<{ visit: SiteVisit; activities: LeadActivity[] } | null> {
-    const sql = `
-      SELECT 
-        sv.*,
-        l.customer_name,
-        l.phone as customer_phone,
-        l.email as customer_email,
-        l.qualification_status as lead_status,
-        l.budget as lead_budget,
-        l.flat_type as lead_flat_type,
-        l.pipeline_stage as lead_pipeline_stage,
-        p.name as project_name,
-        p.code as project_code,
-        p.city as project_city,
-        p.location as project_location,
-        un.unit_number,
-        un.configuration as unit_configuration,
-        un.price as unit_price,
-        un.availability_status as unit_availability,
-        u.name as assigned_user_name,
-        u.email as assigned_user_email,
-        cb.name as created_by_name,
-        pl.id as property_id,
-        pl.code as property_code,
-        COALESCE(pl.title, p.name) as property_title,
-        pl.subtype as property_subtype,
-        pl.cover_image as property_cover_image,
-        COALESCE(pl.price_label, CAST(pl.price AS TEXT)) as property_price
-      FROM site_visits sv
-      LEFT JOIN leads l ON sv.lead_id = l.id
-      LEFT JOIN property_projects p ON sv.project_id = p.id
-      LEFT JOIN property_units un ON sv.unit_id = un.id
-      LEFT JOIN property_listings pl ON sv.property_id = pl.id OR sv.project_id = pl.id OR sv.project_id = pl.code
-      LEFT JOIN users u ON sv.assigned_user_id = u.id
-      LEFT JOIN users cb ON sv.created_by = cb.id
-      WHERE sv.id = ?
-    `;
-
-    const visit = await db.get<SiteVisit>(sql, [id]);
-    if (!visit) return null;
-
-    // RBAC check
-    const isAdmin = user.roles.includes(UserRole.ADMIN);
-    const isEmployee = user.roles.includes(UserRole.EMPLOYEE);
-    if (!isAdmin && !isEmployee && visit.assigned_user_id !== user.userId) {
-      const err: any = new Error('Access denied. You do not have permission to view this site visit.');
-      err.statusCode = 403;
-      throw err;
-    }
-
-    // Retrieve related lead activities
-    const activitiesSql = `
-      SELECT la.*, usr.name as performer_name, usr.email as performer_email
-      FROM lead_activities la
-      LEFT JOIN users usr ON la.performed_by = usr.id
-      WHERE la.lead_id = ? AND (la.metadata LIKE ? OR la.activity_type LIKE 'SITE_VISIT%')
-      ORDER BY la.created_at DESC
-    `;
-    const activities = await db.all<LeadActivity>(activitiesSql, [visit.lead_id, `%${id}%`]);
-
-    return { visit, activities };
-  }
-
-  /**
-   * Schedule a new site visit with comprehensive conflict detection and RBAC validation
+   * Schedule new site visit
    */
   public static async create(
     data: {
-      lead_id: string;
-      project_id: string;
-      unit_id?: string | null;
-      property_id?: string | null;
-      assigned_user_id: string;
+      lead_id?: string;
+      customer_name?: string;
+      phone?: string;
+      email?: string;
+      project_id?: string;
+      unit_id?: string;
+      property_id?: string;
+      assigned_user_id?: string;
       visit_date: string;
       visit_time: string;
       visit_type?: SiteVisitType;
-      remarks?: string | null;
+      remarks?: string;
     },
-    user: JWTPayload
+    userId?: string
   ): Promise<SiteVisit> {
-    // 1. Verify lead exists and user has permission
-    const lead = await db.get<any>('SELECT * FROM leads WHERE id = ?', [data.lead_id]);
-    if (!lead) {
-      const err: any = new Error('Selected lead record was not found.');
-      err.statusCode = 404;
-      throw err;
-    }
+    let leadId = data.lead_id;
+    let customerName = data.customer_name;
+    let customerPhone = data.phone;
+    let customerEmail = data.email;
 
-    const isAdmin = user.roles.includes(UserRole.ADMIN);
-    const isEmployee = user.roles.includes(UserRole.EMPLOYEE);
-
-    if (!isAdmin && !isEmployee && lead.assigned_to !== user.userId) {
-      const err: any = new Error('You can only schedule site visits for leads assigned to you.');
-      err.statusCode = 403;
-      throw err;
-    }
-
-    let propertyId = data.property_id || null;
-    let projectId = data.project_id;
-
-    // Lookup property listing if property_id or project_id points to one
-    let listing: any = null;
-    if (propertyId) {
-      listing = await db.get<any>('SELECT * FROM property_listings WHERE id = ?', [propertyId]);
-    } else if (projectId) {
-      listing = await db.get<any>('SELECT * FROM property_listings WHERE id = ? OR code = ?', [projectId, projectId]);
-      if (listing) {
-        propertyId = listing.id;
+    if (!leadId && (!customerName || !customerPhone) && userId) {
+      const userDoc = await UserModel.findById(userId);
+      if (userDoc) {
+        if (!customerName) customerName = userDoc.name;
+        if (!customerPhone) customerPhone = userDoc.phone || '+1 555-000-0000';
+        if (!customerEmail) customerEmail = userDoc.email;
       }
     }
 
-    if (listing && listing.project_id) {
-      projectId = listing.project_id;
+    if (!leadId && customerName && customerPhone) {
+      const newLead = await LeadModel.create({
+        _id: `lead_${crypto.randomUUID()}`,
+        customer_name: customerName.trim(),
+        phone: customerPhone.trim(),
+        email: customerEmail ? customerEmail.trim().toLowerCase() : null,
+        budget: 10000000,
+        flat_type: '2 BHK',
+        interested_property: data.property_id || data.project_id || 'Property Inquiry',
+        project_id: data.project_id || null,
+        unit_id: data.unit_id || null,
+        property_id: data.property_id || null,
+        assigned_to: data.assigned_user_id || userId || null,
+        pipeline_stage: 'Site Visit',
+        qualification_status: 'Qualified',
+        priority: 'High',
+        created_by: userId || null,
+      });
+      leadId = newLead._id;
     }
 
-    // 2. Verify project exists
-    let project = await db.get<any>('SELECT * FROM property_projects WHERE id = ?', [projectId]);
-    if (!project) {
-      // Check if project exists by code or fallback from listing
-      const fallbackProject = await db.get<any>('SELECT * FROM property_projects LIMIT 1');
-      if (fallbackProject) {
-        projectId = fallbackProject.id;
-        project = fallbackProject;
-      } else {
-        const err: any = new Error('Selected property project does not exist.');
-        err.statusCode = 404;
-        throw err;
-      }
+    if (!leadId) {
+      throw new Error('A valid lead_id or customer details (name and phone) must be provided.');
     }
 
-    // 3. Verify unit if provided (must exist and belong to project)
-    if (data.unit_id) {
-      const unit = await db.get<any>('SELECT * FROM property_units WHERE id = ?', [data.unit_id]);
-      if (!unit) {
-        const err: any = new Error('Selected property unit does not exist.');
-        err.statusCode = 404;
-        throw err;
-      }
-      if (unit.project_id !== projectId) {
-        const err: any = new Error('Selected unit does not belong to the chosen property project.');
-        err.statusCode = 400;
-        throw err;
-      }
-    }
-
-    // 4. Verify assigned executive exists
-    const assignedUser = await db.get<any>('SELECT id, name, status FROM users WHERE id = ?', [
-      data.assigned_user_id,
-    ]);
-    if (!assignedUser || assignedUser.status !== 'ACTIVE') {
-      const err: any = new Error('Assigned executive is not an active system user.');
-      err.statusCode = 400;
-      throw err;
-    }
-
-    // Non-admins can only assign to themselves if agent
-    if (!isAdmin && !isEmployee && data.assigned_user_id !== user.userId) {
-      const err: any = new Error('Agents cannot assign site visits to other users.');
-      err.statusCode = 403;
-      throw err;
-    }
-
-    // 5. Conflict detection: No double-booking executive at exact same date & time for Scheduled visits
-    const conflict = await db.get<any>(
-      `SELECT id, visit_date, visit_time FROM site_visits 
-       WHERE assigned_user_id = ? AND visit_date = ? AND visit_time = ? AND visit_status = 'Scheduled'`,
-      [data.assigned_user_id, data.visit_date, data.visit_time]
-    );
-
-    if (conflict) {
-      const err: any = new Error('This executive already has another activity scheduled at this time.');
-      err.statusCode = 400;
-      throw err;
+    let assignedUserId = data.assigned_user_id;
+    if (!assignedUserId) {
+      const defaultAgent = await UserModel.findOne({ roles: UserRole.AGENT, status: UserStatus.ACTIVE });
+      assignedUserId = defaultAgent?._id || userId || 'usr_agent_001';
     }
 
     const visitId = `sv_${crypto.randomUUID()}`;
-    const now = new Date().toISOString();
-    const visitType = data.visit_type || 'Direct Visit';
+    await SiteVisitModel.create({
+      _id: visitId,
+      lead_id: leadId,
+      project_id: data.project_id || null,
+      unit_id: data.unit_id || null,
+      property_id: data.property_id || null,
+      assigned_user_id: assignedUserId,
+      visit_date: data.visit_date,
+      visit_time: data.visit_time,
+      visit_status: 'Scheduled',
+      visit_type: data.visit_type || 'Direct Visit',
+      remarks: data.remarks?.trim() || null,
+      created_by: userId || null,
+    });
 
-    await db.run(
-      `INSERT INTO site_visits (
-        id, lead_id, project_id, unit_id, property_id, assigned_user_id, visit_date, visit_time, visit_status, visit_type, remarks, created_by, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Scheduled', ?, ?, ?, ?, ?)`,
-      [
-        visitId,
-        data.lead_id,
-        projectId,
-        data.unit_id || null,
-        propertyId || null,
-        data.assigned_user_id,
-        data.visit_date,
-        data.visit_time,
-        visitType,
-        data.remarks || null,
-        user.userId,
-        now,
-        now,
-      ]
-    );
+    await LeadModel.findByIdAndUpdate(leadId, {
+      pipeline_stage: 'Site Visit',
+      next_followup_date: `${data.visit_date}T${data.visit_time}:00.000Z`,
+    });
 
-    // 6. Record activity in lead timeline
-    const unitText = data.unit_id ? ` (Unit ID: ${data.unit_id})` : '';
-    const displayName = listing?.title || project.name;
-    await db.run(
-      `INSERT INTO lead_activities (id, lead_id, activity_type, title, description, performed_by, metadata, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        `act_${crypto.randomUUID()}`,
-        data.lead_id,
-        'SITE_VISIT_SCHEDULED',
-        `Site Visit Scheduled: ${displayName}`,
-        `Site visit scheduled for ${data.visit_date} at ${data.visit_time} at ${displayName}${unitText}. Assigned to ${assignedUser.name}.`,
-        user.userId,
-        JSON.stringify({ site_visit_id: visitId, project_id: projectId, property_id: propertyId, unit_id: data.unit_id }),
-        now,
-      ]
-    );
+    await LeadActivityModel.create({
+      _id: `act_${crypto.randomUUID()}`,
+      lead_id: leadId,
+      activity_type: 'STAGE_CHANGED',
+      title: 'Site Visit Scheduled',
+      description: `Site visit scheduled for ${data.visit_date} at ${data.visit_time}.`,
+      performed_by: userId || null,
+    });
 
-    const created = await this.getById(visitId, user);
-    return created!.visit;
+    return (await this.getById(visitId, { userId: userId || '', email: '', roles: [UserRole.ADMIN] }))!;
   }
 
   /**
-   * Update site visit details
+   * Update Site Visit details
    */
   public static async update(
     id: string,
-    data: {
-      project_id?: string;
-      unit_id?: string | null;
-      visit_type?: SiteVisitType;
-      remarks?: string | null;
-    },
+    data: Partial<{
+      visit_date: string;
+      visit_time: string;
+      assigned_user_id: string;
+      project_id: string;
+      unit_id: string;
+      property_id: string;
+      visit_type: SiteVisitType;
+      remarks: string;
+    }>,
     user: JWTPayload
   ): Promise<SiteVisit> {
-    const existing = await this.getById(id, user);
-    if (!existing) {
-      const err: any = new Error('Site visit not found.');
-      err.statusCode = 404;
-      throw err;
-    }
+    const sv = await SiteVisitModel.findById(id);
+    if (!sv) throw new Error('Site visit not found.');
 
-    const current = existing.visit;
+    if (data.visit_date !== undefined) sv.visit_date = data.visit_date;
+    if (data.visit_time !== undefined) sv.visit_time = data.visit_time;
+    if (data.assigned_user_id !== undefined) sv.assigned_user_id = data.assigned_user_id;
+    if (data.project_id !== undefined) sv.project_id = data.project_id;
+    if (data.unit_id !== undefined) sv.unit_id = data.unit_id;
+    if (data.property_id !== undefined) sv.property_id = data.property_id;
+    if (data.visit_type !== undefined) sv.visit_type = data.visit_type;
+    if (data.remarks !== undefined) sv.remarks = data.remarks?.trim() || null;
 
-    if (current.visit_status === 'Completed' || current.visit_status === 'Cancelled') {
-      const err: any = new Error(`Cannot modify a ${current.visit_status.toLowerCase()} site visit.`);
-      err.statusCode = 400;
-      throw err;
-    }
-
-    const projectId = data.project_id || current.project_id;
-    const unitId = data.unit_id !== undefined ? data.unit_id : current.unit_id;
-    const visitType = data.visit_type || current.visit_type;
-    const remarks = data.remarks !== undefined ? data.remarks : current.remarks;
-    const now = new Date().toISOString();
-
-    if (unitId) {
-      const unit = await db.get<any>('SELECT * FROM property_units WHERE id = ?', [unitId]);
-      if (!unit || unit.project_id !== projectId) {
-        const err: any = new Error('Selected unit is invalid or does not belong to the project.');
-        err.statusCode = 400;
-        throw err;
-      }
-    }
-
-    await db.run(
-      `UPDATE site_visits 
-       SET project_id = ?, unit_id = ?, visit_type = ?, remarks = ?, updated_at = ?
-       WHERE id = ?`,
-      [projectId, unitId || null, visitType, remarks || null, now, id]
-    );
-
-    const updated = await this.getById(id, user);
-    return updated!.visit;
+    await sv.save();
+    return (await this.getById(id, user))!;
   }
 
   /**
-   * Controlled status change: Completed, Cancelled, No Show
+   * Update status / outcome of a site visit
    */
   public static async updateStatus(
     id: string,
     data: {
       visit_status: SiteVisitStatus;
-      outcome?: SiteVisitOutcome | null;
-      remarks?: string | null;
+      outcome?: SiteVisitOutcome;
+      remarks?: string;
+      rescheduled_date?: string;
+      rescheduled_time?: string;
+      schedule_next_follow_up?: boolean;
+      next_follow_up_date?: string;
+      next_follow_up_time?: string;
+      next_follow_up_type?: string;
     },
     user: JWTPayload
   ): Promise<SiteVisit> {
-    const existing = await this.getById(id, user);
-    if (!existing) {
-      const err: any = new Error('Site visit not found.');
-      err.statusCode = 404;
-      throw err;
+    const sv = await SiteVisitModel.findById(id);
+    if (!sv) throw new Error('Site visit not found.');
+
+    const oldStatus = sv.visit_status;
+    sv.visit_status = data.visit_status;
+    if (data.outcome !== undefined) sv.outcome = data.outcome;
+    if (data.remarks) sv.remarks = data.remarks;
+
+    if (data.visit_status === 'Rescheduled' && data.rescheduled_date) {
+      sv.visit_date = data.rescheduled_date;
+      if (data.rescheduled_time) sv.visit_time = data.rescheduled_time;
     }
 
-    const current = existing.visit;
-    const targetStatus = data.visit_status;
+    await sv.save();
 
-    // Allowed transition validation
-    if (current.visit_status === 'Completed') {
-      const err: any = new Error('Completed site visits cannot change status.');
-      err.statusCode = 400;
-      throw err;
+    await LeadActivityModel.create({
+      _id: `act_${crypto.randomUUID()}`,
+      lead_id: sv.lead_id,
+      activity_type: 'STAGE_CHANGED',
+      title: `Site Visit ${data.visit_status}`,
+      description: `Status changed from ${oldStatus} to ${data.visit_status}.`,
+      performed_by: user.userId,
+    });
+
+    if (data.schedule_next_follow_up && data.next_follow_up_date) {
+      await FollowUpModel.create({
+        _id: `fol_${crypto.randomUUID()}`,
+        lead_id: sv.lead_id,
+        site_visit_id: sv._id,
+        assigned_user_id: sv.assigned_user_id,
+        follow_up_type: (data.next_follow_up_type as any) || 'Phone Call',
+        scheduled_date: data.next_follow_up_date,
+        scheduled_time: data.next_follow_up_time || '10:00',
+        remarks: `Follow-up scheduled after ${data.visit_status} site visit.`,
+        status: 'Scheduled',
+        created_by: user.userId,
+      });
     }
 
-    if (current.visit_status === 'Cancelled') {
-      const err: any = new Error('Cancelled site visits cannot change status.');
-      err.statusCode = 400;
-      throw err;
-    }
-
-    if (current.visit_status === 'No Show' && targetStatus !== 'Rescheduled') {
-      const err: any = new Error('A "No Show" visit can only be transitioned to "Rescheduled".');
-      err.statusCode = 400;
-      throw err;
-    }
-
-    const now = new Date().toISOString();
-    const finalRemarks = data.remarks || current.remarks || null;
-    const outcome = data.outcome || null;
-
-    await db.run(
-      `UPDATE site_visits 
-       SET visit_status = ?, outcome = ?, remarks = ?, updated_at = ?
-       WHERE id = ?`,
-      [targetStatus, outcome, finalRemarks, now, id]
-    );
-
-    // Activity logging
-    let actType = 'SITE_VISIT_COMPLETED';
-    let title = `Site Visit Completed: ${current.project_name}`;
-    if (targetStatus === 'Cancelled') {
-      actType = 'SITE_VISIT_CANCELLED';
-      title = `Site Visit Cancelled: ${current.project_name}`;
-    } else if (targetStatus === 'No Show') {
-      actType = 'SITE_VISIT_NO_SHOW';
-      title = `Site Visit No Show: ${current.project_name}`;
-    }
-
-    const desc = `Status updated to "${targetStatus}".${outcome ? ` Outcome: ${outcome}.` : ''}${
-      data.remarks ? ` Remarks: ${data.remarks}` : ''
-    }`;
-
-    await db.run(
-      `INSERT INTO lead_activities (id, lead_id, activity_type, title, description, performed_by, metadata, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        `act_${crypto.randomUUID()}`,
-        current.lead_id,
-        actType,
-        title,
-        desc,
-        user.userId,
-        JSON.stringify({ site_visit_id: id, status: targetStatus, outcome }),
-        now,
-      ]
-    );
-
-    const updated = await this.getById(id, user);
-    return updated!.visit;
+    return (await this.getById(id, user))!;
   }
 
   /**
-   * Reschedule Site Visit with conflict validation
+   * Summary metrics for site visits
    */
   public static async reschedule(
     id: string,
-    data: {
-      visit_date: string;
-      visit_time: string;
-      remarks?: string | null;
-    },
+    data: { rescheduled_date?: string; visit_date?: string; rescheduled_time?: string; visit_time?: string; remarks?: string },
     user: JWTPayload
   ): Promise<SiteVisit> {
-    const existing = await this.getById(id, user);
-    if (!existing) {
-      const err: any = new Error('Site visit not found.');
-      err.statusCode = 404;
-      throw err;
-    }
-
-    const current = existing.visit;
-
-    if (current.visit_status === 'Completed') {
-      const err: any = new Error('Completed site visits cannot be rescheduled.');
-      err.statusCode = 400;
-      throw err;
-    }
-
-    if (current.visit_status === 'Cancelled') {
-      const err: any = new Error('Cancelled site visits cannot be rescheduled.');
-      err.statusCode = 400;
-      throw err;
-    }
-
-    // Conflict detection for the assigned executive (excluding current visit)
-    const conflict = await db.get<any>(
-      `SELECT id FROM site_visits 
-       WHERE assigned_user_id = ? AND visit_date = ? AND visit_time = ? AND visit_status = 'Scheduled' AND id != ?`,
-      [current.assigned_user_id, data.visit_date, data.visit_time, id]
+    return this.updateStatus(
+      id,
+      {
+        visit_status: 'Rescheduled',
+        rescheduled_date: data.rescheduled_date || data.visit_date,
+        rescheduled_time: data.rescheduled_time || data.visit_time,
+        remarks: data.remarks,
+      },
+      user
     );
-
-    if (conflict) {
-      const err: any = new Error('This executive already has another activity scheduled at this time.');
-      err.statusCode = 400;
-      throw err;
-    }
-
-    const now = new Date().toISOString();
-    const prevDate = `${current.visit_date} ${current.visit_time}`;
-    const newDate = `${data.visit_date} ${data.visit_time}`;
-
-    await db.run(
-      `UPDATE site_visits 
-       SET visit_date = ?, visit_time = ?, visit_status = 'Rescheduled', remarks = ?, updated_at = ?
-       WHERE id = ?`,
-      [data.visit_date, data.visit_time, data.remarks || current.remarks, now, id]
-    );
-
-    // Record activity
-    await db.run(
-      `INSERT INTO lead_activities (id, lead_id, activity_type, title, description, performed_by, metadata, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        `act_${crypto.randomUUID()}`,
-        current.lead_id,
-        'SITE_VISIT_RESCHEDULED',
-        `Site Visit Rescheduled: ${current.project_name}`,
-        `Visit rescheduled from ${prevDate} to ${newDate}.${data.remarks ? ` Remarks: ${data.remarks}` : ''}`,
-        user.userId,
-        JSON.stringify({ site_visit_id: id, prevDate, newDate }),
-        now,
-      ]
-    );
-
-    const updated = await this.getById(id, user);
-    return updated!.visit;
   }
 
-  /**
-   * Reassign site visit to a different executive (Admin only)
-   */
   public static async reassign(
     id: string,
-    data: {
-      assigned_user_id: string;
-      remarks?: string | null;
-    },
+    data: { assigned_user_id: string; remarks?: string },
     user: JWTPayload
   ): Promise<SiteVisit> {
-    const existing = await this.getById(id, user);
-    if (!existing) {
-      const err: any = new Error('Site visit not found.');
-      err.statusCode = 404;
-      throw err;
-    }
+    return this.update(id, { assigned_user_id: data.assigned_user_id, remarks: data.remarks }, user);
+  }
 
-    const current = existing.visit;
-
-    // RBAC: Only Admin can reassign arbitrary executive
+  public static async getSummary(user: JWTPayload): Promise<SiteVisitSummary> {
+    const query: any = {};
     const isAdmin = user.roles.includes(UserRole.ADMIN);
-    if (!isAdmin) {
-      const err: any = new Error('Only administrators can reassign site visits.');
-      err.statusCode = 403;
-      throw err;
+    const isEmployee = user.roles.includes(UserRole.EMPLOYEE);
+    if (!isAdmin && !isEmployee) {
+      query.assigned_user_id = user.userId;
     }
 
-    const targetUser = await db.get<any>('SELECT id, name, status FROM users WHERE id = ?', [
-      data.assigned_user_id,
-    ]);
-    if (!targetUser || targetUser.status !== 'ACTIVE') {
-      const err: any = new Error('Selected executive is not active.');
-      err.statusCode = 400;
-      throw err;
-    }
+    const visits = await SiteVisitModel.find(query);
+    const total = visits.length;
+    const scheduled = visits.filter((v) => v.visit_status === 'Scheduled').length;
+    const completed = visits.filter((v) => v.visit_status === 'Completed').length;
+    const rescheduled = visits.filter((v) => v.visit_status === 'Rescheduled').length;
+    const cancelled = visits.filter((v) => v.visit_status === 'Cancelled').length;
+    const noShow = visits.filter((v) => v.visit_status === 'No Show').length;
 
-    // Check conflict for target user
-    const conflict = await db.get<any>(
-      `SELECT id FROM site_visits 
-       WHERE assigned_user_id = ? AND visit_date = ? AND visit_time = ? AND visit_status = 'Scheduled' AND id != ?`,
-      [data.assigned_user_id, current.visit_date, current.visit_time, id]
+    const todayStr = new Date().toISOString().split('T')[0];
+    const todayCount = visits.filter((v) => v.visit_date === todayStr && v.visit_status === 'Scheduled').length;
+    const upcomingCount = visits.filter((v) => v.visit_date > todayStr && v.visit_status === 'Scheduled').length;
+
+    return {
+      total_visits: total,
+      scheduled_visits: scheduled,
+      completed_visits: completed,
+      rescheduled_visits: rescheduled,
+      cancelled_visits: cancelled,
+      no_show_visits: noShow,
+      today_visits: todayCount,
+      upcoming_visits: upcomingCount,
+    };
+  }
+
+  public static async getTodayVisits(user: JWTPayload): Promise<SiteVisit[]> {
+    const todayStr = new Date().toISOString().split('T')[0];
+    const { visits } = await this.list({ fromDate: todayStr, toDate: todayStr, status: 'Scheduled' }, user);
+    return visits;
+  }
+
+  public static async getExecutiveSchedule(executiveId: string, date: string): Promise<SiteVisit[]> {
+    const { visits } = await this.list(
+      { assignedUserId: executiveId, fromDate: date, toDate: date },
+      { userId: executiveId, email: '', roles: [UserRole.ADMIN] }
     );
-
-    if (conflict) {
-      const err: any = new Error('This executive already has another activity scheduled at this time.');
-      err.statusCode = 400;
-      throw err;
-    }
-
-    const now = new Date().toISOString();
-
-    await db.run(
-      `UPDATE site_visits 
-       SET assigned_user_id = ?, updated_at = ?
-       WHERE id = ?`,
-      [data.assigned_user_id, now, id]
-    );
-
-    // Record activity
-    await db.run(
-      `INSERT INTO lead_activities (id, lead_id, activity_type, title, description, performed_by, metadata, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        `act_${crypto.randomUUID()}`,
-        current.lead_id,
-        'SITE_VISIT_REASSIGNED',
-        `Site Visit Reassigned: ${current.project_name}`,
-        `Visit reassigned to ${targetUser.name}.${data.remarks ? ` Remarks: ${data.remarks}` : ''}`,
-        user.userId,
-        JSON.stringify({ site_visit_id: id, previous_executive: current.assigned_user_id, new_executive: data.assigned_user_id }),
-        now,
-      ]
-    );
-
-    const updated = await this.getById(id, user);
-    return updated!.visit;
+    return visits;
   }
 }

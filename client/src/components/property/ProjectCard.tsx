@@ -56,7 +56,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200/90 shadow-subtle hover:shadow-card-hover transition-all duration-300 flex flex-col justify-between group overflow-hidden">
+    <div className="bg-white dark:bg-[#141A24] rounded-2xl border border-slate-200/90 dark:border-[#242F42] shadow-subtle hover:shadow-card-hover transition-all duration-300 flex flex-col justify-between group overflow-hidden">
       {/* 1. Photorealistic Real Estate Image Header with Gallery Controls */}
       <div className="relative h-44 w-full overflow-hidden bg-slate-900 shrink-0">
         <img
@@ -122,14 +122,14 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
       <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
         <div className="space-y-2.5">
           {/* Location & Developer */}
-          <div className="space-y-1 text-xs text-slate-600">
+          <div className="space-y-1 text-xs text-slate-600 dark:text-slate-400">
             <div className="flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+              <MapPin className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
               <span className="truncate">
                 {project.location}, {project.city}
               </span>
             </div>
-            <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
+            <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
               <ShieldCheck className="w-3.5 h-3.5 text-amber-500 shrink-0" />
               <span className="truncate">{project.developer}</span>
             </div>
@@ -137,36 +137,36 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
 
           {/* Description snippet */}
           {project.description && (
-            <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed bg-slate-50 p-2 rounded-lg border border-slate-100">
+            <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed bg-slate-50 dark:bg-[#101622] p-2 rounded-lg border border-slate-100 dark:border-[#242F42]">
               {project.description}
             </p>
           )}
 
           {/* Units & Wings Metric Chips */}
-          <div className="grid grid-cols-2 gap-2 py-1.5 border-t border-b border-slate-100 text-xs">
-            <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg">
-              <Layers className="w-4 h-4 text-brand-600" />
+          <div className="grid grid-cols-2 gap-2 py-1.5 border-t border-b border-slate-100 dark:border-[#242F42] text-xs">
+            <div className="flex items-center gap-2 p-2 bg-slate-50 dark:bg-[#101622] rounded-lg">
+              <Layers className="w-4 h-4 text-brand-600 dark:text-amber-400" />
               <div>
-                <span className="text-[10px] text-slate-400 block font-medium uppercase">Wings</span>
-                <span className="font-bold text-slate-900">{project.total_wings} Towers</span>
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 block font-medium uppercase">Wings</span>
+                <span className="font-bold text-slate-900 dark:text-slate-100">{project.total_wings} Towers</span>
               </div>
             </div>
-            <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg">
-              <Home className="w-4 h-4 text-emerald-600" />
+            <div className="flex items-center gap-2 p-2 bg-slate-50 dark:bg-[#101622] rounded-lg">
+              <Home className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               <div>
-                <span className="text-[10px] text-slate-400 block font-medium uppercase">Inventory</span>
-                <span className="font-bold text-slate-900">{total} Total Flats</span>
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 block font-medium uppercase">Inventory</span>
+                <span className="font-bold text-slate-900 dark:text-slate-100">{total} Total Flats</span>
               </div>
             </div>
           </div>
 
           {/* Inventory Availability Progress Bar */}
           <div className="space-y-1">
-            <div className="flex items-center justify-between text-[11px] font-semibold text-slate-600">
+            <div className="flex items-center justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-400">
               <span>Availability Distribution</span>
-              <span className="text-emerald-700 font-bold">{available} Units Ready</span>
+              <span className="text-emerald-700 dark:text-emerald-400 font-bold">{available} Units Ready</span>
             </div>
-            <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden flex">
+            <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex">
               <div
                 style={{ width: `${availPercent}%` }}
                 className="bg-emerald-500 h-full transition-all duration-500"
@@ -179,11 +179,11 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
               />
               <div
                 style={{ width: `${soldPercent}%` }}
-                className="bg-slate-400 h-full transition-all duration-500"
+                className="bg-slate-400 dark:bg-slate-600 h-full transition-all duration-500"
                 title={`Sold: ${sold} (${soldPercent.toFixed(0)}%)`}
               />
             </div>
-            <div className="flex items-center justify-between text-[10px] text-slate-400 pt-0.5">
+            <div className="flex items-center justify-between text-[10px] text-slate-400 dark:text-slate-500 pt-0.5">
               <span className="flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
                 <span>Avail ({available})</span>
@@ -193,7 +193,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
                 <span>Res ({reserved})</span>
               </span>
               <span className="flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-slate-400 inline-block" />
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-400 dark:bg-slate-600 inline-block" />
                 <span>Sold ({sold})</span>
               </span>
             </div>
@@ -201,7 +201,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
         </div>
 
         {/* Footer Actions */}
-        <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+        <div className="pt-3 border-t border-slate-100 dark:border-[#242F42] flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5">
             <Button
               variant="outline"
@@ -216,7 +216,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
             {canEdit && onEdit && (
               <button
                 onClick={() => onEdit(project)}
-                className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors"
+                className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1A2230] rounded-md transition-colors"
                 title="Edit Project"
               >
                 <Edit2 className="w-3.5 h-3.5" />

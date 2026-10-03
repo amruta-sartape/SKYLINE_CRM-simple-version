@@ -330,6 +330,24 @@ export function getPropertyArea(p: DiscoveryProperty): number {
 
 
 /**
+ * Helper: Detect test or automated mock fixtures to prevent test pollution in customer discovery
+ */
+function isTestRecord(item: { id?: string; code?: string; title?: string; name?: string }): boolean {
+  const code = (item.code || '').toUpperCase();
+  const id = (item.id || '').toUpperCase();
+  const title = (item.title || item.name || '').toUpperCase();
+  return (
+    code.startsWith('TEST_') ||
+    code.startsWith('TEST-') ||
+    id.startsWith('TEST_') ||
+    id.includes('TEST-') ||
+    title.includes('TEST_') ||
+    title.includes('TEST-') ||
+    title.includes('AUTOMATED TEST')
+  );
+}
+
+/**
  * Builds a comprehensive list of customer discovery properties by merging
  * real database Project/Unit records and realistic typed catalog properties.
  * Every individual property has its own unique, non-overlapping image set.
@@ -340,11 +358,14 @@ export function buildDiscoveryCatalog(
   dbListings: any[] = []
 ): DiscoveryProperty[] {
   const items: DiscoveryProperty[] = [];
+  const seenIds = new Set<string>();
+  const seenTitles = new Set<string>();
 
-  // 0. Convert Admin-created DB Property Listings
+  // 0. Convert Admin-created DB Property Listings (Filter out any test fixtures)
   if (dbListings && dbListings.length > 0) {
     dbListings.forEach((l) => {
       if (l.is_active === 0 || l.status === 'Archived') return;
+      if (isTestRecord({ id: l.id, code: l.code, title: l.title })) return;
 
       const galleryImages =
         l.images && l.images.length > 0
@@ -405,18 +426,24 @@ export function buildDiscoveryCatalog(
         projectSpecs: specs.projectSpecs || (l.main_category === 'Projects' ? specs : undefined),
       };
 
-      items.push(propItem);
+      const titleKey = l.title.toLowerCase().trim();
+      if (!seenIds.has(propItem.id) && !seenTitles.has(titleKey)) {
+        seenIds.add(propItem.id);
+        seenTitles.add(titleKey);
+        items.push(propItem);
+      }
     });
   }
 
-
-  // 1. Convert real database projects into premier discovery properties
-  // (Ensures each project from Phase 3 has a dedicated, unique 4-image set)
+  // 1. Convert real database projects into premier discovery properties (Deduplicated, daylight imagery)
   if (dbProjects.length > 0) {
     dbProjects.forEach((proj, idx) => {
+      // Strictly exclude test / mock projects
+      if (isTestRecord({ id: proj.id, code: proj.code, name: proj.name })) return;
+
       const projectUnits = dbUnits.filter((u) => u.project_id === proj.id);
-      const minPrice = projectUnits.length > 0 ? Math.min(...projectUnits.map((u) => u.price)) : 16500000;
-      const maxPrice = projectUnits.length > 0 ? Math.max(...projectUnits.map((u) => u.price)) : 38000000;
+      const minPrice = projectUnits.length > 0 ? Math.min(...projectUnits.map((u) => u.price)) : 8500000;
+      const maxPrice = projectUnits.length > 0 ? Math.max(...projectUnits.map((u) => u.price)) : 28500000;
       const availableUnitsCount = projectUnits.filter((u) => u.availability_status === 'Available').length;
 
       const name = proj.name.toLowerCase();
@@ -425,9 +452,9 @@ export function buildDiscoveryCatalog(
 
       if (name.includes('oasis') || name.includes('villa')) {
         subtype = 'Villa';
-      } else if (name.includes('pinnacle')) {
+      } else if (name.includes('pinnacle') || name.includes('grandeur')) {
         subtype = 'Penthouse';
-      } else if (name.includes('heights') || name.includes('grandeur')) {
+      } else if (name.includes('heights')) {
         subtype = 'Flat';
       }
 
@@ -436,13 +463,13 @@ export function buildDiscoveryCatalog(
       const propItem: DiscoveryProperty = {
         id: `prop_proj_${proj.id}`,
         title: proj.name,
-        code: proj.code,
+        code: proj.code || `SKP-${proj.id.slice(-4).toUpperCase()}`,
         mainCategory,
         subtype,
         location: proj.location,
         city: proj.city,
         state: proj.state,
-        developer: proj.developer,
+        developer: proj.developer || 'Skyline Realty Group',
         price: minPrice,
         priceLabel: minPrice === maxPrice ? formatPrice(minPrice) : `From ${formatPrice(minPrice)}`,
         pricePerSqft: Math.round(minPrice / 1250),
@@ -479,7 +506,12 @@ export function buildDiscoveryCatalog(
         },
       };
 
-      items.push(propItem);
+      const titleKey = proj.name.toLowerCase().trim();
+      if (!seenIds.has(propItem.id) && !seenTitles.has(titleKey)) {
+        seenIds.add(propItem.id);
+        seenTitles.add(titleKey);
+        items.push(propItem);
+      }
     });
   }
 
@@ -1378,6 +1410,17 @@ export function buildDiscoveryCatalog(
     },
   ];
 
-  // Merge database items first, then supplement with typed real estate properties
-  return [...items, ...supplementalProperties];
+  // Merge database items first, then supplement with typed real estate properties with deduplication
+  const finalCatalog: DiscoveryProperty[] = [...items];
+
+  supplementalProperties.forEach((prop) => {
+    const titleKey = prop.title.toLowerCase().trim();
+    if (!seenIds.has(prop.id) && !seenTitles.has(titleKey)) {
+      seenIds.add(prop.id);
+      seenTitles.add(titleKey);
+      finalCatalog.push(prop);
+    }
+  });
+
+  return finalCatalog;
 }
