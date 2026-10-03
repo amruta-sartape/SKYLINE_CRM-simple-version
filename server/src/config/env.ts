@@ -11,4 +11,10 @@ export const config = {
   mongodbUri: process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/skyline_crm',
   mongodbDbName: process.env.MONGODB_DB_NAME || 'skyline_crm',
   clientUrl: process.env.CLIENT_URL || 'http://localhost:5173',
+  smtpHost: process.env.SMTP_HOST || '',
+  smtpPort: parseInt(process.env.SMTP_PORT || '587', 10),
+  smtpSecure: process.env.SMTP_SECURE === 'true',
+  smtpUser: process.env.SMTP_USER || '',
+  smtpPass: process.env.SMTP_PASS || '',
+  smtpFrom: process.env.SMTP_FROM || 'SKYLINE CRM <noreply@skylinecrm.com>',
 };

@@ -1,3 +1,4 @@
+import nodemailer, { type Transporter } from 'nodemailer';
 import { config } from '../config/env.js';
 
 export interface EmailOptions {
@@ -8,6 +9,27 @@ export interface EmailOptions {
 }
 
 export class EmailService {
+  private static transporter: Transporter | null = null;
+
+  private static getTransporter(): Transporter | null {
+    if (this.transporter) return this.transporter;
+
+    if (config.smtpHost && config.smtpUser && config.smtpPass) {
+      this.transporter = nodemailer.createTransport({
+        host: config.smtpHost,
+        port: config.smtpPort,
+        secure: config.smtpSecure,
+        auth: {
+          user: config.smtpUser,
+          pass: config.smtpPass,
+        },
+      });
+      return this.transporter;
+    }
+
+    return null;
+  }
+
   /**
    * Send a transactional verification email to staff members (Operations / Agents)
    */
@@ -46,7 +68,21 @@ export class EmailService {
       '</div>',
     ].join('\n');
 
-    // Note: Do NOT log tokens or passwords. Only log dispatch metadata.
-    console.log('[EmailService] Verification email dispatched to ' + data.email + ' (' + roleTitle + ')');
+    const transporter = this.getTransporter();
+    if (transporter) {
+      try {
+        await transporter.sendMail({
+          from: config.smtpFrom,
+          to: data.email,
+          subject: 'Verify Your Skyline CRM Corporate Account',
+          html,
+        });
+        console.log('[EmailService] Live verification email delivered via SMTP to ' + data.email + ' (' + roleTitle + ')');
+      } catch (err: any) {
+        console.error('[EmailService] Failed to send email via SMTP to ' + data.email + ':', err.message);
+      }
+    } else {
+      console.warn('[EmailService] SMTP credentials (SMTP_HOST, SMTP_USER, SMTP_PASS) not configured in .env. Live internet dispatch skipped for ' + data.email + ' (' + roleTitle + ')');
+    }
   }
 }

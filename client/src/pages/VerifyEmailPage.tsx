@@ -12,6 +12,7 @@ export const VerifyEmailPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const token = searchParams.get('token');
+  const emailParam = searchParams.get('email');
 
   const [status, setStatus] = useState<'idle' | 'verifying' | 'success' | 'error'>(token ? 'verifying' : 'idle');
   const [message, setMessage] = useState<string>('');
@@ -19,6 +20,12 @@ export const VerifyEmailPage: React.FC = () => {
   const [isResending, setIsResending] = useState<boolean>(false);
   const [resendMessage, setResendMessage] = useState<string | null>(null);
   const [resendError, setResendError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (emailParam) {
+      setResendEmail(emailParam);
+    }
+  }, [emailParam]);
 
   useEffect(() => {
     if (!token) {

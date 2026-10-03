@@ -125,13 +125,17 @@ export const RegisterPage: React.FC = () => {
   };
 
   if (isRegistrationSuccess) {
+    const roleLabel = selectedRole === 'EMPLOYEE' ? 'Operations Staff' : 'Real Estate Agent';
+    const targetLoginRoute = `/login?role=${selectedRole === 'EMPLOYEE' ? 'operations' : 'agent'}`;
+    const resendRoute = `/verify-email?email=${encodeURIComponent(registeredEmail)}`;
+
     return (
       <AuthLayout
         title="Check Your Email"
         subtitle="Verification required before portal access."
-        badgeText="Registration Submitted"
+        badgeText="Account Created"
       >
-        <div className="space-y-5 text-center py-4">
+        <div className="space-y-5 text-center py-2">
           <div className="w-16 h-16 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center mx-auto text-emerald-400">
             <CheckCircle2 className="w-9 h-9" />
           </div>
@@ -139,30 +143,40 @@ export const RegisterPage: React.FC = () => {
           <div className="space-y-2">
             <h3 className="text-lg font-bold text-white">Registration Successful!</h3>
             <p className="text-xs text-slate-300 max-w-sm mx-auto leading-relaxed">
-              We have sent a verification link to <strong className="text-brand-300 font-semibold">{registeredEmail}</strong>.
+              We have sent a secure activation link to <strong className="text-brand-300 font-semibold">{registeredEmail}</strong> for your <span className="font-semibold text-white">{roleLabel}</span> account.
             </p>
-            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200 text-left mt-3">
-              <p className="font-semibold text-amber-300">Important:</p>
-              <p className="mt-0.5 text-[11px] text-slate-300">
-                Please check your email and click the verification link to activate your account before logging in.
-              </p>
-            </div>
           </div>
 
-          <div className="pt-3 space-y-2">
+          {/* Verification Instructions Panel */}
+          <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 text-left space-y-2.5">
+            <div className="flex items-center gap-2 text-xs font-bold text-amber-300">
+              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+              <span>Next Steps to Activate Your Account:</span>
+            </div>
+            <ol className="text-xs text-slate-300 space-y-1.5 pl-4 list-decimal leading-relaxed">
+              <li>Open your corporate inbox for <span className="text-slate-200 font-medium">{registeredEmail}</span>.</li>
+              <li>Click the <strong className="text-white">Verify Corporate Email</strong> link.</li>
+              <li>Once verified, sign in to access your {roleLabel} workspace.</li>
+            </ol>
+            <p className="text-[11px] text-slate-400 pt-1 border-t border-slate-800">
+              Note: Unverified accounts cannot sign in until email verification is completed.
+            </p>
+          </div>
+
+          <div className="pt-2 space-y-2.5">
             <Button
               type="button"
               variant="primary"
               size="lg"
-              className="w-full bg-gradient-to-r from-brand-600 to-blue-600 text-white font-bold shadow-lg"
-              onClick={() => navigate('/login')}
+              className="w-full bg-gradient-to-r from-brand-600 to-blue-600 hover:from-brand-500 hover:to-brand-600 text-white font-bold shadow-lg"
+              onClick={() => navigate(targetLoginRoute)}
               rightIcon={<ArrowRight className="w-4 h-4" />}
             >
-              Proceed to Sign In
+              Go to Sign In
             </Button>
             <p className="text-xs text-slate-400">
               Didn't receive the email?{' '}
-              <Link to="/verify-email" className="font-semibold text-brand-400 hover:underline">
+              <Link to={resendRoute} className="font-semibold text-brand-400 hover:text-brand-300 hover:underline">
                 Resend verification email
               </Link>
             </p>

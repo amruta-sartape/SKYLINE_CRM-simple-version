@@ -361,7 +361,7 @@ export const LoginPage: React.FC = () => {
           <div className="pt-2 flex items-center justify-center gap-1.5 text-xs text-slate-400 border-t border-slate-800/60 mt-2">
             <span>Looking for property discovery?</span>
             <Link
-              to="/discovery"
+              to="/customer/login"
               className="font-semibold text-amber-400 hover:text-amber-300 transition-colors hover:underline inline-flex items-center gap-1"
             >
               <span>Customer Portal</span>

@@ -20,6 +20,9 @@ yarn-error.log*
 .env.local
 .env.*.local
 
+.env
+server/.env
+
 # OS
 .DS_Store
 Thumbs.db
