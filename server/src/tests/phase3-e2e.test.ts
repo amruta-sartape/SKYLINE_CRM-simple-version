@@ -20,8 +20,9 @@ async function runTests() {
   const projectList = await ProjectService.listProjects();
   assert(projectList.projects.length >= 4, 'Projects list fetched from MongoDB');
   const firstProj = projectList.projects[0];
-  assert(firstProj.wings && firstProj.wings.length > 0, 'Project has embedded wings');
-  console.log(`  ✅ PASS: Project ${firstProj.name} has ${firstProj.wings.length} wings.`);
+  const wings = firstProj?.wings || [];
+  assert(wings.length > 0, 'Project has embedded wings');
+  console.log(`  ✅ PASS: Project ${firstProj.name} has ${wings.length} wings.`);
 
   console.log('\n--- 3. Inventory Units & Floor Matrix ---');
   const unitList = await UnitService.listUnits();
@@ -32,7 +33,9 @@ async function runTests() {
   assert(summary.total_units > 0, 'Inventory summary calculated');
   assert(summary.available_units > 0, 'Available units counted');
 
-  const matrix = await UnitService.getFloorMatrix(firstProj.id, firstProj.wings[0].id);
+  const firstWing = wings[0];
+  assert(firstWing && firstWing.id, 'First wing exists');
+  const matrix = await UnitService.getFloorMatrix(firstProj.id, firstWing.id);
   assert(matrix && matrix.floors.length > 0, 'Floor matrix generated');
   console.log('  ✅ PASS: Floor Matrix generated accurately.');
 
