@@ -40,6 +40,14 @@ export class EmailService {
     role: string;
   }): Promise<void> {
     const roleTitle = data.role === 'EMPLOYEE' ? 'Operations' : 'Real Estate Agent';
+    let cleanUrl = (data.verificationLink || '').trim();
+    while (/^(http:\/\/|https:\/\/)?CLIENT_URL=/i.test(cleanUrl)) {
+      cleanUrl = cleanUrl.replace(/^(http:\/\/|https:\/\/)?CLIENT_URL=/i, '').trim();
+    }
+    if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+      cleanUrl = `http://${cleanUrl}`;
+    }
+
     const html = [
       '<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 8px; background-color: #ffffff;">',
       '  <div style="margin-bottom: 20px; border-bottom: 2px solid #0284c7; padding-bottom: 12px;">',
@@ -54,10 +62,14 @@ export class EmailService {
       '    To activate your staff credentials and proceed to the portal, please verify your corporate email address by clicking the button below:',
       '  </p>',
       '  <div style="margin: 28px 0; text-align: center;">',
-      '    <a href="' + data.verificationLink + '" style="background-color: #0284c7; color: #ffffff; padding: 12px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 14px; display: inline-block;">',
+      '    <a href="' + cleanUrl + '" target="_blank" rel="noopener noreferrer" style="background-color: #0284c7; color: #ffffff; padding: 12px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 14px; display: inline-block;">',
       '      Verify Corporate Email',
       '    </a>',
       '  </div>',
+      '  <p style="color: #64748b; font-size: 12px; line-height: 1.5; margin-top: 16px; word-break: break-all;">',
+      '    If the button above is not clickable, copy and paste this URL into your browser:<br />',
+      '    <a href="' + cleanUrl + '" target="_blank" rel="noopener noreferrer" style="color: #0284c7; text-decoration: underline;">' + cleanUrl + '</a>',
+      '  </p>',
       '  <p style="color: #64748b; font-size: 12px; line-height: 1.5;">',
       '    This verification link is single-use and will expire in 24 hours. If you did not request this registration, no further action is required.',
       '  </p>',
@@ -68,6 +80,19 @@ export class EmailService {
       '</div>',
     ].join('\n');
 
+    const text = [
+      `Hello ${data.name},`,
+      '',
+      `Thank you for registering as a ${roleTitle} on the SKYLINE CRM enterprise portal.`,
+      '',
+      'To activate your staff credentials and proceed to the portal, please verify your corporate email address by clicking the link below:',
+      cleanUrl,
+      '',
+      'This verification link is single-use and will expire in 24 hours. If you did not request this registration, no further action is required.',
+      '',
+      `© ${new Date().getFullYear()} Skyline Realty Group. All rights reserved. Confidential corporate communication.`,
+    ].join('\n');
+
     const transporter = this.getTransporter();
     if (transporter) {
       try {
@@ -76,6 +101,7 @@ export class EmailService {
           to: data.email,
           subject: 'Verify Your Skyline CRM Corporate Account',
           html,
+          text,
         });
         console.log('[EmailService] Live verification email delivered via SMTP to ' + data.email + ' (' + roleTitle + ')');
       } catch (err: any) {

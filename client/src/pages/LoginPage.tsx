@@ -177,7 +177,7 @@ export const LoginPage: React.FC = () => {
               }`}
             >
               <Briefcase className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-              <span>Operations</span>
+              <span>Employee</span>
             </button>
 
             {/* 3. AGENT */}
