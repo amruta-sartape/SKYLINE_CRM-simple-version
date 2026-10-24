@@ -1,0 +1,10 @@
+export { EmployeeManagement } from './EmployeeManagement';
+export { AttendanceSection } from './AttendanceSection';
+export { SalaryProcessing } from './SalaryProcessing';
+export { EmployeePayment } from './EmployeePayment';
+export { SalarySlipPage } from './SalarySlipPage';
+export { SalarySlipModal } from './SalarySlipModal';
+export { InterviewManager } from './InterviewManager';
+export { EmpTransport } from './EmpTransport';
+export { MeetingSchedule } from './MeetingSchedule';
+export { NoticePeriod } from './NoticePeriod';

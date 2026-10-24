@@ -1,0 +1,89 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if user is accessing their own document
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Helper function to check user role
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && getUserData().role == 'Admin';
+    }
+
+    // User profiles collection
+    match /users/{userId} {
+      // Any authenticated user can read profiles (needed for directory/assignments)
+      allow read: if isAuthenticated();
+      // Users can write/update their own profile or Admin can manage all
+      allow create: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Enquiries collection
+    match /enquiries/{enquiryId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Follow-ups collection
+    match /followups/{followupId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Leads collection
+    match /leads/{leadId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Site visits collection
+    match /siteVisits/{visitId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Bookings collection
+    match /bookings/{bookingId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Flat sales collection
+    match /flatSales/{saleId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Finance collections (Vendor, Petty Cash, Client Payments, Daybook)
+    match /vendorPayments/{paymentId} {
+      allow read, write: if isAuthenticated();
+    }
+    match /pettyCash/{cashId} {
+      allow read, write: if isAuthenticated();
+    }
+    match /clientPayments/{paymentId} {
+      allow read, write: if isAuthenticated();
+    }
+    match /dayBook/{entryId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // HR & Payroll collections
+    match /employees/{employeeId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    match /employeePayments/{paymentId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+  }
+}
